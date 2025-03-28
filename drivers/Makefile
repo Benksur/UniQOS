@@ -33,6 +33,12 @@ DISPLAY_HEADERS = $(INC_DIR)/$(DISPLAY_DIR)/$(DISPLAY_DRIVER).h
 AUDIO_HEADERS = $(INC_DIR)/$(AUDIO_DIR)/$(AUDIO_DRIVER).h
 MODEM_HEADERS = $(INC_DIR)/$(MODEM_DIR)/$(MODEM_DRIVER).h
 
+# Test files directory
+TEST_DIR = tests/drivers
+TEST_SRCS = $(TEST_DIR)/test_$(DISPLAY_DRIVER).c \
+            $(TEST_DIR)/test_$(AUDIO_DRIVER).c \
+            $(TEST_DIR)/test_$(MODEM_DRIVER).c
+
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OUT_DIR)
@@ -52,13 +58,28 @@ $(OUT_DIR)/%.bin: $(OBJ_DIR)/%.o | $(OBJ_DIR)
 $(OUT_DIR)/drivers.bin: $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(DRIVERS))) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-flash_lcd: $(OUT_DIR)/$(DISPLAY_DRIVER).bin
+# Modified object file rules to include test files
+$(OUT_DIR)/test_$(DISPLAY_DRIVER).bin: $(OBJ_DIR)/$(DISPLAY_DRIVER).o $(OBJ_DIR)/test_$(DISPLAY_DRIVER).o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(OUT_DIR)/test_$(AUDIO_DRIVER).bin: $(OBJ_DIR)/$(AUDIO_DRIVER).o $(OBJ_DIR)/test_$(AUDIO_DRIVER).o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+$(OUT_DIR)/test_$(MODEM_DRIVER).bin: $(OBJ_DIR)/$(MODEM_DRIVER).o $(OBJ_DIR)/test_$(MODEM_DRIVER).o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+# Test object files
+$(OBJ_DIR)/test_%.o: $(TEST_DIR)/test_%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Modified flash targets
+flash_lcd: $(OUT_DIR)/test_$(DISPLAY_DRIVER).bin
 	$(FLASH_TOOL) -p $<
 
-flash_audio: $(OUT_DIR)/$(AUDIO_DRIVER).bin
+flash_audio: $(OUT_DIR)/test_$(AUDIO_DRIVER).bin
 	$(FLASH_TOOL) -p $<
 
-flash_modem: $(OUT_DIR)/$(MODEM_DRIVER).bin
+flash_modem: $(OUT_DIR)/test_$(MODEM_DRIVER).bin
 	$(FLASH_TOOL) -p $<
 
 flash: $(OUT_DIR)/drivers.bin
