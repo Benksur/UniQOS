@@ -6,6 +6,17 @@ DISPLAY_DIR = display
 AUDIO_DIR = audio
 MODEM_DIR = modem
 
+INC_DIR = include/drivers
+INC_DIRS = -I$(INC_DIR) \
+           -I$(INC_DIR)/$(DISPLAY_DIR) \
+           -I$(INC_DIR)/$(AUDIO_DIR) \
+           -I$(INC_DIR)/$(MODEM_DIR) \
+           -I$(SRC_DIR)/$(DISPLAY_DIR) \
+           -I$(SRC_DIR)/$(AUDIO_DIR) \
+           -I$(SRC_DIR)/$(MODEM_DIR)
+
+CFLAGS += $(INC_DIRS)
+
 DISPLAY_DRIVER = ili9341_lcd
 AUDIO_DRIVER = wm8960_codec
 MODEM_DRIVER = rc7620_modem
@@ -17,17 +28,22 @@ OBJ_DIR = build
 OUT_DIR = $(OBJ_DIR)/out
 FLASH_TOOL = stlink-cli
 
+# Header dependencies
+DISPLAY_HEADERS = $(INC_DIR)/$(DISPLAY_DIR)/$(DISPLAY_DRIVER).h
+AUDIO_HEADERS = $(INC_DIR)/$(AUDIO_DIR)/$(AUDIO_DRIVER).h
+MODEM_HEADERS = $(INC_DIR)/$(MODEM_DIR)/$(MODEM_DRIVER).h
+
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OUT_DIR)
 
-$(OBJ_DIR)/$(DISPLAY_DRIVER).o: $(SRC_DIR)/$(DISPLAY_DIR)/$(DISPLAY_DRIVER).c | $(OBJ_DIR)
+$(OBJ_DIR)/$(DISPLAY_DRIVER).o: $(SRC_DIR)/$(DISPLAY_DIR)/$(DISPLAY_DRIVER).c $(DISPLAY_HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/$(AUDIO_DRIVER).o: $(SRC_DIR)/$(AUDIO_DIR)/$(AUDIO_DRIVER).c | $(OBJ_DIR)
+$(OBJ_DIR)/$(AUDIO_DRIVER).o: $(SRC_DIR)/$(AUDIO_DIR)/$(AUDIO_DRIVER).c $(AUDIO_HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/$(MODEM_DRIVER).o: $(SRC_DIR)/$(MODEM_DIR)/$(MODEM_DRIVER).c | $(OBJ_DIR)
+$(OBJ_DIR)/$(MODEM_DRIVER).o: $(SRC_DIR)/$(MODEM_DIR)/$(MODEM_DRIVER).c $(MODEM_HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUT_DIR)/%.bin: $(OBJ_DIR)/%.o | $(OBJ_DIR)
