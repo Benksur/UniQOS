@@ -2,6 +2,10 @@ CC = arm-none-eabi-gcc
 CFLAGS = -Wall -O2 -mcpu=cortex-m4 -mthumb
 LDFLAGS = -T linker.ld
 
+DISPLAY_DIR = display
+AUDIO_DIR = audio
+MODEM_DIR = modem
+
 DISPLAY_DRIVER = ili9341_lcd
 AUDIO_DRIVER = wm8960_codec
 MODEM_DRIVER = rc7620_modem
@@ -17,7 +21,13 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(OUT_DIR)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJ_DIR)/$(DISPLAY_DRIVER).o: $(SRC_DIR)/$(DISPLAY_DIR)/$(DISPLAY_DRIVER).c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/$(AUDIO_DRIVER).o: $(SRC_DIR)/$(AUDIO_DIR)/$(AUDIO_DRIVER).c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/$(MODEM_DRIVER).o: $(SRC_DIR)/$(MODEM_DIR)/$(MODEM_DRIVER).c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUT_DIR)/%.bin: $(OBJ_DIR)/%.o | $(OBJ_DIR)
