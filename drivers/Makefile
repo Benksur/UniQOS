@@ -2,23 +2,28 @@ CC = arm-none-eabi-gcc
 CFLAGS = -Wall -O2 -mcpu=cortex-m4 -mthumb
 LDFLAGS = -T linker.ld
 
+BOARD_DIR = board
 DISPLAY_DIR = display
 AUDIO_DIR = audio
 MODEM_DIR = modem
 
 INC_DIR = include/drivers
-INC_DIRS = -I$(INC_DIR) \
-           -I$(INC_DIR)/$(DISPLAY_DIR) \
-           -I$(INC_DIR)/$(AUDIO_DIR) \
-           -I$(INC_DIR)/$(MODEM_DIR) \
-           -I$(SRC_DIR)/$(DISPLAY_DIR) \
-           -I$(SRC_DIR)/$(AUDIO_DIR) \
-           -I$(SRC_DIR)/$(MODEM_DIR)
+INC_DIRS = -Iinclude/drivers \
+           -Iinclude/drivers/$(DISPLAY_DIR) \
+           -Iinclude/drivers/$(AUDIO_DIR) \
+           -Iinclude/drivers/$(MODEM_DIR) \
+           -Iinclude/board
+
+# Add STM32 HAL include path
+STM32_DIR = third_party/stm32
+INC_DIRS += -I$(STM32_DIR)/drivers/stm32f4xx_hal_driver/inc \
+            -I$(STM32_DIR)/cmsis/device/st/stm32f4xx/include \
+            -I$(STM32_DIR)/cmsis/include
 
 CFLAGS += $(INC_DIRS)
 
 DISPLAY_DRIVER = ili9341_lcd
-AUDIO_DRIVER = wm8960_codec
+AUDIO_DRIVER = nau88c22
 MODEM_DRIVER = rc7620_modem
 
 DRIVERS = $(DISPLAY_DRIVER) $(AUDIO_DRIVER) $(MODEM_DRIVER)
