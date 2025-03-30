@@ -45,24 +45,43 @@ uint8_t nau88c22_init(void)
         uint16_t val;
     } reg_conf_t;
 
-    const reg_conf_t init_seq[] = {
-        {NAU_PWR1, 0x0FC},
-        {NAU_PWR2, 0x1E3},
-        {NAU_PWR3, 0x00C},
-        {NAU_AINTF, 0x002},
-        {NAU_CLOCK1, 0x073},
-        {NAU_DAC_CTRL, 0x000},
-        {NAU_LEFT_DAC_VOL, 0x1FF},
-        {NAU_RIGHT_DAC_VOL, 0x1FF},
-        {NAU_LEFT_ADC_VOL, 0x1FF},
-        {NAU_RIGHT_ADC_VOL, 0x1FF}};
+    const reg_conf_t startup_seq[] = {
+        {NAU_PWR1, 0x004},
+        {NAU_PWR1, 0x004},
+        {NAU_PWR1, 0x00D},
+    };
 
+    const reg_conf_t init_seq[] = {
+        {NAU_AINTF, 0x011}, // Mono operation mode I want to test here....
+        {NAU_CLOCK2, 0x001},
+        {NAU_JACK_DETECT1, 0x040},
+        {NAU_JACK_DETECT2, 0x001},
+        {NAU_PPL_N, 0x019},
+        {NAU_PPL_K1, 0x1A},
+        {NAU_PPL_K2, 0x039},
+        {NAU_PPL_K3, 0x0B0},
+        {NAU_INPUT_CONTROL, 0x0B3}, //May need to change - Investigate with HP det
+        {NAU_OUTPUT_CONTROL, 0x002},//May need to change, not sure how diff speak
+        //PLL needs to be off until clock can be reduced
+        {NAU_PWR1, 0x03D},
+        {NAU_PWR2, 0x015}, 
+        {NAU_PWR3, 0x06F},
+    };
+    
     uint8_t i;
 
     if (!nau88c22_write_reg(NAU_RESET, 0x000))
         return 0;
 
     HAL_Delay(50);
+
+    for (i = 0; i < sizeof(startup_seq) / sizeof(startup_seq[0]); i++)
+    {
+        if (!nau88c22_write_reg(startup_seq[i].reg, startup_seq[i].val))
+            return 0;
+    }
+
+    HAL_Delay(250);
 
     for (i = 0; i < sizeof(init_seq) / sizeof(init_seq[0]); i++)
     {
@@ -72,6 +91,30 @@ uint8_t nau88c22_init(void)
 
     codec_initialized = 1;
     return 1;
+}
+
+uint8_t nau88c22_sleep(uint8_t enable)
+{
+    if (!codec_initialized)
+        return 0;
+
+    uint16_t reg_data;
+
+    if (!nau88c22_read_reg(NAU_PWR2, &reg_data))
+        return 0;
+
+    if (enable)
+        reg_data |= 0x040;
+    else
+        reg_data &= ~0x040;
+
+    return nau88c22_write_reg(NAU_PWR2, reg_data);
+}
+
+uint8_t nau88c22_hp_mic(uint8_t enable)
+{
+    //this is just a reminder for me to deal with this
+    return 0;
 }
 
 uint8_t nau88c22_set_volume(uint8_t volume)
@@ -89,11 +132,15 @@ uint8_t nau88c22_set_volume(uint8_t volume)
     {
         vol_reg = (volume * 255) / 100;
         vol_reg = vol_reg & 0xFF;
-        vol_reg |= 0x100;
     }
 
+    // FYI: Not entirely sure this is the correct one, there are 
+    // other volume registers for each end device which may be 
+    // more correct i.e. preserve volume between unplug headphone
     if (!nau88c22_write_reg(NAU_LEFT_DAC_VOL, vol_reg))
         return 0;
+
+    vol_reg |= 0x100; // Syncronised Control 
 
     return nau88c22_write_reg(NAU_RIGHT_DAC_VOL, vol_reg);
 }

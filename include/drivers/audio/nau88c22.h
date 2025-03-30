@@ -38,6 +38,32 @@
 #define NAU_ALC_CTRL2 0x21
 #define NAU_ALC_CTRL3 0x22
 #define NAU_NOISE_GATE 0x23
+#define NAU_PPL_N 0x24
+#define NAU_PPL_K1 0x25
+#define NAU_PPL_K2 0x26
+#define NAU_PPL_K3 0x27
+#define NAU_3D_CONTROL 0x29
+#define NAU_RIGHT_SPEAKER_SUBMIXER 0x2B
+#define NAU_INPUT_CONTROL 0x2C
+#define NAU_LEFT_INPUT_PGA_GAIN 0x2D
+#define NAU_RIGHT_INPUT_PGA_GAIN 0x2E
+#define NAU_LEFT_ADC_BOOST 0x2F
+#define NAU_RIGHT_ADC_BOOST 0x30
+#define NAU_OUTPUT_CONTROL 0x31
+#define NAU_LEFT_MIXER 0x32
+#define NAU_RIGHT_MIXER 0x33
+#define NAU_LHP_VOLUME 0x34
+#define NAU_RHP_VOLUME 0x35
+#define NAU_LSPKOUT_VOLUME 0x36
+#define NAU_RSPKOUT_VOLUME 0x37
+#define NAU_AUX2_MIXER 0x38
+#define NAU_AUX1_MIXER 0x39
+#define NAU_PWR4 0x3A
+#define NAU_LEFT_TIME_SLOT 0x3B
+#define NAU_MISC 0x3C
+#define NAU_RIGHT_TIME_SLOT 0x3D
+#define NAU_REVISION 0x3E
+#define NAU_DEVICE_ID 0x3F
 
 uint8_t nau88c22_init(void);
 uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data);
