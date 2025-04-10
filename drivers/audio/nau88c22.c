@@ -47,7 +47,6 @@ uint8_t nau88c22_init(void)
 
     const reg_conf_t startup_seq[] = {
         {NAU_PWR1, 0x004},
-        {NAU_PWR1, 0x004},
         {NAU_PWR1, 0x00D},
     };
 
