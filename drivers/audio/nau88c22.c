@@ -54,19 +54,21 @@ uint8_t nau88c22_init(void)
         {NAU_AINTF, 0x011}, // Mono operation mode I want to test here....
         {NAU_CLOCK2, 0x001},
         {NAU_JACK_DETECT1, 0x040},
-        {NAU_JACK_DETECT2, 0x001},
-        {NAU_PPL_N, 0x019},
-        {NAU_PPL_K1, 0x1A},
-        {NAU_PPL_K2, 0x039},
+        {NAU_JACK_DETECT2, 0x021}, // toggle loudspeaker to headphones on jack detect
+        // R = 9.408163070, f2 = 90.318MHz, f1 = 19.2/2 = 9.6MHz
+        {NAU_PPL_N, 0x019},  // N of 9
+        {NAU_PPL_K1, 0x1A},  // 0.408163070
+        {NAU_PPL_K2, 0x039}, // 0.000000000
         {NAU_PPL_K3, 0x0B0},
-        {NAU_INPUT_CONTROL, 0x0B3}, //May need to change - Investigate with HP det
-        {NAU_OUTPUT_CONTROL, 0x002},//May need to change, not sure how diff speak
-        //PLL needs to be off until clock can be reduced
+        {NAU_INPUT_CONTROL, 0x0B3}, // 0.65x microphone bias
+        // May need to change - Investigate with HP det
+        {NAU_OUTPUT_CONTROL, 0x002}, // May need to change, not sure how diff speak
+        // PLL needs to be off until clock can be reduced
         {NAU_PWR1, 0x03D},
-        {NAU_PWR2, 0x015}, 
+        {NAU_PWR2, 0x015},
         {NAU_PWR3, 0x06F},
     };
-    
+
     uint8_t i;
 
     if (!nau88c22_write_reg(NAU_RESET, 0x000))
@@ -110,13 +112,30 @@ uint8_t nau88c22_sleep(uint8_t enable)
     return nau88c22_write_reg(NAU_PWR2, reg_data);
 }
 
-uint8_t nau88c22_hp_mic(uint8_t enable)
+uint8_t nau88c22_hp_mic_toggle(uint8_t enable)
 {
-    //this is just a reminder for me to deal with this
-    return 0;
+    if (enable)
+    {
+        if (!nau88c22_write_reg(NAU_PWR2, 0x02A))
+        {
+            return 0;
+        }
+    }
+    else
+    {
+        if (!nau88c22_write_reg(NAU_PWR2, 0x015))
+        {
+            return 0;
+        }
+    }
 }
 
-uint8_t nau88c22_set_volume(uint8_t volume)
+uint8_t nau88c22_hp_detect(void)
+{
+    return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5);
+}
+
+uint8_t nau88c22_set_output_volume(uint8_t volume, uint8_t left_reg, uint8_t right_reg)
 {
     if (!codec_initialized)
         return 0;
@@ -129,37 +148,120 @@ uint8_t nau88c22_set_volume(uint8_t volume)
     }
     else
     {
-        vol_reg = (volume * 255) / 100;
-        vol_reg = vol_reg & 0xFF;
+        vol_reg = (volume * 63) / 100;
+        vol_reg &= 0x3F;
     }
 
-    // FYI: Not entirely sure this is the correct one, there are 
-    // other volume registers for each end device which may be 
-    // more correct i.e. preserve volume between unplug headphone
-    if (!nau88c22_write_reg(NAU_LEFT_DAC_VOL, vol_reg))
+    if (!nau88c22_write_reg(left_reg, vol_reg))
         return 0;
 
-    vol_reg |= 0x100; // Syncronised Control 
+    vol_reg |= 0x100; // Syncronised Control
 
-    return nau88c22_write_reg(NAU_RIGHT_DAC_VOL, vol_reg);
+    return nau88c22_write_reg(right_reg, vol_reg);
 }
 
-uint8_t nau88c22_mute(uint8_t enable)
+uint8_t nau88c22_increment_output_volume(uint8_t increment)
+{
+    if (!codec_initialized)
+        return 0;
+
+    const uint8_t vol_step_percent = 5;
+    uint8_t left_reg, right_reg;
+    uint16_t current_reg_data;
+    uint8_t current_volume_percent;
+    uint8_t new_volume_percent;
+
+    if (nau88c22_hp_detect())
+    {
+        left_reg = NAU_LHP_VOLUME;
+        right_reg = NAU_RHP_VOLUME;
+    }
+    else
+    {
+        left_reg = NAU_LSPKOUT_VOLUME;
+        right_reg = NAU_RSPKOUT_VOLUME;
+    }
+
+    if (!nau88c22_read_reg(left_reg, &current_reg_data))
+        return 0;
+
+    uint16_t current_volume_raw = current_reg_data & 0x3F;
+    if (current_volume_raw == 0)
+    {
+        current_volume_percent = 0;
+    }
+    else
+    {
+
+        // 31 for rounding during integer division
+        current_volume_percent = (uint8_t)(((uint32_t)current_volume_raw * 100 + 31) / 63);
+    }
+    if (increment)
+    {
+        if (current_volume_percent > (100 - vol_step_percent))
+        {
+            new_volume_percent = 100;
+        }
+        else
+        {
+            new_volume_percent = current_volume_percent + vol_step_percent;
+        }
+    }
+    else
+    {
+        if (current_volume_percent < vol_step_percent)
+        {
+            new_volume_percent = 0;
+        }
+        else
+        {
+            new_volume_percent = current_volume_percent - vol_step_percent;
+        }
+    }
+
+    return nau88c22_set_output_volume(new_volume_percent, left_reg, right_reg);
+}
+
+uint8_t nau88c22_mute_output(uint8_t enable)
 {
     if (!codec_initialized)
         return 0;
 
     uint16_t reg_data;
+    const uint16_t mute_mask = (1 << 6);
 
-    if (!nau88c22_read_reg(NAU_DAC_CTRL, &reg_data))
+    if (!nau88c22_read_reg(NAU_LHP_VOLUME, &reg_data))
         return 0;
 
     if (enable)
-        reg_data |= 0x008;
+        reg_data |= mute_mask;
     else
-        reg_data &= ~0x008;
+        reg_data &= ~mute_mask;
 
-    return nau88c22_write_reg(NAU_DAC_CTRL, reg_data);
+    if (!nau88c22_write_reg(NAU_LHP_VOLUME, reg_data))
+        return 0;
+
+    reg_data |= 0x100;
+    if (!nau88c22_write_reg(NAU_RHP_VOLUME, reg_data))
+        return 0;
+    reg_data = 0;
+
+    if (!nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &reg_data))
+        return 0;
+
+    if (enable)
+        reg_data |= mute_mask;
+    else
+        reg_data &= ~mute_mask;
+
+    if (!nau88c22_write_reg(NAU_LSPKOUT_VOLUME, reg_data))
+        return 0;
+
+    reg_data |= 0x100;
+    if (!nau88c22_write_reg(NAU_RSPKOUT_VOLUME, reg_data))
+        return 0;
+
+    return 1;
 }
 
 uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain)

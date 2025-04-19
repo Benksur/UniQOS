@@ -66,10 +66,14 @@
 #define NAU_DEVICE_ID 0x3F
 
 uint8_t nau88c22_init(void);
+uint8_t nau88c22_hp_mic_toggle(uint8_t enable);
+uint8_t nau88c22_hp_detect(void);
 uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data);
 uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data);
-uint8_t nau88c22_set_volume(uint8_t volume);
-uint8_t nau88c22_mute(uint8_t enable);
+uint8_t nau88c22_set_output_volume(uint8_t volume, uint8_t left_reg, uint8_t right_reg);
+uint8_t nau88c22_increment_output_volume(uint8_t increment);
+uint8_t nau88c22_mute_output(uint8_t enable);
 uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain);
+
 
 #endif
