@@ -84,7 +84,6 @@ uint8_t nau88c22_mute_mic(uint8_t enable);
 uint8_t nau88c22_mute_hp_mic(uint8_t enable);
 uint8_t nau88c22_sleep(uint8_t enable);
 uint8_t nau88c22_mute_all(uint8_t enable);
-
 uint8_t nau88c22_save_and_mute_all(void);
 uint8_t nau88c22_restore_mute_state(void);
 
