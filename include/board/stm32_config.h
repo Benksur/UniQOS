@@ -1,7 +1,7 @@
 #ifndef STM32_CONFIG_H
 #define STM32_CONFIG_H
 
-#include "stm32f4xx_hal.h"
+#include "stm32h7xx_hal.h"
 
 #define AUDIO_I2C_HANDLE      hi2c1
 #define AUDIO_I2S_HANDLE      hi2s2
