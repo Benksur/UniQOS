@@ -59,6 +59,14 @@ uint8_t rc7620_init(void)
     }
     HAL_Delay(100);
 
+    // disable echo
+    rc7620_send_command("ATE0", response, sizeof(response), default_timeout);
+    HAL_Delay(100);
+
+    // enable verbose error messages
+    rc7620_send_command("AT+CMEE=2", response, sizeof(response), default_timeout);
+    HAL_Delay(100);
+
     // set phone functionality 1 (full functionality, high power draw)
     if (!rc7620_send_command("AT+CFUN=1", response, sizeof(response), 5000) || !rc7620_check_ok(response))
     {
@@ -75,6 +83,15 @@ uint8_t rc7620_init(void)
     {
         return 0; 
     }
+    HAL_Delay(100);
+
+    // check network registration status
+    rc7620_send_command("AT+CREG?", response, sizeof(response), default_timeout);
+    HAL_Delay(100);
+
+    
+
+    rc7620_send_command("AT+CEREG?", response, sizeof(response), default_timeout);
     HAL_Delay(100);
 
     return 1; // Initialization successful
