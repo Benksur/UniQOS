@@ -2,15 +2,9 @@
 #define MCP73871_H
 
 #include <stdint.h>
+#include "stm32h7xx_hal.h"
+#include "stm32_config.h"
 
-#define MCP73871_STAT1_PORT GPIOB
-#define MCP73871_STAT1_PIN GPIO_PIN_15
-
-#define MCP73871_STAT2_PORT GPIOB
-#define MCP73871_STAT2_PIN GPIO_PIN_14
-
-#define MCP73871_PG_PORT GPIOB
-#define MCP73871_PG_PIN GPIO_PIN_13
 
 enum MCP73871_States {
     UNKNOWN = 0, //Non defined state

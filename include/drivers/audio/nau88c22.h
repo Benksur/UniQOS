@@ -2,6 +2,8 @@
 #define NAU88C22_H
 
 #include <stdint.h>
+#include "stm32_config.h"
+#include "stm32h7xx_hal.h"
 
 #define NAU88C22_I2C_ADDR 0x1A
 

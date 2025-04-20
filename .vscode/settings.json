@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "stm32_config.h": "c"
+        "stm32_config.h": "c",
+        "mcp73871.h": "c"
     }
 }

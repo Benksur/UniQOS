@@ -1,6 +1,5 @@
 #include "nau88c22.h"
-#include "stm32_config.h"
-#include "stm32f4xx_hal.h"
+
 
 static uint8_t codec_initialized = 0;
 

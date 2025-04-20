@@ -1,4 +1,4 @@
-#include "stm32h7xx_hal.h"
+
 #include "mcp73871.h"
 
 enum MCP73871_States mcp73871_status(void)
