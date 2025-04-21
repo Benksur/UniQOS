@@ -3,10 +3,11 @@
 
 #include "stm32h7xx_hal.h"
 
-#define AUDIO_I2C_HANDLE      hi2c1
-#define AUDIO_I2S_HANDLE      hi2s2
-#define DISPLAY_SPI_HANDLE    hspi1
-#define MODEM_UART_HANDLE     huart2
+#define AUDIO_I2C_HANDLE hi2c1
+#define AUDIO_I2S_HANDLE hi2s2
+#define DISPLAY_SPI_HANDLE hspi1
+#define MODEM_UART_HANDLE huart2
+#define DEBUG_UART_HANDLE huart3
 
 #define MCP73871_STAT1_PORT GPIOB
 #define MCP73871_STAT1_PIN GPIO_PIN_15
@@ -24,5 +25,6 @@ extern I2C_HandleTypeDef AUDIO_I2C_HANDLE;
 extern I2S_HandleTypeDef AUDIO_I2S_HANDLE;
 extern SPI_HandleTypeDef DISPLAY_SPI_HANDLE;
 extern UART_HandleTypeDef MODEM_UART_HANDLE;
+extern UART_HandleTypeDef DEBUG_UART_HANDLE;
 
 #endif
