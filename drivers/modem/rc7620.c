@@ -1,4 +1,6 @@
 #include "rc7620.h"
+#include <stdio.h>
+#include <string.h>
 
 uint8_t rc7620_write_command(const char *command)
 {
@@ -145,15 +147,38 @@ uint8_t rc7620_init(void)
     return 1; // Initialization successful
 }
 
-void rc7620_handle_sms(void)
+uint8_t rc7620_display_sms(int index)
 {
-    char response[128];
+    char command_buffer[32];
+    char response_buffer[256]; // Internal buffer
+    uint32_t timeout_ms = 3000;
+    uint8_t success = 0;
 
-    // read the message from location 1
-    rc7620_send_command("AT+CMGR=1", response, sizeof(response), 1000);
+    memset(response_buffer, 0, sizeof(response_buffer));
 
-    if (strstr(response, "+CMGR:"))
+    snprintf(command_buffer, sizeof(command_buffer), "AT+CMGR=%d", index);
+    printf("Requesting SMS display for index %d: %s\\r\\n", index, command_buffer);
+
+    if (rc7620_send_command(command_buffer, response_buffer, sizeof(response_buffer), timeout_ms))
     {
-        printf("Incoming message: %s\n", response);
+        if (strstr(response_buffer, "+CMGR:") != NULL)
+        {
+            // response in form +CMGR: <status>,<sender_address>,[<alpha>],<timestamp>[,<optional_fields>]<CR><LF>
+            // <message_body><CR><LF>
+            // <CR><LF>
+            // OK<CR><LF>
+            printf("--- SMS Index %d ---\\r\\n%s\\r\\n--- End SMS ---\\r\\n", index, response_buffer);
+            success = 1;
+        }
+        else
+        {
+            printf("Failed to display SMS content at index %d (Invalid response/Timeout):\\r\\n%s\\r\\n", index, response_buffer);
+        }
     }
+    else
+    {
+        printf("Failed to send AT+CMGR command for index %d.\\r\\n", index);
+    }
+
+    return success;
 }
