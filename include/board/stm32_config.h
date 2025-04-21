@@ -1,7 +1,7 @@
 #ifndef STM32_CONFIG_H
 #define STM32_CONFIG_H
 
-#include "stm32h7xx_hal.h"
+#include "main.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -16,27 +16,21 @@
 #define MODEM_UART_HANDLE huart1
 #define DEBUG_UART_HANDLE huart3
 
-#define MCP73871_STAT1_PORT GPIOB
-#define MCP73871_STAT1_PIN GPIO_PIN_15
+#define MCP73871_STAT1_PORT MCP_STAT1_GPIO_Port
+#define MCP73871_STAT1_PIN MCP_STAT1_Pin
 
-#define MCP73871_STAT2_PORT GPIOB
-#define MCP73871_STAT2_PIN GPIO_PIN_14
+#define MCP73871_STAT2_PORT MCP_STAT2_GPIO_Port
+#define MCP73871_STAT2_PIN MCP_STAT2_Pin
 
-#define MCP73871_PG_PORT GPIOB
-#define MCP73871_PG_PIN GPIO_PIN_13
+#define MCP73871_PG_PORT MCP_PG_GPIO_Port
+#define MCP73871_PG_PIN MCP_PG_Pin
 
-#define MODEM_POWER_PORT GPIOC
-#define MODEM_POWER_PIN GPIO_PIN_6
+#define MODEM_POWER_PORT MOB_PWR_GPIO_Port
+#define MODEM_POWER_PIN MOB_PWR_Pin
 
-#define DRV2603_ENABLE_PORT GPIOC
-#define DRV2603_ENABLE_PIN GPIO_PIN_4
-#define DRV2603_PWM_PORT GPIOA
-#define DRV2603_PWM_PIN GPIO_PIN_6
-
-extern I2C_HandleTypeDef hi2c1;
-extern I2S_HandleTypeDef hi2s1;
-extern SPI_HandleTypeDef hspi1;
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart3;
+#define DRV2603_ENABLE_PORT VIB_EN_GPIO_Port
+#define DRV2603_ENABLE_PIN VIB_EN_Pin
+#define DRV2603_PWM_PORT VIB_PWM_GPIO_Port
+#define DRV2603_PWM_PIN VIB_PWM_Pin
 
 #endif

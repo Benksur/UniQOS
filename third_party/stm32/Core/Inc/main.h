@@ -61,6 +61,14 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void stm32_board_init(void);
+
+/* Peripheral handles */
+extern I2C_HandleTypeDef hi2c1;
+extern I2S_HandleTypeDef hi2s1;
+extern SPI_HandleTypeDef hspi1;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart3;
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

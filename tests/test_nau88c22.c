@@ -1,5 +1,4 @@
 #include "nau88c22.h"
-#include "stm32f4xx_hal.h"
 #include "stm32_config.h"
 
 const int16_t sine_wave[48] = {

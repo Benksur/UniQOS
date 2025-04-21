@@ -20,11 +20,6 @@
 #define STM32H743xx
 #define USE_HAL_DRIVER
 #include <stdint.h>
-#include "stm32h7xx.h"
-#include "stm32h7xx_hal_conf.h"
-#include "stm32h7xx_hal.h"
-#include "stm32h7xx_hal_sd.h"
-#include "stm32h7xx_hal_sd_ex.h"
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
