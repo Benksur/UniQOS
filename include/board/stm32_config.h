@@ -3,6 +3,14 @@
 
 #include "stm32h7xx_hal.h"
 
+#ifdef DEBUG
+#include <stdio.h>
+#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_PRINTF(...)
+#endif
+
+
 #define AUDIO_I2C_HANDLE hi2c1
 #define AUDIO_I2S_HANDLE hi2s2
 #define DISPLAY_SPI_HANDLE hspi1

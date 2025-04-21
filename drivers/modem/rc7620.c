@@ -1,6 +1,5 @@
 #include "rc7620.h"
-#include <stdio.h>
-#include <string.h>
+
 
 uint8_t rc7620_write_command(const char *command)
 {
@@ -69,35 +68,41 @@ uint8_t rc7620_init(void)
     const uint32_t default_timeout = 500;
 
     // test AT startup
-    printf("Sending: AT\r\n");
+    DEBUG_PRINTF("Sending: AT\r\n");
     if (!rc7620_send_command("AT", response, sizeof(response), default_timeout) || !rc7620_check_ok(response))
     {
-        printf("Response: %s\r\n", response);
+        DEBUG_PRINTF("Response: %s\r\n", response);
         return 0;
     }
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // disable echo
-    printf("Sending: ATE0\r\n");
+    DEBUG_PRINTF("Sending: ATE0\r\n");
     rc7620_send_command("ATE0", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // disable auto hang-up and keep audio path
-    printf("Sending: AT+CVHU=0\r\n");
+    DEBUG_PRINTF("Sending: AT+CVHU=0\r\n");
     rc7620_send_command("AT+CVHU=0", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
+    HAL_Delay(100);
+
+    // disable GPS
+    DEBUG_PRINTF("Sending: AT!CUSTOM=\"GPSENABLE\",0\r\n");
+    rc7620_send_command("AT!CUSTOM=\"GPSENABLE\",0", response, sizeof(response), default_timeout);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // check SIM status and/or needs pin
-    printf("Sending: AT+CPIN?\r\n");
+    DEBUG_PRINTF("Sending: AT+CPIN?\r\n");
     if (!rc7620_send_command("AT+CPIN?", response, sizeof(response), default_timeout))
     {
-        printf("Response: %s\r\n", response);
+        DEBUG_PRINTF("Response: %s\r\n", response);
         return 0;
     }
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     if (!strstr(response, "READY"))
     {
         return 0;
@@ -107,42 +112,42 @@ uint8_t rc7620_init(void)
     // AT+IPR= to change baud rate if needed, default 115200
 
     // print IMEI number (not needed but just for debugging)
-    printf("Sending: AT+GSN\r\n");
+    DEBUG_PRINTF("Sending: AT+GSN\r\n");
     rc7620_send_command("AT+GSN", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // check network registration status
-    printf("Sending: AT+CREG?\r\n");
+    DEBUG_PRINTF("Sending: AT+CREG?\r\n");
     rc7620_send_command("AT+CREG?", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
-    printf("Sending: AT+CEREG?\r\n");
+    DEBUG_PRINTF("Sending: AT+CEREG?\r\n");
     rc7620_send_command("AT+CEREG?", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // set phone functionality 1 (full functionality, high power draw)
-    printf("Sending: AT+CFUN=1\r\n");
+    DEBUG_PRINTF("Sending: AT+CFUN=1\r\n");
     if (!rc7620_send_command("AT+CFUN=1", response, sizeof(response), 5000) || !rc7620_check_ok(response))
     {
-        printf("Response: %s\r\n", response);
+        DEBUG_PRINTF("Response: %s\r\n", response);
         return 0;
     }
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // Set APN to telstra IP
-    printf("Sending: AT+CGDCONT=1,\"IP\",\"telstra.internet\"\r\n");
+    DEBUG_PRINTF("Sending: AT+CGDCONT=1,\"IP\",\"telstra.internet\"\r\n");
     rc7620_send_command("AT+CGDCONT=1,\"IP\",\"telstra.internet\"", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // notify on new sms
-    printf("Sending: AT+CNMI=1,1,0,0,0\r\n");
+    DEBUG_PRINTF("Sending: AT+CNMI=1,1,0,0,0\r\n");
     rc7620_send_command("AT+CNMI=1,1,0,0,0", response, sizeof(response), default_timeout);
-    printf("Response: %s\r\n", response);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
     return 1; // Initialization successful
 }
@@ -157,7 +162,7 @@ uint8_t rc7620_display_sms(int index)
     memset(response_buffer, 0, sizeof(response_buffer));
 
     snprintf(command_buffer, sizeof(command_buffer), "AT+CMGR=%d", index);
-    printf("Requesting SMS display for index %d: %s\\r\\n", index, command_buffer);
+    DEBUG_PRINTF("Requesting SMS display for index %d: %s\\r\\n", index, command_buffer);
 
     if (rc7620_send_command(command_buffer, response_buffer, sizeof(response_buffer), timeout_ms))
     {
@@ -167,18 +172,104 @@ uint8_t rc7620_display_sms(int index)
             // <message_body><CR><LF>
             // <CR><LF>
             // OK<CR><LF>
-            printf("--- SMS Index %d ---\\r\\n%s\\r\\n--- End SMS ---\\r\\n", index, response_buffer);
+            DEBUG_PRINTF("--- SMS Index %d ---\\r\\n%s\\r\\n--- End SMS ---\\r\\n", index, response_buffer);
             success = 1;
         }
         else
         {
-            printf("Failed to display SMS content at index %d (Invalid response/Timeout):\\r\\n%s\\r\\n", index, response_buffer);
+            DEBUG_PRINTF("Failed to display SMS content at index %d (Invalid response/Timeout):\\r\\n%s\\r\\n", index, response_buffer);
         }
     }
     else
     {
-        printf("Failed to send AT+CMGR command for index %d.\\r\\n", index);
+        DEBUG_PRINTF("Failed to send AT+CMGR command for index %d.\\r\\n", index);
     }
 
     return success;
+}
+
+uint8_t rc7620_send_sms(const char *sms_address, const char *sms_message)
+{
+    char command_buffer[160];
+    char response_buffer[128];
+    uint32_t sms_timeout_ms = 30000;
+
+    DEBUG_PRINTF("Setting SMS text mode: AT+CMGF=1\r\n");
+    if (!rc7620_send_command("AT+CMGF=1", response_buffer, sizeof(response_buffer), 1000) || !rc7620_check_ok(response_buffer))
+    {
+        DEBUG_PRINTF("Failed to set SMS mode to text. Response:\r\n%s\r\n", response_buffer);
+        return 0;
+    }
+    DEBUG_PRINTF("SMS mode set. Response:\r\n%s\r\n", response_buffer);
+    HAL_Delay(100);
+
+    int cmd_len = snprintf(command_buffer, sizeof(command_buffer), "AT+CMGS=\"%s\"\r\n", sms_address);
+    if (cmd_len < 0 || cmd_len >= sizeof(command_buffer))
+    {
+        DEBUG_PRINTF("Failed to format AT+CMGS command (number too long?).\r\n");
+        return 0;
+    }
+
+    DEBUG_PRINTF("Sending SMS command: %s", command_buffer);
+    if (!rc7620_write_command(command_buffer))
+    {
+        DEBUG_PRINTF("Failed to write AT+CMGS command.\r\n");
+        return 0;
+    }
+
+    HAL_Delay(100); 
+    memset(response_buffer, 0, sizeof(response_buffer));
+    if (rc7620_read_response((uint8_t *)response_buffer, sizeof(response_buffer), 1000) != HAL_OK)
+    {
+        DEBUG_PRINTF("Did not receive prompt > within timeout.\r\n");
+        return 0;
+    }
+
+    char *prompt_start = response_buffer;
+    while (*prompt_start == '\r' || *prompt_start == '\n' || *prompt_start == ' ')
+    {
+        prompt_start++;
+    }
+
+    if (strncmp(prompt_start, "> ", 2) != 0)
+    {
+        DEBUG_PRINTF("Did not receive correct prompt >. Received:\r\n%s\r\n", response_buffer);
+        return 0;
+    }
+    DEBUG_PRINTF("Received prompt >\r\n");
+
+    DEBUG_PRINTF("Sending message body: %s\r\n", sms_message);
+    if (!rc7620_write_command(sms_message))
+    {
+        DEBUG_PRINTF("Failed to write SMS message body.\r\n");
+        return 0;
+    }
+
+    DEBUG_PRINTF("Sending Ctrl+Z (0x1A)\r\n");
+    char ctrl_z[2] = {0x1A, 0x00}; 
+    if (!rc7620_write_command(ctrl_z))
+    {
+        DEBUG_PRINTF("Failed to write Ctrl+Z.\r\n");
+        return 0;
+    }
+
+    memset(response_buffer, 0, sizeof(response_buffer));
+    if (rc7620_read_response((uint8_t *)response_buffer, sizeof(response_buffer), sms_timeout_ms) != HAL_OK)
+    {
+        DEBUG_PRINTF("Did not receive final response within timeout.\r\n");
+        return 0;
+    }
+
+    DEBUG_PRINTF("Final response:\r\n%s\r\n", response_buffer);
+
+    if (strstr(response_buffer, "+CMGS") != NULL && strstr(response_buffer, "OK") != NULL)
+    {
+        DEBUG_PRINTF("SMS sent successfully.\r\n");
+        return 1;
+    }
+    else
+    {
+        DEBUG_PRINTF("SMS send final response did not contain +CMGS and OK.\r\n");
+        return 0;
+    }
 }

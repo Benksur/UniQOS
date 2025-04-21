@@ -35,7 +35,7 @@ HAL_StatusTypeDef read_line_from_debug_uart(char *buffer, uint16_t max_len)
         if (received_char == '\r' || received_char == '\n')
         {
             buffer[index] = '\0';
-            printf("\r\n");
+            DEBUG_PRINTF("\r\n");
             return HAL_OK;
         }
         else if (received_char == '\b' || received_char == 127)
@@ -43,7 +43,7 @@ HAL_StatusTypeDef read_line_from_debug_uart(char *buffer, uint16_t max_len)
             if (index > 0)
             {
                 index--;
-                printf("\b \b");
+                DEBUG_PRINTF("\b \b");
             }
         }
         else if (received_char >= ' ' && received_char <= '~')
@@ -63,14 +63,14 @@ void modem_terminal_run(void)
 
     printf("\r\n--- RC7620 AT Command Terminal ---\r\n");
 
-    printf("Initializing RC7620...\r\n");
+    DEBUG_PRINTF("Initializing RC7620...\r\n");
     if (rc7620_init())
     {
-        printf("Modem initialized successfully.\r\n");
+        DEBUG_PRINTF("Modem initialized successfully.\r\n");
     }
     else
     {
-        printf("Modem initialization FAILED. Proceeding to terminal anyway...\r\n");
+        DEBUG_PRINTF("Modem initialization FAILED. Proceeding to terminal anyway...\r\n");
     }
 
     printf("Enter AT commands (or type 'exit' to quit):\r\n");
@@ -82,7 +82,7 @@ void modem_terminal_run(void)
 
         if (read_line_from_debug_uart(input_buffer, INPUT_BUFFER_SIZE) != HAL_OK)
         {
-            printf("Error reading input.\r\n");
+            DEBUG_PRINTF("Error reading input.\r\n");
             continue;
         }
 
@@ -97,15 +97,14 @@ void modem_terminal_run(void)
             break;
         }
 
-        printf("Sending: %s\r\n", input_buffer);
+        DEBUG_PRINTF("Sending: %s\r\n", input_buffer);
         if (!rc7620_send_command(input_buffer, response_buffer, RESPONSE_BUFFER_SIZE, 2000))
         {
-            printf("Failed to send command (write error or buffer overflow).\r\n");
+            DEBUG_PRINTF("Failed to send command (write error or buffer overflow).\r\n");
         }
         else
         {
-
-            printf("Response:\r\n%s\r\n", response_buffer);
+            DEBUG_PRINTF("Response:\r\n%s\r\n", response_buffer);
         }
     }
 }
