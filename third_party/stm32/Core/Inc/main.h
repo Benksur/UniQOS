@@ -26,6 +26,11 @@
 extern "C" {
 #endif
 
+/* USER CODE BEGIN Includes */
+#define STM32H743xx
+#define USE_HAL_DRIVER
+/* USER CODE END Includes */
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
 

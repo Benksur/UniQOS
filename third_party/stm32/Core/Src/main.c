@@ -17,6 +17,14 @@
  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#define STM32H743xx
+#define USE_HAL_DRIVER
+#include <stdint.h>
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_conf.h"
+#include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal_sd.h"
+#include "stm32h7xx_hal_sd_ex.h"
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -83,9 +91,8 @@ void stm32_board_init(void);
 // Define the wrapper function that calls the static initializers
 void stm32_board_init(void)
 {
-  // MUST DEAL WITH MPU_Config();
-  // AND ALSO HAL_Init();
-  // THESE CANNOT BE CALLED WITHIN WRAPPER, MUST BE CALLED IN ENTRY POINT
+  MPU_Config();
+  HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
   MX_DMA_Init();

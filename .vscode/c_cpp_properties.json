@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/third_party/stm32/Core/Inc",
+        "${workspaceFolder}/third_party/stm32/Drivers/STM32H7xx_HAL_Driver/Inc",
+        "${workspaceFolder}/third_party/stm32/Drivers/CMSIS/Include",
+        "${workspaceFolder}/third_party/stm32/Drivers/CMSIS/Device/ST/STM32H7xx/Include"
+      ],
+      "defines": [],
+      "macFrameworkPath": [],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "macos-clang-x64"
+    }
+  ],
+  "version": 4
+}
