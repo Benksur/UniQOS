@@ -3,5 +3,6 @@
         "stm32_config.h": "c",
         "mcp73871.h": "c",
         "rc7620.h": "c"
-    }
+    },
+    "files.autoSave": "onFocusChange"
 }

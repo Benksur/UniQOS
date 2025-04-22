@@ -65,9 +65,9 @@ uint8_t rc7620_send_command(const char *command, char *response, uint16_t respon
 
 void rc7620_power_on(void)
 {
-    HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, 0);
+    HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, GPIO_PIN_RESET);
     HAL_Delay(250);
-    HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, 1);
+    HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, GPIO_PIN_SET);
     HAL_Delay(100);
 }
 

@@ -1,6 +1,5 @@
 #include "nau88c22.h"
 
-
 static uint8_t codec_initialized = 0;
 
 typedef struct
@@ -428,6 +427,9 @@ uint8_t nau88c22_set_mic_volume(uint8_t mic_channel, uint8_t volume)
         return 0;
 
     uint16_t gain_reg_val;
+    uint16_t current_reg_data;
+    uint16_t new_reg_data;
+
     if (volume == 0)
     {
         gain_reg_val = 0x00;
@@ -438,11 +440,10 @@ uint8_t nau88c22_set_mic_volume(uint8_t mic_channel, uint8_t volume)
         gain_reg_val &= 0x3F;
     }
 
-    uint16_t current_reg_data;
     if (!nau88c22_read_reg(reg_addr, &current_reg_data))
         goto set_mic_vol_cleanup;
 
-    uint16_t new_reg_data = (current_reg_data & ~0x3F) | gain_reg_val;
+    new_reg_data = (current_reg_data & ~0x3F) | gain_reg_val;
 
     if (!nau88c22_write_reg(reg_addr, new_reg_data))
         goto set_mic_vol_cleanup;
@@ -593,14 +594,16 @@ uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain)
         return 0;
     }
 
+    uint16_t current_reg_data;
+    uint16_t new_reg_data;
+
     if (!nau88c22_save_and_mute_all())
         return 0;
 
-    uint16_t current_reg_data;
     if (!nau88c22_read_reg(eq_reg, &current_reg_data))
         goto set_eq_cleanup;
 
-    uint16_t new_reg_data = (current_reg_data & ~0x1F) | gain_val;
+    new_reg_data = (current_reg_data & ~0x1F) | gain_val;
 
     if (!nau88c22_write_reg(eq_reg, new_reg_data))
         goto set_eq_cleanup;
