@@ -1,6 +1,6 @@
 #include "ws2812.h"
 
-#define WS2812_MAX_PIXELS 15
+#define WS2812_MAX_PIXELS 17
 static ws2812_pixel_t pixels[WS2812_MAX_PIXELS];
 
 static inline __attribute__((always_inline)) void delay_cycles(uint32_t cycles) {
