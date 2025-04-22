@@ -1,7 +1,6 @@
 #ifndef DRV2603_H
 #define DRV2603_H
 
-#include "stm32h7xx_hal.h"
 #include "board/stm32_config.h"
 
 void drv2603_init(TIM_HandleTypeDef *htim_pwm);
