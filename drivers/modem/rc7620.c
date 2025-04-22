@@ -1,5 +1,4 @@
 #include "rc7620.h"
-#include "errno.h"
 
 static uint8_t curr_function_mode = 0;
 
