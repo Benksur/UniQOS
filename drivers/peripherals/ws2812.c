@@ -39,6 +39,7 @@ uint8_t ws2812_clear(uint32_t num_pixels) {
 
 static void ws2812_send_bit_0(void) {
     // T0H: 0.35μs (168 cycles at 480MHz)
+    // may need to tune delay
     RGB_DATA_GPIO_Port->BSRR = RGB_DATA_Pin;
     delay_cycles(128);
     
