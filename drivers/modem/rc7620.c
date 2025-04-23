@@ -1,5 +1,5 @@
 #include "rc7620.h"
-
+#include "stm32h7xx_hal.h"
 static uint8_t curr_function_mode = 0;
 
 //
@@ -117,6 +117,40 @@ uint8_t rc7620_toggle_airplane_mode(void)
     {
         return rc7620_set_function_mode(MODE_AIRPLANE);
     }
+}
+
+uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
+{
+    char response[100];
+    uint8_t ret = 0;
+    int matches = 0;
+    int8_t utcoffset;
+
+    RTC_DateTypeDef *datestructure;
+    RTC_TimeTypeDef *timestructure;
+
+    ret |= rc7620_send_command("AT+CCLK?", response, sizeof(response), 3000) || !rc7620_check_ok(response);
+
+    if (ret || !rc7620_check_ok(response)) // not sure this will actually respond with OK but ig we can see
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    //response should be in form "+CCLK: yy/MM/dd,hh:mm:ss±zz"
+    int matches = sscanf(response, "+CCLK: %hhd/%hhd/%hhd,%hhd:%hhd:%hhd%hhd",
+        &datestructure.Year, &datestructure.Month, &datestructure.Date, 
+        &timestructure.Hours, &timestructure.Minutes, &timestructure.Seconds,
+        &utcoffset);
+
+    if (matches != 7) {
+        return EBADMSG;
+    }
+
+    memcpy(date, &datestructure);
+    memcpy(time, &timestructure);
+
+    return ret;
 }
 
 uint8_t rc7620_init(void)
