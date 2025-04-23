@@ -31,8 +31,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#define STM32H743xx
-#define USE_HAL_DRIVER
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -64,6 +62,7 @@ extern I2S_HandleTypeDef hi2s1;
 extern SPI_HandleTypeDef hspi1;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
+extern DMA_HandleTypeDef hdma_tim5_ch4;
 
 /* USER CODE END EFP */
 

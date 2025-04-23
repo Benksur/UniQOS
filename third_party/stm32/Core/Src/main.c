@@ -99,6 +99,7 @@ void stm32_board_init(void)
   MX_FMC_Init();
   MX_SDMMC1_SD_Init();
   MX_TIM5_Init();
+  MX_RTC_Init();
 }
 /* USER CODE END 0 */
 
