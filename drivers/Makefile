@@ -25,7 +25,7 @@ INC_DIRS += -I$(STM32_DIR)/Core/Inc \
             -isystem /usr/arm-none-eabi/include
 
 # Add STM32H7 defines to the CFLAGS
-FULL_CFLAGS = $(CFLAGS) $(INC_DIRS) -DSTM32H743xx -DUSE_HAL_DRIVER
+FULL_CFLAGS = $(CFLAGS) $(INC_DIRS) -DSTM32H753xx -DUSE_HAL_DRIVER
 
 
 # STM32 HAL sources
@@ -58,17 +58,21 @@ STM32_SRCS = $(STM32_DIR)/Core/Src/system_stm32h7xx.c \
              $(STM32_DIR)/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rtc_ex.c
 
 # Startup file
-STARTUP_SRC = $(STM32_DIR)/Drivers/CMSIS/Device/ST/STM32H7xx/Source/Templates/gcc/startup_stm32h743xx.s
+STARTUP_SRC = $(STM32_DIR)/Drivers/CMSIS/Device/ST/STM32H7xx/Source/Templates/gcc/startup_stm32h753xx.s
 
 # Get object files for STM32 sources
 STM32_OBJS = $(patsubst $(STM32_DIR)/%.c,$(OBJ_DIR)/stm32_%.o,$(STM32_SRCS))
 STARTUP_OBJ = $(OBJ_DIR)/startup.o
 
 # Define the main.o path explicitly for clarity and filtering
-# HAL_MAIN_OBJ = $(OBJ_DIR)/stm32_Core/Src/main.o # No longer filtering
+HAL_MAIN_OBJ = $(OBJ_DIR)/stm32_Core/Src/main.o
+# Define the it.o path explicitly for clarity and filtering
+HAL_IT_OBJ = $(OBJ_DIR)/stm32_Core/Src/stm32h7xx_it.o
 
 # Filter out the HAL main object file for blinky target
-# STM32_OBJS_NO_MAIN = $(filter-out $(HAL_MAIN_OBJ), $(STM32_OBJS)) # No longer filtering
+STM32_OBJS_NO_MAIN = $(filter-out $(HAL_MAIN_OBJ), $(STM32_OBJS))
+# Filter out HAL main and it object files for blinky target
+STM32_OBJS_FOR_BLINKY = $(filter-out $(HAL_MAIN_OBJ) $(HAL_IT_OBJ), $(STM32_OBJS))
 
 DISPLAY_DRIVER = ili9341_lcd
 AUDIO_DRIVER = nau88c22
@@ -126,9 +130,9 @@ $(STARTUP_OBJ): $(STARTUP_SRC) | $(OBJ_DIR)
 # Define the main.o path explicitly for clarity
 # MAIN_OBJ = $(OBJ_DIR)/stm32_Core/Src/main.o # Not needed
 
-# Link BLINKY_BIN ensuring test_blinky.o comes first and allowing multiple main defs
-$(BLINKY_BIN): $(BLINKY_OBJ) $(STM32_OBJS) $(STARTUP_OBJ) | $(OBJ_DIR)
-	$(CC) -o $@ $(BLINKY_OBJ) $(STM32_OBJS) $(STARTUP_OBJ) $(FULL_CFLAGS) $(LDFLAGS)
+# Link BLINKY_BIN ensuring test_blinky.o comes first and using only necessary HAL objects
+$(BLINKY_BIN): $(BLINKY_OBJ) $(STM32_OBJS_FOR_BLINKY) $(STARTUP_OBJ) | $(OBJ_DIR)
+	$(CC) -o $@ $(BLINKY_OBJ) $(STM32_OBJS_FOR_BLINKY) $(STARTUP_OBJ) $(FULL_CFLAGS) $(LDFLAGS)
 
 $(OUT_DIR)/%.bin: $(OBJ_DIR)/%.o | $(OBJ_DIR)
 	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
