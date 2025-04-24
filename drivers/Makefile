@@ -36,6 +36,7 @@ endif
 # Make sure these sources match makefile in third_party/stm32
 SUBMAKE_C_SOURCES := \
 $(TEST_FILE_PATH) \
+Core/Src/syscalls.c \
 Core/Src/gpio.c \
 Core/Src/dma.c \
 Core/Src/fmc.c \
