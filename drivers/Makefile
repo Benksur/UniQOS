@@ -1,16 +1,33 @@
-# Simple forwarding Makefile for STM32 using sub-make
 .PHONY: all clean flash
-
-# Default TARGET from the STM32 Makefile
 TARGET = Firmware
+BOARD ?= dev
 
-# --- Define the C_SOURCES list for the sub-make --- 
-# Paths must be relative to the sub-make directory (../third_party/stm32)
-# test_blinky.c path: ../../tests/test_blinky.c
-# Exclude the original main.c (Core/Src/main.c)
-# This list needs to be kept in sync with the third_party/stm32/Makefile!
-SUBMAKE_C_SOURCES = \
-../../tests/test_blinky.c \
+# BOARD=pcb or BOARD=dev to define linker files
+ifeq ($(BOARD), pcb)
+LDSCRIPT = STM32H730XX_FLASH.ld
+STARTUP_FILE = startup_stm32h730xx.s
+else ifeq ($(BOARD), dev)
+LDSCRIPT = STM32H753XX_FLASH.ld
+STARTUP_FILE = startup_stm32h753xx.s
+else
+$(error Invalid BOARD specified: $(BOARD). Use 'pcb' or 'dev')
+endif
+
+TEST ?= blinky
+
+# Specify test file (TEST=blinky, codec, )
+ifeq ($(TEST), blinky)
+TEST_FILE_PATH := ../../tests/test_blinky.c
+else ifeq ($(TEST), codec)
+TEST_FILE_PATH := ../../tests/test_nau88c22.c
+
+else
+$(error Invalid TEST specified: $(TEST))
+endif
+
+# Make sure these sources match makefile in third_party/stm32
+SUBMAKE_C_SOURCES := \
+$(TEST_FILE_PATH) \
 Core/Src/gpio.c \
 Core/Src/dma.c \
 Core/Src/fmc.c \
@@ -60,11 +77,9 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 Core/Src/system_stm32h7xx.c
 
-# Forward standard targets to STM32 Makefile, overriding C_SOURCES
-all clean:
-	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)"
 
-# Flash command using the output from the STM32 build directory
-# Depends on 'all' to ensure the build is complete first
+all clean:
+	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) STARTUP_FILE=$(STARTUP_FILE)
+
 flash: all
 	STM32_Programmer_CLI -c port=SWD -w ../third_party/stm32/build/$(TARGET).bin 0x08000000 -v -rst
