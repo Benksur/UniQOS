@@ -2,16 +2,24 @@
 TARGET = Firmware
 BOARD ?= dev
 
-# BOARD=pcb or BOARD=dev to define linker files
+# Define Linker Script and Startup file based on BOARD
 ifeq ($(BOARD), pcb)
 LDSCRIPT = STM32H730XX_FLASH.ld
 STARTUP_FILE = startup_stm32h730xx.s
+BOARD_C_DEF = -DSTM32H730xx
 else ifeq ($(BOARD), dev)
 LDSCRIPT = STM32H753XX_FLASH.ld
 STARTUP_FILE = startup_stm32h753xx.s
+BOARD_C_DEF = -DSTM32H753xx \
+              -DRCC_USART16910CLKSOURCE_D2PCLK2=RCC_USART16CLKSOURCE_D2PCLK2
 else
 $(error Invalid BOARD specified: $(BOARD). Use 'pcb' or 'dev')
 endif
+
+# Combine common and board-specific C definitions
+# These will override the C_DEFS in the sub-makefile
+COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER
+SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF)
 
 TEST ?= blinky
 
@@ -79,7 +87,7 @@ Core/Src/system_stm32h7xx.c
 
 
 all clean:
-	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) STARTUP_FILE=$(STARTUP_FILE)
+	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)"
 
 flash: all
 	STM32_Programmer_CLI -c port=SWD -w ../third_party/stm32/build/$(TARGET).bin 0x08000000 -v -rst
