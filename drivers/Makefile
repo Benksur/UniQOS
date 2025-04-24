@@ -21,14 +21,17 @@ endif
 COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER
 SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF)
 
-TEST ?= blinky
+TEST ?=
 
 # Specify test file (TEST=blinky, codec, )
-ifeq ($(TEST), blinky)
+ifeq ($(TEST), )
+# Ignore empty - no test
+else ifeq ($(TEST), blinky)
 TEST_FILE_PATH := ../../tests/test_blinky.c
+TARGET := test_blinky
 else ifeq ($(TEST), codec)
 TEST_FILE_PATH := ../../tests/test_nau88c22.c
-
+TARGET := test_nau88c22
 else
 $(error Invalid TEST specified: $(TEST))
 endif
@@ -89,7 +92,7 @@ Core/Src/system_stm32h7xx.c
 
 
 all clean:
-	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build"
+	$(MAKE) -C ../third_party/stm32 $@ TARGET="$(TARGET)" C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build" 
 
 flash: all
 	STM32_Programmer_CLI -c port=SWD -w ../build/$(TARGET).bin 0x08000000 -v -rst
