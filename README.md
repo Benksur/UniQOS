@@ -1,5 +1,11 @@
 # UniQOS
 
+## Flash Instructions
+Make sure STM32_Programmer_CLI and arm-none-eabi-gcc in PATH variables
+
+arm-none-eabi-gcc version 14.2
+
+
 ## Hardware Components
 
 - **STM32H7xx:** Microcontroller

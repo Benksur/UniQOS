@@ -48,18 +48,14 @@ extern "C" {
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void stm32_board_init(void);
 
 /* Peripheral handles */
 extern I2C_HandleTypeDef hi2c1;
 extern I2S_HandleTypeDef hi2s1;
-extern SPI_HandleTypeDef hspi1;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_tim5_ch4;
@@ -67,6 +63,36 @@ extern DMA_HandleTypeDef hdma_tim5_ch4;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define PB_HASH_Pin GPIO_PIN_2
+#define PB_HASH_GPIO_Port GPIOE
+#define PB_1_Pin GPIO_PIN_3
+#define PB_1_GPIO_Port GPIOE
+#define PB_2_Pin GPIO_PIN_4
+#define PB_2_GPIO_Port GPIOE
+#define PB_3_Pin GPIO_PIN_5
+#define PB_3_GPIO_Port GPIOE
+#define PB_4_Pin GPIO_PIN_6
+#define PB_4_GPIO_Port GPIOE
+#define PB_5_Pin GPIO_PIN_13
+#define PB_5_GPIO_Port GPIOC
+#define PB_6_Pin GPIO_PIN_14
+#define PB_6_GPIO_Port GPIOC
+#define PB_7_Pin GPIO_PIN_15
+#define PB_7_GPIO_Port GPIOC
+#define PB_8_Pin GPIO_PIN_0
+#define PB_8_GPIO_Port GPIOH
+#define PB_9_Pin GPIO_PIN_1
+#define PB_9_GPIO_Port GPIOH
+#define PB_MENU_L_Pin GPIO_PIN_0
+#define PB_MENU_L_GPIO_Port GPIOC
+#define PB_MENU_R_Pin GPIO_PIN_1
+#define PB_MENU_R_GPIO_Port GPIOC
+#define PB_PWR_Pin GPIO_PIN_0
+#define PB_PWR_GPIO_Port GPIOA
+#define PB_VOL_DOWN_Pin GPIO_PIN_1
+#define PB_VOL_DOWN_GPIO_Port GPIOA
+#define PB_VOL_UP_Pin GPIO_PIN_2
+#define PB_VOL_UP_GPIO_Port GPIOA
 #define RGB_DATA_Pin GPIO_PIN_3
 #define RGB_DATA_GPIO_Port GPIOA
 #define VIB_PWM_Pin GPIO_PIN_6
@@ -133,6 +159,8 @@ extern DMA_HandleTypeDef hdma_tim5_ch4;
 #define SDMMC_DET_GPIO_Port GPIOC
 #define UART_DSR_Pin GPIO_PIN_8
 #define UART_DSR_GPIO_Port GPIOA
+#define PB_HANG_Pin GPIO_PIN_15
+#define PB_HANG_GPIO_Port GPIOA
 #define DISP_D2_Pin GPIO_PIN_0
 #define DISP_D2_GPIO_Port GPIOD
 #define DISP_D3_Pin GPIO_PIN_1
@@ -143,8 +171,24 @@ extern DMA_HandleTypeDef hdma_tim5_ch4;
 #define DISP_RD_GPIO_Port GPIOD
 #define DISP_WR_Pin GPIO_PIN_5
 #define DISP_WR_GPIO_Port GPIOD
+#define PB_CALL_Pin GPIO_PIN_6
+#define PB_CALL_GPIO_Port GPIOD
 #define DISP_CS_Pin GPIO_PIN_7
 #define DISP_CS_GPIO_Port GPIOD
+#define PB_DPAD_UP_Pin GPIO_PIN_3
+#define PB_DPAD_UP_GPIO_Port GPIOB
+#define PB_DPAD_DOWN_Pin GPIO_PIN_4
+#define PB_DPAD_DOWN_GPIO_Port GPIOB
+#define PB_DPAD_RIGHT_Pin GPIO_PIN_5
+#define PB_DPAD_RIGHT_GPIO_Port GPIOB
+#define PB_DPAD_LEFT_Pin GPIO_PIN_6
+#define PB_DPAD_LEFT_GPIO_Port GPIOB
+#define PB_DPAD_SELECT_Pin GPIO_PIN_7
+#define PB_DPAD_SELECT_GPIO_Port GPIOB
+#define PB_STAR_Pin GPIO_PIN_0
+#define PB_STAR_GPIO_Port GPIOE
+#define PB_0_Pin GPIO_PIN_1
+#define PB_0_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

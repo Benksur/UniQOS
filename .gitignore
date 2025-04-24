@@ -1,3 +1,4 @@
 *.o
 *.map
 *.a
+third_party/stm32/build/
