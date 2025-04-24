@@ -34,6 +34,7 @@ $(error Invalid TEST specified: $(TEST))
 endif
 
 # Make sure these sources match makefile in third_party/stm32
+# add syscalls.c and $(TEST_FILE_PATH)
 SUBMAKE_C_SOURCES := \
 $(TEST_FILE_PATH) \
 Core/Src/syscalls.c \
@@ -88,7 +89,7 @@ Core/Src/system_stm32h7xx.c
 
 
 all clean:
-	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)"
+	$(MAKE) -C ../third_party/stm32 $@ C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build"
 
 flash: all
-	STM32_Programmer_CLI -c port=SWD -w ../third_party/stm32/build/$(TARGET).bin 0x08000000 -v -rst
+	STM32_Programmer_CLI -c port=SWD -w ../build/$(TARGET).bin 0x08000000 -v -rst
