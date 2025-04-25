@@ -17,4 +17,5 @@
 #define ENODATA 14   /* No data available*/
 #define EBADMSG 15   /* Bad Message*/
 #define ETIMEDOUT 16 /* Connection Timed Out*/
+#define ENOSYS 17    /* Function not implemented */
 #endif

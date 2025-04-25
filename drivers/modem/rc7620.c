@@ -19,11 +19,14 @@ uint8_t rc7620_read_response(uint8_t *buffer, uint16_t max_len, uint32_t timeout
     memset(buffer, 0, max_len);
     HAL_StatusTypeDef result = HAL_UART_Receive(&MODEM_UART_HANDLE, buffer, max_len - 1, timeout);
 
-    if (result == HAL_TIMEOUT) {
-        DEBUG_PRINTF("ERROR: Timed out reading response");
+    if (result == HAL_TIMEOUT)
+    {
+        DEBUG_PRINTF("ERROR: Timed out reading response\r\n");
         return ETIMEDOUT;
-    } else if (result != HAL_OK){
-        DEBUG_PRINTF("ERROR: Error reading response");
+    }
+    else if (result != HAL_OK)
+    {
+        DEBUG_PRINTF("ERROR: Error reading response\r\n");
         return EIO;
     }
 
@@ -42,7 +45,7 @@ uint8_t rc7620_send_command(const char *command, char *response, uint16_t respon
     uint8_t ret = 0;
     if (cmd_len < 0 || cmd_len >= sizeof(cmd_buffer))
     {
-        DEBUG_PRINTF("ERROR: Bad Command Size");
+        DEBUG_PRINTF("ERROR: Bad Command Size\r\n");
         return E2BIG;
     }
 
@@ -74,7 +77,7 @@ void rc7620_power_on(void)
 void rc7620_power_off(void)
 {
     char response[32];
-    rc7620_send_command("AT!POWERDOWN", response, sizeof(response), 1000);
+    rc7620_send_command("AT!POWERDOWN", response, sizeof(response), TIMEOUT_2S);
     HAL_Delay(1000);
 }
 
@@ -86,7 +89,7 @@ uint8_t rc7620_set_function_mode(enum FunctionModes mode)
     // Only defined modes for RC7620
     if (mode != 0 && mode != 1 && mode != 4 && mode != 5 && mode != 6 && mode != 7)
     {
-        DEBUG_PRINTF("ERROR: Bad function Mode");
+        DEBUG_PRINTF("ERROR: Bad function Mode\r\n");
         return EINVAL;
     }
 
@@ -96,7 +99,7 @@ uint8_t rc7620_set_function_mode(enum FunctionModes mode)
         return EINVAL;
     }
 
-    if (rc7620_send_command(cmd, response, sizeof(response), 3000) || !rc7620_check_ok(response)) // not sure this will actually respond with OK but ig we can see
+    if (rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_30S) || !rc7620_check_ok(response)) // not sure this will actually respond with OK but ig we can see
     {
         DEBUG_PRINTF("Response: %s\r\n", response);
         return EBADMSG;
@@ -129,7 +132,7 @@ uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_Tim
     RTC_DateTypeDef datestructure;
     RTC_TimeTypeDef timestructure;
 
-    ret |= rc7620_send_command("AT+CCLK?", response, sizeof(response), 3000) || !rc7620_check_ok(response);
+    ret |= rc7620_send_command("AT+CCLK?", response, sizeof(response), TIMEOUT_30S) || !rc7620_check_ok(response);
 
     if (ret || !rc7620_check_ok(response)) // not sure this will actually respond with OK but ig we can see
     {
@@ -137,13 +140,15 @@ uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_Tim
         return EBADMSG;
     }
 
-    //response should be in form "+CCLK: yy/MM/dd,hh:mm:ss±zz"
+    // response should be in form "+CCLK: yy/MM/dd,hh:mm:ss±zz"
     matches = sscanf(response, "+CCLK: %hhd/%hhd/%hhd,%hhd:%hhd:%hhd%hhd",
-        &datestructure.Year, &datestructure.Month, &datestructure.Date, 
-        &timestructure.Hours, &timestructure.Minutes, &timestructure.Seconds,
-        &utcoffset);
+                     &datestructure.Year, &datestructure.Month, &datestructure.Date,
+                     &timestructure.Hours, &timestructure.Minutes, &timestructure.Seconds,
+                     &utcoffset);
 
-    if (matches != 7) {
+    if (matches != 7)
+    {
+        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
         return EBADMSG;
     }
 
@@ -151,6 +156,153 @@ uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_Tim
     memcpy(time, &timestructure, sizeof(RTC_TimeTypeDef));
 
     return ret;
+}
+
+uint8_t rc7620_signal_strength(int16_t *rssi, uint8_t *ber)
+{
+    uint8_t ret = 0;
+    char response[100];
+    int matches = 0;
+    uint8_t rssi_val, ber_val;
+    int16_t rssi_val_db = 0; // unknown val
+
+    ret |= rc7620_send_command("AT+CSQ", response, sizeof(response), TIMEOUT_2S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    // response in form +CSQ: <rssi>,<ber>
+    matches = sscanf(response, "+CSQ: %hhd,%hhd",
+                     rssi_val, ber_val);
+
+    if (matches != 2)
+    {
+        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    if (rssi_val != 99)
+    {
+        rssi_val_db = (rssi_val * 2) - 113; // to db
+    }
+    else
+    {
+        rssi_val_db = 0;
+    }
+
+    memcpy(rssi, &rssi_val_db, sizeof(int16_t));
+    memcpy(ber, &ber_val, sizeof(uint8_t));
+
+    return ret;
+}
+
+uint8_t rc7620_select_phonebook_memory(char storage[2], char *password)
+{
+    char response[100];
+    char cmd[24];
+    uint8_t ret = 0;
+
+    if (strlen(storage) != 2)
+    {
+        return EINVAL;
+    }
+
+    if (snprintf(cmd, sizeof(cmd), "AT+CPBS=\"%s\"", storage) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBS=\"%s\"\"\r\n", storage);
+        return EINVAL;
+    }
+
+    if (password != NULL)
+    {
+        if (strlen(password) > 8)
+        {
+            return EINVAL;
+        }
+        strcat(cmd, password);
+    }
+
+    // I think only "SM","ME","MT" are appropriate storage sources
+
+    // +CPBS=<storage>[,<password>]
+    ret |= rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
+}
+
+uint8_t rc7620_select_sim_phonebook_memory(void)
+{
+    return rc7620_select_phonebook_memory("SM", NULL);
+}
+
+uint8_t rc7620_query_phonebook_memory(int *used, int *total)
+{
+    char response[100];
+    uint8_t ret = 0;
+    int used_val, total_val;
+    int matches = 0;
+
+    ret |= rc7620_send_command("+CPBS?", response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    // +CPBS: <storage>[,<used>,<total>]
+    matches = sscanf(response, "+CPBS: %d,%d",
+        used_val, total_val);
+
+    if (matches != 2)
+    {
+        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    memcpy(used, &used_val, sizeof(int));
+    memcpy(total, &total_val, sizeof(int));
+
+    return ret;
+}
+
+uint8_t rc7620_find_phonebook_entries(char *findtext)
+{
+    // Not sure how usefull this will be ignoring for now
+    
+    //+CPBF=<findtext>
+
+    //[+CPBF: <index1>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]]
+    //[<CR><LF>+CBPF: <index2>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]
+    //[...]]
+    return ENOSYS;
+}
+
+uint8_t rc7620_read_phonebook_entries(void)
+{
+    //+CPBR=<index1>[,<index2>]
+
+    //[+CPBR: <index1>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]]
+    //[[...]
+    //[<CR><LF>+CPBR: <index2>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]]]
+    return ENOSYS;
+}
+
+uint8_t rc7620_write_phonebook_entries(void)
+{
+    //+CPBW=[<index>][,<number>[,<type>[,<text>[,<group>[,<adnumber>[,<adtype>[,<secondtext>[,<email>[,<sip_uri>[,<tel_uri>[,<hidden>]]]]]]]]]]]
+
+    //+CPBW: <written_index>
+    return ENOSYS;
 }
 
 uint8_t rc7620_init(void)
@@ -251,7 +403,7 @@ uint8_t rc7620_display_sms(int index)
     memset(response_buffer, 0, sizeof(response_buffer));
 
     snprintf(command_buffer, sizeof(command_buffer), "AT+CMGR=%d", index);
-    DEBUG_PRINTF("Requesting SMS display for index %d: %s\\r\\n", index, command_buffer);
+    DEBUG_PRINTF("Requesting SMS display for index %d: %s\r\n", index, command_buffer);
 
     if (rc7620_send_command(command_buffer, response_buffer, sizeof(response_buffer), timeout_ms))
     {

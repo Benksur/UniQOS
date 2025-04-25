@@ -39,6 +39,9 @@ TARGET := test_blinky
 else ifeq ($(TEST), codec)
 TEST_FILE_PATH := ../../tests/test_nau88c22.c
 TARGET := test_nau88c22
+else ifeq ($(TEST), mobile)
+TEST_FILE_PATH := ../../tests/test_rc7620.c
+TARGET := test_rc7620
 else
 $(error Invalid TEST specified: $(TEST))
 endif
