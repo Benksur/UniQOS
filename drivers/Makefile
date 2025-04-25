@@ -18,7 +18,7 @@ endif
 
 # Combine common and board-specific C definitions
 # These will override the C_DEFS in the sub-makefile
-COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER
+COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DLV_LVGL_H_INCLUDE_SIMPLE
 SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
 				  -I../../include/board \
                   -I../../include/drivers \
