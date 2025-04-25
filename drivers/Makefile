@@ -56,6 +56,7 @@ $(TEST_FILE_PATH) \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
 Core/Src/syscalls.c \
+Core/Src/sysmem.c \
 Core/Src/gpio.c \
 Core/Src/dma.c \
 Core/Src/fmc.c \

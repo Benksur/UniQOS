@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include "errno.h"
+#include "errornum.h"
 #include "stm32_config.h"
 
 enum FunctionModes {

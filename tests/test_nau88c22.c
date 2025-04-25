@@ -4,7 +4,6 @@
 
 void SystemClock_Config(void);
 void Error_Handler(void);
-static void MPU_Config(void);
 
 const int16_t sine_wave[48] = {
     0, 4276, 8480, 12539, 16383, 19947, 23169, 25995,
@@ -20,17 +19,27 @@ int main(void)
     uint8_t status;
     uint16_t i = 0;
     uint16_t audio_buffer[2];
+    nau88c22_codec_t codec;
     
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
     
-    status = nau88c22_init();
-    if (!status) {
+    status = nau88c22_init(&codec);
+    if (status != 0) {
         while(1) {
             HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
             HAL_Delay(100);
         }
     }
     
-    nau88c22_set_volume(80);
+    status = nau88c22_set_output_volume(&codec, 80, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
+    if (status != 0) {
+        while(1) {
+            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+            HAL_Delay(100);
+        }
+    }
     
     while(1) {
         audio_buffer[0] = sine_wave[i];

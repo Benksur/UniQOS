@@ -70,23 +70,34 @@
 #define MIC_BUILTIN 0
 #define MIC_HEADPHONE 1
 
-uint8_t nau88c22_init(void);
-uint8_t nau88c22_hp_mic_toggle(uint8_t enable);
-uint8_t nau88c22_hp_detect(void);
-uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data);
-uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data);
-uint8_t nau88c22_set_output_volume(uint8_t volume, uint8_t left_reg, uint8_t right_reg);
-uint8_t nau88c22_increment_output_volume(uint8_t increment);
-uint8_t nau88c22_mute_output(uint8_t enable);
-uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain);
-uint8_t nau88c22_set_mic_volume(uint8_t mic_channel, uint8_t volume);
-uint8_t nau88c22_increment_mic_volume(uint8_t mic_channel, uint8_t increment);
-uint8_t nau88c22_read_volume_percent(uint8_t reg_addr, uint8_t *volume_percent);
-uint8_t nau88c22_mute_mic(uint8_t enable);
-uint8_t nau88c22_mute_hp_mic(uint8_t enable);
-uint8_t nau88c22_sleep(uint8_t enable);
-uint8_t nau88c22_mute_all(uint8_t enable);
-uint8_t nau88c22_save_and_mute_all(void);
-uint8_t nau88c22_restore_mute_state(void);
+typedef struct
+{
+    uint8_t output_muted;
+    uint8_t mic_muted;
+    uint8_t hp_mic_muted;
+} nau88c22_mute_state_t;
+
+typedef struct {
+    uint8_t initialized;
+    nau88c22_mute_state_t saved_mute_state;
+    uint8_t mute_state_saved;
+    uint8_t volume;
+} nau88c22_codec_t;
+
+uint8_t nau88c22_init(nau88c22_codec_t *codec);
+uint8_t nau88c22_hp_mic_toggle(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_hp_detect(void); 
+uint8_t nau88c22_set_output_volume(nau88c22_codec_t *codec, uint8_t volume, uint8_t left_reg, uint8_t right_reg);
+uint8_t nau88c22_increment_output_volume(nau88c22_codec_t *codec, uint8_t increment);
+uint8_t nau88c22_mute_output(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_set_eq(nau88c22_codec_t *codec, uint8_t band, uint8_t gain);
+uint8_t nau88c22_set_mic_volume(nau88c22_codec_t *codec, uint8_t mic_channel, uint8_t volume);
+uint8_t nau88c22_increment_mic_volume(nau88c22_codec_t *codec, uint8_t mic_channel, uint8_t increment);
+uint8_t nau88c22_read_volume_percent(nau88c22_codec_t *codec, uint8_t reg_addr, uint8_t *volume_percent);
+uint8_t nau88c22_get_output_volume(nau88c22_codec_t *codec);
+uint8_t nau88c22_mute_mic(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_mute_hp_mic(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_sleep(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_mute_all(nau88c22_codec_t *codec, uint8_t enable);
 
 #endif

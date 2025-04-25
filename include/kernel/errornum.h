@@ -1,5 +1,5 @@
-#ifndef ERRNO_H_
-#define ERRNO_H_
+#ifndef ERRORNUM_H_
+#define ERRORNUM_H_
 
 #define EPERM 1      /* Operation not permitted */
 #define ENOENT 2     /* No such file or directory */
