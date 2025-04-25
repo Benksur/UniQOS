@@ -390,6 +390,12 @@ uint8_t rc7620_init(void)
     rc7620_send_command("AT+CNMI=1,1,0,0,0", response, sizeof(response), default_timeout);
     DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
+        
+    // Set ring indicator  4 | 8 | 16 = 28 -> Incomming Call, data call & text
+    DEBUG_PRINTF("Sending: AT+WWAKESET=28\r\n");
+    rc7620_send_command("AT+WWAKESET=28", response, sizeof(response), default_timeout);
+    DEBUG_PRINTF("Response: %s\r\n", response);
+    HAL_Delay(100);
     return ret; // Initialization successful
 }
 
