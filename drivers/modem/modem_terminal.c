@@ -1,5 +1,5 @@
 #include "modem_terminal.h"
-#include "board/stm32_config.h"
+#include "stm32_config.h"
 #include "rc7620.h"
 #include <stdio.h>
 #include <string.h>

@@ -1,5 +1,10 @@
 #include "nau88c22.h"
 #include "stm32_config.h"
+#include "gpio.h"
+
+void SystemClock_Config(void);
+void Error_Handler(void);
+static void MPU_Config(void);
 
 const int16_t sine_wave[48] = {
     0, 4276, 8480, 12539, 16383, 19947, 23169, 25995,
@@ -16,12 +21,11 @@ int main(void)
     uint16_t i = 0;
     uint16_t audio_buffer[2];
     
-    board_init();
     
     status = nau88c22_init();
     if (!status) {
         while(1) {
-            HAL_GPIO_TogglePin(ERROR_LED_GPIO_Port, ERROR_LED_Pin);
+            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
             HAL_Delay(100);
         }
     }

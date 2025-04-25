@@ -1,4 +1,3 @@
-
 #include "mcp73871.h"
 
 enum MCP73871_States mcp73871_status(void)
@@ -23,5 +22,5 @@ enum MCP73871_States mcp73871_status(void)
         result = CHARGE_COMPLETE;
     }
 
-    return result
+    return result;
 }

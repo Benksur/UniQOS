@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "errno.h"
-#include "board/stm32_config.h"
+#include "stm32_config.h"
 
 enum FunctionModes {
     MODE_MIN = 0, // minimum functionality, low power draw

@@ -19,7 +19,14 @@ endif
 # Combine common and board-specific C definitions
 # These will override the C_DEFS in the sub-makefile
 COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER
-SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF)
+SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
+				  -I../../include/board \
+                  -I../../include/drivers \
+                  -I../../include/drivers/audio \
+                  -I../../include/drivers/power \
+                  -I../../include/drivers/modem \
+                  -I../../include/drivers/peripherals \
+                  -I../../include/kernel
 
 TEST ?=
 
@@ -40,6 +47,14 @@ endif
 # add syscalls.c and $(TEST_FILE_PATH)
 SUBMAKE_C_SOURCES := \
 $(TEST_FILE_PATH) \
+../../drivers/power/bq27441.c \
+../../drivers/power/mcp73871.c \
+../../drivers/audio/nau88c22.c \
+../../drivers/modem/modem_terminal.c \
+../../drivers/modem/rc7620.c \
+../../drivers/peripherals/lsm6dsvtr.c \
+../../drivers/peripherals/drv2603.c \
+../../drivers/peripherals/ws2812.c \
 Core/Src/syscalls.c \
 Core/Src/gpio.c \
 Core/Src/dma.c \

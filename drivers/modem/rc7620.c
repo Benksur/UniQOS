@@ -126,8 +126,8 @@ uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_Tim
     int matches = 0;
     int8_t utcoffset;
 
-    RTC_DateTypeDef *datestructure;
-    RTC_TimeTypeDef *timestructure;
+    RTC_DateTypeDef datestructure;
+    RTC_TimeTypeDef timestructure;
 
     ret |= rc7620_send_command("AT+CCLK?", response, sizeof(response), 3000) || !rc7620_check_ok(response);
 
@@ -137,8 +137,8 @@ uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_Tim
         return EBADMSG;
     }
 
-    //response should be in form "+CCLK: yy/MM/dd,hh:mm:ss±zz"
-    int matches = sscanf(response, "+CCLK: %hhd/%hhd/%hhd,%hhd:%hhd:%hhd%hhd",
+    //response should be in form "+CCLK: yy/MM/dd,hh:mm:ss±zz"
+    matches = sscanf(response, "+CCLK: %hhd/%hhd/%hhd,%hhd:%hhd:%hhd%hhd",
         &datestructure.Year, &datestructure.Month, &datestructure.Date, 
         &timestructure.Hours, &timestructure.Minutes, &timestructure.Seconds,
         &utcoffset);
@@ -147,8 +147,8 @@ uint8_t rc7620_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_Tim
         return EBADMSG;
     }
 
-    memcpy(date, &datestructure);
-    memcpy(time, &timestructure);
+    memcpy(date, &datestructure, sizeof(RTC_DateTypeDef));
+    memcpy(time, &timestructure, sizeof(RTC_TimeTypeDef));
 
     return ret;
 }

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "stm32_config.h"
-#include "kernel/errno.h"
+#include "errno.h"
 
 typedef struct {
     uint8_t g; 
