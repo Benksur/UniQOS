@@ -26,7 +26,8 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/drivers/power \
                   -I../../include/drivers/modem \
                   -I../../include/drivers/peripherals \
-                  -I../../include/kernel
+                  -I../../include/kernel \
+                  -I../../third_party/lvgl-master
 
 TEST ?=
 
