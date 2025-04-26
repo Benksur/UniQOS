@@ -36,6 +36,9 @@ void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height) {
 
     st7789v_reset(handle);
 
+    HAL_TIM_PWM_Start(&DISPLAY_PWM_TIMER, TIM_CHANNEL_3);
+    //handle pwm here
+
     st7789v_write_cmd(handle, ST7789V_CMD_SWRESET);
     HAL_Delay(150);
 

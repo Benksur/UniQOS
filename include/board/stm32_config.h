@@ -14,6 +14,7 @@
 #define AUDIO_I2S_HANDLE hi2s1
 #define MODEM_UART_HANDLE huart1
 #define DEBUG_UART_HANDLE huart3
+#define DISPLAY_PWM_TIMER htim2
 
 
 #define MCP73871_STAT1_PORT MCP_STAT1_GPIO_Port

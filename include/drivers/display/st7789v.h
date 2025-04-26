@@ -3,6 +3,7 @@
 
 #include "stm32_config.h"
 #include "lvgl.h"
+#include "tim.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
