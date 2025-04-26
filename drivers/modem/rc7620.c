@@ -2,7 +2,6 @@
 #include "stm32h7xx_hal.h"
 static uint8_t curr_function_mode = 0;
 
-//
 uint8_t rc7620_write_command(const char *command)
 {
     const uint32_t timeout = 2000;
@@ -176,7 +175,7 @@ uint8_t rc7620_signal_strength(int16_t *rssi, uint8_t *ber)
 
     // response in form +CSQ: <rssi>,<ber>
     matches = sscanf(response, "+CSQ: %hhd,%hhd",
-                     rssi_val, ber_val);
+                     &rssi_val, &ber_val);
 
     if (matches != 2)
     {
@@ -195,6 +194,37 @@ uint8_t rc7620_signal_strength(int16_t *rssi, uint8_t *ber)
 
     memcpy(rssi, &rssi_val_db, sizeof(int16_t));
     memcpy(ber, &ber_val, sizeof(uint8_t));
+
+    return ret;
+}
+
+uint8_t rc7620_select_char_set(char *chset)
+{
+    char response[100];
+    char cmd[24];
+    uint8_t ret = 0;
+
+    // 6 Char max length for 3GPP TS 27.007 Sec 5.5
+    if (strlen(chset) > 6)
+    {
+        return EINVAL;
+    }
+
+    //+CSCS=[<chset>]
+    if (snprintf(cmd, sizeof(cmd), "AT+CSCS=\"%s\"", chset) < 0)
+    {
+        chset
+            DEBUG_PRINTF("ERROR: in creating string \"AT+CSCS=\"%s\"\"\r\n", chset);
+        return EINVAL;
+    }
+
+    ret |= rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_2S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
 
     return ret;
 }
@@ -261,7 +291,7 @@ uint8_t rc7620_query_phonebook_memory(int *used, int *total)
 
     // +CPBS: <storage>[,<used>,<total>]
     matches = sscanf(response, "+CPBS: %d,%d",
-        used_val, total_val);
+                     &used_val, &total_val);
 
     if (matches != 2)
     {
@@ -275,34 +305,164 @@ uint8_t rc7620_query_phonebook_memory(int *used, int *total)
     return ret;
 }
 
-uint8_t rc7620_find_phonebook_entries(char *findtext)
+uint8_t rc7620_get_phonebook_info(rc7620_phonebook__t *phonebook)
 {
-    // Not sure how usefull this will be ignoring for now
-    
-    //+CPBF=<findtext>
+    char response[100];
+    uint8_t ret = 0;
+    int matches = 0;
+    uint16_t index_min, index_max, nlength, tlength;
 
-    //[+CPBF: <index1>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]]
-    //[<CR><LF>+CBPF: <index2>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]
-    //[...]]
-    return ENOSYS;
+    ret |= rc7620_send_command("AT+CPBR=?", response, sizeof(response), TIMEOUT_30S) || !rc7620_check_ok(response);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    matches = sscanf(response, "+CPBR: (%hd-%hd),%hd,%hd",
+                     &index_min, &index_max, &nlength, &tlength);
+
+    if (matches != 4)
+    {
+        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    phonebook->nlength = nlength;
+    phonebook->tlength = tlength;
+    phonebook->index_min = index_min;
+    phonebook->index_max = index_max;
+
+    return ret;
 }
 
-uint8_t rc7620_read_phonebook_entries(void)
+uint8_t rc7620_get_phonebook_entry_range(uint16_t index1, uint16_t index2, rc7620_phonebook__t *phonebook)
 {
+    char response[100];
+    char cmd[24];
+    uint8_t ret = 0;
+    int matches = 0;
+
+    // TODO: verfy index vals
+
     //+CPBR=<index1>[,<index2>]
+    if (snprintf(cmd, sizeof(cmd), "AT+CPBR=%hd,%hd", index1, index2) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBR=%hd,%hd\"\r\n", index1, index2);
+        return EINVAL;
+    }
 
-    //[+CPBR: <index1>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]]
-    //[[...]
-    //[<CR><LF>+CPBR: <index2>,<number>,<type>,<text>[,<hidden>][,<group>][,<adnumber>][,<adtype>][,<secondtext>][,<email>][,<sip_uri>][,<tel_uri>]]]
+    ret |= rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    // not sure best way to parse
+    // TODO: figure out parsing method
+    
     return ENOSYS;
 }
 
-uint8_t rc7620_write_phonebook_entries(void)
+uint8_t rc7620_cache_phonebook(void)
 {
-    //+CPBW=[<index>][,<number>[,<type>[,<text>[,<group>[,<adnumber>[,<adtype>[,<secondtext>[,<email>[,<sip_uri>[,<tel_uri>[,<hidden>]]]]]]]]]]]
-
-    //+CPBW: <written_index>
     return ENOSYS;
+}
+
+uint8_t rc7620_write_phonebook_entry_index(uint16_t index, rc7620_phonebook_entry_t *entry)
+{
+
+    char response[100];
+    char cmd[100];
+    uint8_t ret = 0;
+    int matches = 0;
+
+    // TODO: verfy index vals
+
+    //+CPBW=[<index>][,<number>[,<type>[,<text>]]]
+    if (snprintf(cmd, sizeof(cmd), "AT+CPBW=%hd,%s,%hd,%s",
+                 entry->index, entry->number, entry->type, entry->text) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBW=%s,%hd,%s\"\r\n",
+                     entry->index, entry->number, entry->type, entry->text);
+        return EINVAL;
+    }
+
+    ret |= rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    //TODO figure out if we can get out a response worth caring
+    DEBUG_PRINTF("Response: %s\r\n", response);
+
+    return ret;
+}
+
+uint8_t rc7620_delete_phonebook_entry(uint16_t index)
+{
+
+    char response[100];
+    char cmd[100];
+    uint8_t ret = 0;
+    int matches = 0;
+
+    // TODO: verfy index vals
+
+    if (snprintf(cmd, sizeof(cmd), "AT+CPBW=%hd", index) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBW=%hd\"\r\n", index);
+        return EINVAL;
+    }
+
+    ret |= rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
+}
+
+uint8_t rc7620_write_phonebook_entry_first(rc7620_phonebook_entry_t *entry)
+{
+
+    char response[100];
+    char cmd[100];
+    uint8_t ret = 0;
+    int matches = 0;
+
+    // TODO: verfy index vals
+
+    //+CPBW=[,<number>[,<type>[,<text>]]]
+    if (snprintf(cmd, sizeof(cmd), "AT+CPBW=,%s,%hd,%s",
+                 entry->number, entry->type, entry->text) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBW=,%s,%hd,%s\"\r\n",
+                     entry->number, entry->type, entry->text);
+        return EINVAL;
+    }
+
+    ret |= rc7620_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !rc7620_check_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    //TODO figure out if we can get out an index
+    DEBUG_PRINTF("Response: %s\r\n", response);
+
+    return ret;
 }
 
 uint8_t rc7620_init(void)
@@ -390,10 +550,16 @@ uint8_t rc7620_init(void)
     rc7620_send_command("AT+CNMI=1,1,0,0,0", response, sizeof(response), default_timeout);
     DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
-        
+
     // Set ring indicator  4 | 8 | 16 = 28 -> Incomming Call, data call & text
     DEBUG_PRINTF("Sending: AT+WWAKESET=28\r\n");
     rc7620_send_command("AT+WWAKESET=28", response, sizeof(response), default_timeout);
+    DEBUG_PRINTF("Response: %s\r\n", response);
+    HAL_Delay(100);
+
+    // TEMP: find out what are the supported charsets
+    DEBUG_PRINTF("Sending: AT+CSCS=?\r\n");
+    rc7620_send_command("AT+CSCS=?", response, sizeof(response), default_timeout);
     DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
     return ret; // Initialization successful
