@@ -1,22 +1,20 @@
+#include <stdint.h>
 #include "st7789v.h"
 
+static void st7789v_write_cmd(unsigned char cmd);
+static void st7789v_write_data(unsigned short data);
 
-#define ST7789V_CMD_REG_ADDR  ((volatile uint16_t *)0x60000000)
-#define ST7789V_DATA_REG_ADDR ((volatile uint16_t *)0x60020000)
-
-void st7789v_write_cmd(st7789v_handle_t *handle, uint8_t cmd) {
-    *handle->cmd_reg = cmd;
+static void st7789v_write_cmd(unsigned char cmd) {
+    ST7789V_CMDWRITE(cmd);
 }
 
-void st7789v_write_data(st7789v_handle_t *handle, uint8_t *data, size_t len) {
-    for (size_t i = 0; i < len; i++) {
-        *handle->data_reg = data[i];
-    }
+void st7789v_write_data(unsigned short data) {
+    ST7789V_DATAWRITE(data);
 }
 
-void st7789v_write_data16(st7789v_handle_t *handle, uint16_t *data, size_t len) {
+void st7789v_write_data_buffer(unsigned short *data, size_t len) {
     for (size_t i = 0; i < len; i++) {
-        *handle->data_reg = data[i];
+        ST7789V_DATAWRITE(data[i]);
     }
 }
 
@@ -30,8 +28,6 @@ void st7789v_reset(st7789v_handle_t *handle) {
 void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height) {
     handle->width = width;
     handle->height = height;
-    handle->cmd_reg = ST7789V_CMD_REG_ADDR;
-    handle->data_reg = ST7789V_DATA_REG_ADDR;
     handle->madctl_val = ST7789V_MADCTL_RGB;
 
     st7789v_reset(handle);
@@ -39,10 +35,10 @@ void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height) {
     HAL_TIM_PWM_Start(&DISPLAY_PWM_TIMER, TIM_CHANNEL_3);
     //handle pwm here
 
-    st7789v_write_cmd(handle, ST7789V_CMD_SWRESET);
+    st7789v_write_cmd(ST7789V_CMD_SWRESET);
     HAL_Delay(150);
 
-    st7789v_write_cmd(handle, ST7789V_CMD_SLPOUT);
+    st7789v_write_cmd(ST7789V_CMD_SLPOUT);
     HAL_Delay(500);
 
     st7789v_set_pixel_format(handle, ST7789V_PIXEL_FORMAT_16BIT);
@@ -57,34 +53,34 @@ void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height) {
 }
 
 void st7789v_set_pixel_format(st7789v_handle_t *handle, uint8_t format) {
-    st7789v_write_cmd(handle, ST7789V_CMD_COLMOD);
-    st7789v_write_data(handle, &format, 1);
+    st7789v_write_cmd(ST7789V_CMD_COLMOD);
+    st7789v_write_data(format);
 }
 
 void st7789v_set_madctl(st7789v_handle_t *handle, uint8_t madctl_value) {
     handle->madctl_val = madctl_value;
-    st7789v_write_cmd(handle, ST7789V_CMD_MADCTL);
-    st7789v_write_data(handle, &handle->madctl_val, 1);
+    st7789v_write_cmd(ST7789V_CMD_MADCTL);
+    st7789v_write_data(handle->madctl_val);
 }
 
 void st7789v_set_address_window(st7789v_handle_t *handle, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     uint8_t data[4];
 
-    st7789v_write_cmd(handle, ST7789V_CMD_CASET);
+    st7789v_write_cmd(ST7789V_CMD_CASET);
     data[0] = (x0 >> 8) & 0xFF;
     data[1] = x0 & 0xFF;
     data[2] = (x1 >> 8) & 0xFF;
     data[3] = x1 & 0xFF;
-    st7789v_write_data(handle, data, 4);
+    st7789v_write_data_buffer(data, 4);
 
-    st7789v_write_cmd(handle, ST7789V_CMD_RASET);
+    st7789v_write_cmd(ST7789V_CMD_RASET);
     data[0] = (y0 >> 8) & 0xFF;
     data[1] = y0 & 0xFF;
     data[2] = (y1 >> 8) & 0xFF;
     data[3] = y1 & 0xFF;
-    st7789v_write_data(handle, data, 4);
+    st7789v_write_data_buffer(data, 4);
 
-    st7789v_write_cmd(handle, ST7789V_CMD_RAMWR);
+    st7789v_write_cmd(ST7789V_CMD_RAMWR);
 }
 
 void st7789v_fill_rect(st7789v_handle_t *handle, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
@@ -95,14 +91,14 @@ void st7789v_fill_rect(st7789v_handle_t *handle, uint16_t x, uint16_t y, uint16_
     st7789v_set_address_window(handle, x, y, x + w - 1, y + h - 1);
 
     for (uint32_t i = 0; i < (w * h); i++) {
-        *handle->data_reg = color;
+        st7789v_write_data(color);
     }
 }
 
 void st7789v_display_on(st7789v_handle_t *handle) {
-    st7789v_write_cmd(handle, ST7789V_CMD_DISPON);
+    st7789v_write_cmd(ST7789V_CMD_DISPON);
 }
 
 void st7789v_display_off(st7789v_handle_t *handle) {
-    st7789v_write_cmd(handle, ST7789V_CMD_DISPOFF);
+    st7789v_write_cmd(ST7789V_CMD_DISPOFF);
 }

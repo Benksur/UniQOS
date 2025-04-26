@@ -8,6 +8,14 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+//FMC memory bank addresses
+#define ST7789V_CMD_REG_ADDR  ((uint32_t)0x60000000)
+#define ST7789V_DATA_REG_ADDR ((uint32_t)0x60020000) // might need to check this address
+
+#define ST7789V_CMDWRITE(command)   *(volatile uint16_t *) (ST7789V_CMD_REG_ADDR) = (command)
+#define ST7789V_DATAWRITE(data)     *(volatile uint16_t *) (ST7789V_DATA_REG_ADDR) = (data)
+#define ST7789V_CMDREAD(command)    *(volatile uint16_t *) (ST7789V_CMD_REG_ADDR)
+#define ST7789V_DATAREAD(data)      *(volatile uint16_t *) (ST7789V_DATA_REG_ADDR)
 
 
 #define ST7789V_CMD_NOP     0x00
@@ -47,16 +55,13 @@
 typedef struct {
     uint16_t width;
     uint16_t height;
-    volatile uint16_t *cmd_reg;
-    volatile uint16_t *data_reg;
     uint8_t madctl_val;
 } st7789v_handle_t;
 
 void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height);
 void st7789v_reset(st7789v_handle_t *handle);
-void st7789v_write_cmd(st7789v_handle_t *handle, uint8_t cmd);
-void st7789v_write_data(st7789v_handle_t *handle, uint8_t *data, size_t len);
-void st7789v_write_data16(st7789v_handle_t *handle, uint16_t *data, size_t len);
+void st7789v_write_data(unsigned short data);
+void st7789v_write_data_buffer(unsigned short *data, size_t len);
 void st7789v_set_pixel_format(st7789v_handle_t *handle, uint8_t format);
 void st7789v_set_madctl(st7789v_handle_t *handle, uint8_t madctl_value);
 void st7789v_set_address_window(st7789v_handle_t *handle, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
