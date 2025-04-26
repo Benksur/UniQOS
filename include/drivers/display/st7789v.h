@@ -60,6 +60,7 @@ typedef struct {
 
 void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height);
 void st7789v_reset(st7789v_handle_t *handle);
+void st7789v_write_cmd(unsigned char cmd);
 void st7789v_write_data(unsigned short data);
 void st7789v_write_data_buffer(unsigned short *data, size_t len);
 void st7789v_set_pixel_format(st7789v_handle_t *handle, uint8_t format);

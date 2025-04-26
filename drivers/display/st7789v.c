@@ -1,14 +1,13 @@
 #include <stdint.h>
 #include "st7789v.h"
 
-static void st7789v_write_cmd(unsigned char cmd);
-static void st7789v_write_data(unsigned short data);
 
-static void st7789v_write_cmd(unsigned char cmd) {
+
+void st7789v_write_cmd(unsigned char cmd) {
     ST7789V_CMDWRITE(cmd);
 }
 
-void st7789v_write_data(unsigned short data) {
+void st7789v_write_data(unsigned short data) { // No longer static
     ST7789V_DATAWRITE(data);
 }
 
@@ -101,4 +100,38 @@ void st7789v_display_on(st7789v_handle_t *handle) {
 
 void st7789v_display_off(st7789v_handle_t *handle) {
     st7789v_write_cmd(ST7789V_CMD_DISPOFF);
+}
+
+/* Send short command to the LCD. This function shall wait until the transaction finishes. */
+int32_t my_lcd_send_cmd(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, const uint8_t *param, size_t param_size)
+{
+    LV_UNUSED(disp);
+    if (cmd_size == 1) {
+        st7789v_write_cmd(cmd[0]);
+    } else {
+        return LV_RESULT_INVALID;
+    }
+
+    for (size_t i = 0; i < param_size; i++) {
+        st7789v_write_data((uint16_t)param[i]);
+    }
+
+    return LV_RESULT_OK;
+}
+
+/* Send large array of pixel data to the LCD. If necessary, this function has to do the byte-swapping. This function can do the transfer in the background. */
+int32_t my_lcd_send_color(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, uint8_t *param, size_t param_size)
+{
+
+    if (cmd_size == 1) {
+        st7789v_write_cmd(cmd[0]);
+    } else {
+        return LV_RESULT_INVALID;
+    }
+
+    uint32_t pixel_count = param_size / sizeof(uint16_t);
+    st7789v_write_data_buffer((uint16_t *)param, pixel_count);
+    lv_display_flush_ready(disp);
+
+    return LV_RESULT_OK;
 }
