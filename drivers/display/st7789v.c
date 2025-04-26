@@ -64,6 +64,7 @@ static void my_lcd_send_color(lv_display_t *disp, const uint8_t *cmd, size_t cmd
 
     size_t pixel_count = param_size / sizeof(uint16_t);
     st7789v_write_data_buffer(param, pixel_count);
+    lv_display_flush_ready(disp);
 }
 
 /*
@@ -72,7 +73,7 @@ void task_display(void const *argument) {
     st7789v_io_init();
     lv_init();
     lv_display_t *lcd_disp = lv_st7789_create(LCD_H_RES, LCD_V_RES, LV_LCD_FLAG_NONE, lcd_send_cmd, lcd_send_color);
-    
+
     lv_color_t * buf1 = NULL;
     lv_color_t * buf2 = NULL;
 
