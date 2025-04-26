@@ -12,7 +12,7 @@
  */
 
 /* clang-format off */
-#if 0 /* Set this to "1" to enable content */
+#if 1 /* Set this to "1" to enable content */
 
 #ifndef LV_CONF_H
 #define LV_CONF_H
@@ -1251,7 +1251,7 @@
 
 /* Drivers for LCD devices connected via SPI/parallel port */
 #define LV_USE_ST7735        0
-#define LV_USE_ST7789        0
+#define LV_USE_ST7789        1
 #define LV_USE_ST7796        0
 #define LV_USE_ILI9341       0
 
