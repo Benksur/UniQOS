@@ -5,14 +5,13 @@ static uint8_t nau88c22_is_muted(uint8_t reg_addr);
 static uint8_t nau88c22_save_and_mute_all(nau88c22_codec_t *codec);
 static uint8_t nau88c22_restore_mute_state(nau88c22_codec_t *codec);
 
-static uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
+uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
 {
-    uint8_t data[3];
-    data[0] = reg_addr;
-    data[1] = (reg_data >> 8) & 0xFF;
-    data[2] = reg_data & 0xFF;
+    uint8_t data[2];
+    data[0] = (reg_addr << 1) | ((reg_data >> 8) & 0x01);
+    data[1] = reg_data & 0xFF;
 
-    if (HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 3, 100) != HAL_OK)
+    if (HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 2, 100) != HAL_OK)
     {
         return EIO;
     }
@@ -20,21 +19,31 @@ static uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
     return 0; 
 }
 
-static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
+uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
 {
-    uint8_t data[2];
+    uint8_t addr_byte;
+    uint8_t data[2] = {0, 0};
+    HAL_StatusTypeDef status;
 
-    if (HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, &reg_addr, 1, 100) != HAL_OK)
+    if (reg_data == NULL)
+    {
+        return EINVAL;
+    }
+
+    addr_byte = reg_addr << 1;
+
+    status = HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, &addr_byte, 1, 100);
+    if (status != HAL_OK)
     {
         return EIO;
     }
 
-    if (HAL_I2C_Master_Receive(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 2, 100) != HAL_OK)
+    status = HAL_I2C_Master_Receive(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 2, 100);
+    if (status != HAL_OK)
     {
         return EIO;
     }
-
-    *reg_data = (data[0] << 8) | data[1];
+    *reg_data = ((data[0] & 0x01) << 8) | data[1];
     return 0; 
 }
 
@@ -232,10 +241,48 @@ uint8_t nau88c22_set_output_volume(nau88c22_codec_t *codec, uint8_t volume, uint
     codec->volume = volume;
 
     return nau88c22_restore_mute_state(codec);
+    // return 0;
 
 set_output_vol_cleanup_err:
     nau88c22_restore_mute_state(codec);
     return EIO;
+}
+
+uint8_t nau88c22_set_output_volume_simple(nau88c22_codec_t *codec, uint8_t volume, uint8_t left_reg, uint8_t right_reg)
+{
+    if (!codec || !codec->initialized)
+        return ENODEV;
+
+    uint16_t vol_reg;
+    uint8_t err = 0;
+    uint16_t current_reg_data;
+
+    if (volume == 0)
+    {
+        vol_reg = 0x000;
+    }
+    else
+    {
+        if (volume > 100) volume = 100;
+        vol_reg = (volume * 63) / 100;
+        vol_reg &= 0x3F;
+    }
+
+    err = nau88c22_read_reg(left_reg, &current_reg_data);
+    if (err != 0) return EIO;
+    vol_reg |= (current_reg_data & 0x140);
+    err = nau88c22_write_reg(left_reg, vol_reg);
+    if (err != 0) return EIO;
+
+    err = nau88c22_read_reg(right_reg, &current_reg_data);
+    if (err != 0) return EIO;
+    vol_reg |= (current_reg_data & 0x140);
+    vol_reg |= 0x100;
+    err = nau88c22_write_reg(right_reg, vol_reg);
+    if (err != 0) return EIO;
+
+    codec->volume = volume;
+    return 0;
 }
 
 uint8_t nau88c22_increment_output_volume(nau88c22_codec_t *codec, uint8_t increment)
@@ -505,27 +552,41 @@ uint8_t nau88c22_mute_all(nau88c22_codec_t *codec, uint8_t enable)
         return ENODEV;
 
     uint8_t err = 0;
+    uint8_t final_err = 0;
+    
+    // Ensure the enable value is valid (only 0 or 1)
+    enable = (enable != 0) ? 1 : 0;
 
     err = nau88c22_mute_output(codec, enable);
-    if (err != 0) return err;
+    if (err != 0) {
+        final_err = err;
+    }
 
     err = nau88c22_mute_mic(codec, enable);
-     if (err != 0) return err;
+    if (err != 0 && final_err == 0) {
+        final_err = err;
+    }
 
     err = nau88c22_mute_hp_mic(codec, enable);
-    if (err != 0) return err;
+    if (err != 0 && final_err == 0) {
+        final_err = err;
+    }
 
-    return 0;
+    return final_err;
 }
 
 static uint8_t nau88c22_is_muted(uint8_t reg_addr)
 {
     uint16_t reg_data;
+    uint8_t ret;
+    
     if (nau88c22_read_reg(reg_addr, &reg_data) != 0)
     {
         return 0;
     }
-    return (reg_data & (1 << 6)) ? 1 : 0;
+    
+    ret = (reg_data & (1 << 6)) ? 1 : 0;
+    return ret;
 }
 
 static uint8_t nau88c22_save_and_mute_all(nau88c22_codec_t *codec)
@@ -536,13 +597,26 @@ static uint8_t nau88c22_save_and_mute_all(nau88c22_codec_t *codec)
     if (codec->mute_state_saved)
         return EBUSY;
 
-    codec->saved_mute_state.output_muted = nau88c22_is_muted(NAU_LHP_VOLUME);
-    codec->saved_mute_state.mic_muted = nau88c22_is_muted(NAU_LEFT_INPUT_PGA_GAIN);
-    codec->saved_mute_state.hp_mic_muted = nau88c22_is_muted(NAU_RIGHT_INPUT_PGA_GAIN);
+    // Initialize values to safe defaults in case of read failure
+    codec->saved_mute_state.output_muted = 0;
+    codec->saved_mute_state.mic_muted = 0;
+    codec->saved_mute_state.hp_mic_muted = 0;
 
-    codec->mute_state_saved = 1;
+    uint8_t output_muted = nau88c22_is_muted(NAU_LHP_VOLUME);
+    uint8_t mic_muted = nau88c22_is_muted(NAU_LEFT_INPUT_PGA_GAIN);
+    uint8_t hp_mic_muted = nau88c22_is_muted(NAU_RIGHT_INPUT_PGA_GAIN);
+    
+    // Ensure values are only 0 or 1
+    codec->saved_mute_state.output_muted = (output_muted == 1) ? 1 : 0;
+    codec->saved_mute_state.mic_muted = (mic_muted == 1) ? 1 : 0;
+    codec->saved_mute_state.hp_mic_muted = (hp_mic_muted == 1) ? 1 : 0;
 
-    return nau88c22_mute_all(codec, 1);
+    uint8_t mute_result = nau88c22_mute_all(codec, 1);
+    if (mute_result == 0) {
+        codec->mute_state_saved = 1;
+    }
+
+    return mute_result;
 }
 
 static uint8_t nau88c22_restore_mute_state(nau88c22_codec_t *codec)
@@ -555,15 +629,20 @@ static uint8_t nau88c22_restore_mute_state(nau88c22_codec_t *codec)
 
     uint8_t err = 0;
     uint8_t final_err = 0;
+    
+    // Validate mute values before restoring
+    uint8_t output_muted = (codec->saved_mute_state.output_muted == 1) ? 1 : 0;
+    uint8_t mic_muted = (codec->saved_mute_state.mic_muted == 1) ? 1 : 0;
+    uint8_t hp_mic_muted = (codec->saved_mute_state.hp_mic_muted == 1) ? 1 : 0;
 
-    err = nau88c22_mute_output(codec, codec->saved_mute_state.output_muted);
+    err = nau88c22_mute_output(codec, output_muted);
     if (err != 0 && final_err == 0) final_err = err;
 
-    err = nau88c22_mute_mic(codec, codec->saved_mute_state.mic_muted);
-     if (err != 0 && final_err == 0) final_err = err;
+    err = nau88c22_mute_mic(codec, mic_muted);
+    if (err != 0 && final_err == 0) final_err = err;
 
-    err = nau88c22_mute_hp_mic(codec, codec->saved_mute_state.hp_mic_muted);
-     if (err != 0 && final_err == 0) final_err = err;
+    err = nau88c22_mute_hp_mic(codec, hp_mic_muted);
+    if (err != 0 && final_err == 0) final_err = err;
 
     codec->mute_state_saved = 0;
 
