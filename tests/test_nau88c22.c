@@ -1,5 +1,4 @@
 #include "nau88c22.h"
-#include "bloop_x.h"
 #include "sm64_mario_boing.h"
 #include "i2c.h"
 #include "i2s.h"
@@ -44,54 +43,30 @@ int main(void)
         }
     }
 
-    // Set max volume and unmute
-    uint16_t lspk_reg = 0, rspk_reg = 0;
-    nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &lspk_reg);
-    nau88c22_read_reg(NAU_RSPKOUT_VOLUME, &rspk_reg);
-    
-    // Clear mute bit (bit 6)
-    lspk_reg &= ~(1 << 6);
-    // Set max volume (0x3F = 63)
-    lspk_reg = (lspk_reg & ~0x3F) | 0x3F;
-    
-    rspk_reg &= ~(1 << 6);
-    rspk_reg = (rspk_reg & ~0x3F) | 0x3F;
-    // Set right channel update bit
-    rspk_reg |= 0x100;
-    
-    // Write volume settings
-    nau88c22_write_reg(NAU_LSPKOUT_VOLUME, lspk_reg);
-    nau88c22_write_reg(NAU_RSPKOUT_VOLUME, rspk_reg);
-    
-    HAL_Delay(100);
-    
-    // Verify volume settings
-    uint16_t check_reg = 0;
-    status = nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &check_reg);
-    if ((check_reg & 0x3F) == 0 || (check_reg & (1 << 6))) {
-        // Volume is zero or muted - LED pattern (2 blinks)
-        for (int i = 0; i < 6; i++) {
+    status = nau88c22_enable_jlin(&codec);
+    if (status != 0) {
+        // Error enabling JLIN - fast blink
+        while(1) {
             HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-            HAL_Delay(200);
+            HAL_Delay(100);
         }
     }
 
-    // Simple square wave test
+    nau88c22_set_output_volume(&codec, 100, NAU_LSPKOUT_VOLUME, NAU_RSPKOUT_VOLUME);
+    nau88c22_set_output_volume(&codec, 0, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
+    
     while(1) {
-        // audio_buffer[0] = 0;
-        // audio_buffer[1] = samples[i];
-        
-
-        // uint16_t offset = 0;
-        // while (offset < 286303) {
-        //     uint16_t chunkSize = (286303 - offset) >= 4096 ? 4096 : (286303 - offset);
-        //     HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)&samples[offset], chunkSize, HAL_MAX_DELAY);
-        //     offset += chunkSize;
-        // }
 
         HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 7840, HAL_MAX_DELAY);
+        if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5)) {
+            for (uint8_t x = 0; i < 10; i++){
+                HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+                HAL_Delay(20);
+            }
+            
+        }
         
-        HAL_Delay(4000);
+        HAL_Delay(2000);
         
         // i = (i + 1) % 143151;
     }

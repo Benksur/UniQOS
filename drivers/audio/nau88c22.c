@@ -47,6 +47,32 @@ uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
     return 0; 
 }
 
+uint8_t nau88c22_enable_jlin(nau88c22_codec_t *codec) {
+    typedef struct
+    {
+        uint8_t reg;
+        uint16_t val;
+    } reg_conf_t;
+
+    const reg_conf_t write_seq[] = {
+        {NAU_PWR2, 0x1BF},
+        {NAU_INPUT_CONTROL, 0x0C4},
+        {NAU_COMPANDING, 0x001},
+        {NAU_LEFT_ADC_BOOST, 0x177},
+        {NAU_RIGHT_ADC_BOOST, 0x177},
+        
+    };
+
+    uint8_t i;
+
+    for (i = 0; i < sizeof(write_seq) / sizeof(write_seq[0]); i++)
+    {
+        if (nau88c22_write_reg(write_seq[i].reg, write_seq[i].val) != 0)
+            return EIO;
+    }
+    return 0;
+}
+
 uint8_t nau88c22_init(nau88c22_codec_t *codec)
 {
     typedef struct
@@ -61,22 +87,22 @@ uint8_t nau88c22_init(nau88c22_codec_t *codec)
     };
 
     const reg_conf_t init_seq[] = {
-        {NAU_AINTF, 0x011}, // Mono operation mode I want to test here....
+        {NAU_AINTF, 0x051}, // mono, 24 bit audio stream
         {NAU_CLOCK2, 0x001},
-        {NAU_JACK_DETECT1, 0x040},
-        {NAU_JACK_DETECT2, 0x021}, // toggle loudspeaker to headphones on jack detect
+        // {NAU_JACK_DETECT1, 0x040}, // disable now because jack detection is shit
+        // {NAU_JACK_DETECT2, 0x021}, // toggle loudspeaker to headphones on jack detect
         // R = 9.408163070, f2 = 90.318MHz, f1 = 19.2/2 = 9.6MHz
         {NAU_PPL_N, 0x019},  // N of 9
         {NAU_PPL_K1, 0x1A},  // 0.408163070
         {NAU_PPL_K2, 0x039}, // 0.000000000
         {NAU_PPL_K3, 0x0B0},
         {NAU_INPUT_CONTROL, 0x0B3}, // 0.65x microphone bias
-        // May need to change - Investigate with HP det
         {NAU_OUTPUT_CONTROL, 0x002}, // May need to change, not sure how diff speak
         // PLL needs to be off until clock can be reduced
         {NAU_PWR1, 0x03D},
-        {NAU_PWR2, 0x015},
+        {NAU_PWR2, 0x195},
         {NAU_PWR3, 0x06F},
+
     };
 
     uint8_t i;
@@ -102,7 +128,6 @@ uint8_t nau88c22_init(nau88c22_codec_t *codec)
     }
 
     codec->initialized = 1;
-    codec->mute_state_saved = 0;
     codec->volume = 0;
 
     return 0;
@@ -241,7 +266,6 @@ uint8_t nau88c22_set_output_volume(nau88c22_codec_t *codec, uint8_t volume, uint
     codec->volume = volume;
 
     return nau88c22_restore_mute_state(codec);
-    // return 0;
 
 set_output_vol_cleanup_err:
     nau88c22_restore_mute_state(codec);
@@ -344,35 +368,25 @@ uint8_t nau88c22_mute_output(nau88c22_codec_t *codec, uint8_t enable)
     const uint16_t mute_mask = (1 << 6);
     uint8_t err = 0;
 
-    err = nau88c22_save_and_mute_all(codec);
-    if (err != 0)
-        return err;
-
-
-    err = nau88c22_read_reg(NAU_LHP_VOLUME, &reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_read_reg(NAU_LHP_VOLUME, &reg_data); if (err != 0) return EIO;
     if (enable) reg_data |= mute_mask; else reg_data &= ~mute_mask;
-    err = nau88c22_write_reg(NAU_LHP_VOLUME, reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_write_reg(NAU_LHP_VOLUME, reg_data); if (err != 0) return EIO;
 
-
-    err = nau88c22_read_reg(NAU_RHP_VOLUME, &reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_read_reg(NAU_RHP_VOLUME, &reg_data); if (err != 0) return EIO;
     if (enable) reg_data |= mute_mask; else reg_data &= ~mute_mask;
     reg_data |= 0x100; 
-    err = nau88c22_write_reg(NAU_RHP_VOLUME, reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_write_reg(NAU_RHP_VOLUME, reg_data); if (err != 0) return EIO;
 
-    err = nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &reg_data); if (err != 0) return EIO;
     if (enable) reg_data |= mute_mask; else reg_data &= ~mute_mask;
-    err = nau88c22_write_reg(NAU_LSPKOUT_VOLUME, reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_write_reg(NAU_LSPKOUT_VOLUME, reg_data); if (err != 0) return EIO;
 
-    err = nau88c22_read_reg(NAU_RSPKOUT_VOLUME, &reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_read_reg(NAU_RSPKOUT_VOLUME, &reg_data); if (err != 0) return EIO;
     if (enable) reg_data |= mute_mask; else reg_data &= ~mute_mask;
     reg_data |= 0x100;
-    err = nau88c22_write_reg(NAU_RSPKOUT_VOLUME, reg_data); if (err != 0) goto mute_output_cleanup_err;
+    err = nau88c22_write_reg(NAU_RSPKOUT_VOLUME, reg_data); if (err != 0) return EIO;
 
-    return nau88c22_restore_mute_state(codec);
-
-mute_output_cleanup_err:
-    nau88c22_restore_mute_state(codec);
-    return EIO;
+    return 0;
 }
 
 uint8_t nau88c22_mute_mic(nau88c22_codec_t *codec, uint8_t enable)
@@ -384,12 +398,8 @@ uint8_t nau88c22_mute_mic(nau88c22_codec_t *codec, uint8_t enable)
     const uint16_t mute_mask = (1 << 6);
     uint8_t err = 0;
 
-    err = nau88c22_save_and_mute_all(codec);
-    if (err != 0)
-        return err;
-
     err = nau88c22_read_reg(NAU_LEFT_INPUT_PGA_GAIN, &reg_data);
-    if (err != 0) goto mute_mic_cleanup_err;
+    if (err != 0) return EIO;
 
     if (enable)
         reg_data |= mute_mask;
@@ -397,30 +407,22 @@ uint8_t nau88c22_mute_mic(nau88c22_codec_t *codec, uint8_t enable)
         reg_data &= ~mute_mask;
 
     err = nau88c22_write_reg(NAU_LEFT_INPUT_PGA_GAIN, reg_data);
-    if (err != 0) goto mute_mic_cleanup_err;
+    if (err != 0) return EIO;
 
-    return nau88c22_restore_mute_state(codec);
-
-mute_mic_cleanup_err:
-    nau88c22_restore_mute_state(codec);
-    return EIO;
+    return 0;
 }
 
 uint8_t nau88c22_mute_hp_mic(nau88c22_codec_t *codec, uint8_t enable)
 {
-     if (!codec || !codec->initialized)
+    if (!codec || !codec->initialized)
         return ENODEV;
 
     uint16_t reg_data;
     const uint16_t mute_mask = (1 << 6);
     uint8_t err = 0;
 
-    err = nau88c22_save_and_mute_all(codec);
-    if (err != 0)
-        return err;
-
     err = nau88c22_read_reg(NAU_RIGHT_INPUT_PGA_GAIN, &reg_data);
-     if (err != 0) goto mute_hp_mic_cleanup_err;
+    if (err != 0) return EIO;
 
     if (enable)
         reg_data |= mute_mask;
@@ -428,13 +430,9 @@ uint8_t nau88c22_mute_hp_mic(nau88c22_codec_t *codec, uint8_t enable)
         reg_data &= ~mute_mask;
 
     err = nau88c22_write_reg(NAU_RIGHT_INPUT_PGA_GAIN, reg_data);
-     if (err != 0) goto mute_hp_mic_cleanup_err;
+    if (err != 0) return EIO;
 
-    return nau88c22_restore_mute_state(codec);
-
-mute_hp_mic_cleanup_err:
-    nau88c22_restore_mute_state(codec);
-    return EIO;
+    return 0;
 }
 
 uint8_t nau88c22_set_mic_volume(nau88c22_codec_t *codec, uint8_t mic_channel, uint8_t volume)
@@ -554,7 +552,6 @@ uint8_t nau88c22_mute_all(nau88c22_codec_t *codec, uint8_t enable)
     uint8_t err = 0;
     uint8_t final_err = 0;
     
-    // Ensure the enable value is valid (only 0 or 1)
     enable = (enable != 0) ? 1 : 0;
 
     err = nau88c22_mute_output(codec, enable);
@@ -594,27 +591,15 @@ static uint8_t nau88c22_save_and_mute_all(nau88c22_codec_t *codec)
     if (!codec || !codec->initialized)
         return ENODEV;
 
-    if (codec->mute_state_saved)
-        return EBUSY;
-
-    // Initialize values to safe defaults in case of read failure
-    codec->saved_mute_state.output_muted = 0;
-    codec->saved_mute_state.mic_muted = 0;
-    codec->saved_mute_state.hp_mic_muted = 0;
-
     uint8_t output_muted = nau88c22_is_muted(NAU_LHP_VOLUME);
     uint8_t mic_muted = nau88c22_is_muted(NAU_LEFT_INPUT_PGA_GAIN);
     uint8_t hp_mic_muted = nau88c22_is_muted(NAU_RIGHT_INPUT_PGA_GAIN);
     
-    // Ensure values are only 0 or 1
     codec->saved_mute_state.output_muted = (output_muted == 1) ? 1 : 0;
     codec->saved_mute_state.mic_muted = (mic_muted == 1) ? 1 : 0;
     codec->saved_mute_state.hp_mic_muted = (hp_mic_muted == 1) ? 1 : 0;
 
     uint8_t mute_result = nau88c22_mute_all(codec, 1);
-    if (mute_result == 0) {
-        codec->mute_state_saved = 1;
-    }
 
     return mute_result;
 }
@@ -624,8 +609,6 @@ static uint8_t nau88c22_restore_mute_state(nau88c22_codec_t *codec)
     if (!codec || !codec->initialized)
         return ENODEV;
 
-    if (!codec->mute_state_saved)
-        return EINVAL;
 
     uint8_t err = 0;
     uint8_t final_err = 0;
@@ -643,8 +626,6 @@ static uint8_t nau88c22_restore_mute_state(nau88c22_codec_t *codec)
 
     err = nau88c22_mute_hp_mic(codec, hp_mic_muted);
     if (err != 0 && final_err == 0) final_err = err;
-
-    codec->mute_state_saved = 0;
 
     return final_err;
 }
@@ -697,5 +678,34 @@ uint8_t nau88c22_get_output_volume(nau88c22_codec_t *codec)
     if (!codec || !codec->initialized)
         return 0;
 
-    return codec->volume;
+    uint8_t reg_addr;
+    uint16_t reg_data;
+    uint8_t err;
+
+    // Determine which register to read based on headphone detection
+    if (nau88c22_hp_detect())
+    {
+        reg_addr = NAU_LHP_VOLUME;
+    }
+    else
+    {
+        reg_addr = NAU_LSPKOUT_VOLUME;
+    }
+
+    err = nau88c22_read_reg(reg_addr, &reg_data);
+    if (err != 0)
+        return codec->volume;  // Fall back to cached value if read fails
+
+    // Extract volume bits (0-63) and convert to percentage
+    uint8_t raw_volume = reg_data & 0x3F;
+    if (raw_volume == 0)
+        return 0;
+    
+    uint8_t volume_percent = (uint8_t)(((uint32_t)raw_volume * 100 + 31) / 63);
+    if (volume_percent > 100)
+        volume_percent = 100;
+
+    // Update cached value
+    codec->volume = volume_percent;
+    return volume_percent;
 }
