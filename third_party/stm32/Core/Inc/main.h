@@ -59,7 +59,6 @@ extern I2S_HandleTypeDef hi2s1;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_tim5_ch4;
-
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

@@ -174,8 +174,11 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  // Add LED toggle for visual feedback
   while (1)
   {
+      HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
+      HAL_Delay(100); // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */
 }

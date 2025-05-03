@@ -1,9 +1,11 @@
 #include "nau88c22.h"
-#include "stm32_config.h"
+#include "bloop_x.h"
+#include "sm64_mario_boing.h"
+#include "i2c.h"
+#include "i2s.h"
 #include "gpio.h"
 
 void SystemClock_Config(void);
-void Error_Handler(void);
 
 const int16_t sine_wave[48] = {
     0, 4276, 8480, 12539, 16383, 19947, 23169, 25995,
@@ -18,95 +20,79 @@ int main(void)
 {
     uint8_t status;
     uint16_t i = 0;
-    uint16_t audio_buffer[2];
+    int16_t audio_buffer[2];
     nau88c22_codec_t codec;
     
     HAL_Init();
     SystemClock_Config();
+
     MX_GPIO_Init();
+    MX_I2C1_Init();
+    MX_I2S1_Init();
+
+    // Reset the codec first - toggle LED during initialization
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+    HAL_Delay(100);
     
+    // Initialize codec
     status = nau88c22_init(&codec);
     if (status != 0) {
+        // Error initializing codec - fast blink
         while(1) {
             HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
             HAL_Delay(100);
         }
     }
+
+    // Set max volume and unmute
+    uint16_t lspk_reg = 0, rspk_reg = 0;
+    nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &lspk_reg);
+    nau88c22_read_reg(NAU_RSPKOUT_VOLUME, &rspk_reg);
     
-    status = nau88c22_set_output_volume(&codec, 80, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
-    if (status != 0) {
-        while(1) {
+    // Clear mute bit (bit 6)
+    lspk_reg &= ~(1 << 6);
+    // Set max volume (0x3F = 63)
+    lspk_reg = (lspk_reg & ~0x3F) | 0x3F;
+    
+    rspk_reg &= ~(1 << 6);
+    rspk_reg = (rspk_reg & ~0x3F) | 0x3F;
+    // Set right channel update bit
+    rspk_reg |= 0x100;
+    
+    // Write volume settings
+    nau88c22_write_reg(NAU_LSPKOUT_VOLUME, lspk_reg);
+    nau88c22_write_reg(NAU_RSPKOUT_VOLUME, rspk_reg);
+    
+    HAL_Delay(100);
+    
+    // Verify volume settings
+    uint16_t check_reg = 0;
+    status = nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &check_reg);
+    if ((check_reg & 0x3F) == 0 || (check_reg & (1 << 6))) {
+        // Volume is zero or muted - LED pattern (2 blinks)
+        for (int i = 0; i < 6; i++) {
             HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-            HAL_Delay(100);
+            HAL_Delay(200);
         }
     }
-    
+
+    // Simple square wave test
     while(1) {
-        audio_buffer[0] = sine_wave[i];
-        audio_buffer[1] = sine_wave[i];
+        // audio_buffer[0] = 0;
+        // audio_buffer[1] = samples[i];
         
-        HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio_buffer, 2, HAL_MAX_DELAY);
+
+        // uint16_t offset = 0;
+        // while (offset < 286303) {
+        //     uint16_t chunkSize = (286303 - offset) >= 4096 ? 4096 : (286303 - offset);
+        //     HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)&samples[offset], chunkSize, HAL_MAX_DELAY);
+        //     offset += chunkSize;
+        // }
+
+        HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 7840, HAL_MAX_DELAY);
         
-        i = (i + 1) % 48;
+        HAL_Delay(4000);
+        
+        // i = (i + 1) % 143151;
     }
 }
-
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
-
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
-
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = 64;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 12;
-  RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
-  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
-
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-
-void Error_Handler(void)
-{
-  __disable_irq();
-  while (1)
-  {
-  }
-}
-
-#ifdef  USE_FULL_ASSERT
-void assert_failed(uint8_t *file, uint32_t line){}
-#endif

@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include "stm32_config.h"
-#include "stm32h7xx_hal.h"
 
 #define NAU88C22_I2C_ADDR 0x1A
 
@@ -84,6 +83,9 @@ typedef struct {
     uint8_t volume;
 } nau88c22_codec_t;
 
+uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data);
+uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data);
+
 uint8_t nau88c22_init(nau88c22_codec_t *codec);
 uint8_t nau88c22_hp_mic_toggle(nau88c22_codec_t *codec, uint8_t enable);
 uint8_t nau88c22_hp_detect(void); 
@@ -100,4 +102,5 @@ uint8_t nau88c22_mute_hp_mic(nau88c22_codec_t *codec, uint8_t enable);
 uint8_t nau88c22_sleep(nau88c22_codec_t *codec, uint8_t enable);
 uint8_t nau88c22_mute_all(nau88c22_codec_t *codec, uint8_t enable);
 
+uint8_t nau88c22_set_output_volume_simple(nau88c22_codec_t *codec, uint8_t volume, uint8_t left_reg, uint8_t right_reg);
 #endif

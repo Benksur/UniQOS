@@ -3,10 +3,15 @@
 
 #include "stm32_config.h"
 #include "lvgl.h"
+#include "lv_st7789.h"
 #include "tim.h"
+#include "fmc.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+
+#define LCD_H_RES       240
+#define LCD_V_RES       320
 
 //FMC memory bank addresses
 #define ST7789V_CMD_REG_ADDR  ((uint32_t)0x60000000)
@@ -52,22 +57,14 @@
 #define ST7789V_MADCTL_BGR 0x08
 #define ST7789V_MADCTL_MH  0x04
 
-typedef struct {
-    uint16_t width;
-    uint16_t height;
-    uint8_t madctl_val;
-} st7789v_handle_t;
 
-void st7789v_init(st7789v_handle_t *handle, uint16_t width, uint16_t height);
-void st7789v_reset(st7789v_handle_t *handle);
-void st7789v_write_cmd(unsigned char cmd);
-void st7789v_write_data(unsigned short data);
-void st7789v_write_data_buffer(unsigned short *data, size_t len);
-void st7789v_set_pixel_format(st7789v_handle_t *handle, uint8_t format);
-void st7789v_set_madctl(st7789v_handle_t *handle, uint8_t madctl_value);
-void st7789v_set_address_window(st7789v_handle_t *handle, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-void st7789v_fill_rect(st7789v_handle_t *handle, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
-void st7789v_display_on(st7789v_handle_t *handle);
-void st7789v_display_off(st7789v_handle_t *handle);
+void st7789v_init(void);
+void st7789v_reset(void);
+void st7789v_write_cmd(const uint8_t cmd);
+void st7789v_write_cmd_buffer(const uint8_t *cmd, size_t len);
+void st7789v_write_data(const uint8_t data);
+void st7789v_write_data_buffer(const uint8_t *data, size_t len);
+void st7789v_display_on(void);
+void st7789v_display_off(void);
 
 #endif

@@ -7,7 +7,7 @@
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
-            "executable": "./build/test_blinky.elf",
+            "executable": "./build/test_nau88c22.elf",
             "device": "STM32H753xx",
             "configFiles": [
                 "interface/stlink.cfg",
