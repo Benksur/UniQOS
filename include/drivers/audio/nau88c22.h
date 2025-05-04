@@ -100,7 +100,7 @@ uint8_t nau88c22_mute_mic(nau88c22_codec_t *codec, uint8_t enable);
 uint8_t nau88c22_mute_hp_mic(nau88c22_codec_t *codec, uint8_t enable);
 uint8_t nau88c22_sleep(nau88c22_codec_t *codec, uint8_t enable);
 uint8_t nau88c22_mute_all(nau88c22_codec_t *codec, uint8_t enable);
-uint8_t nau88c22_enable_jlin(nau88c22_codec_t *codec);
+uint8_t nau88c22_enable_lin_mic(nau88c22_codec_t *codec);
 
 uint8_t nau88c22_set_output_volume_simple(nau88c22_codec_t *codec, uint8_t volume, uint8_t left_reg, uint8_t right_reg);
 #endif

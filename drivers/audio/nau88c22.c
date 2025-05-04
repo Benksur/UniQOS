@@ -47,7 +47,7 @@ uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
     return 0; 
 }
 
-uint8_t nau88c22_enable_jlin(nau88c22_codec_t *codec) {
+uint8_t nau88c22_enable_lin_mic(nau88c22_codec_t *codec) {
     typedef struct
     {
         uint8_t reg;
@@ -100,7 +100,7 @@ uint8_t nau88c22_init(nau88c22_codec_t *codec)
         {NAU_OUTPUT_CONTROL, 0x002}, // May need to change, not sure how diff speak
         // PLL needs to be off until clock can be reduced
         {NAU_PWR1, 0x03D},
-        {NAU_PWR2, 0x195},
+        {NAU_PWR2, 0x195}, // enable headphone drivers
         {NAU_PWR3, 0x06F},
 
     };
