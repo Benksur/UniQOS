@@ -43,7 +43,7 @@ int main(void)
         }
     }
 
-    status = nau88c22_enable_jlin(&codec);
+    status = nau88c22_enable_lin_mic(&codec);
     if (status != 0) {
         // Error enabling JLIN - fast blink
         while(1) {
