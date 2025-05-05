@@ -213,8 +213,7 @@ uint8_t rc7620_select_char_set(char *chset)
     //+CSCS=[<chset>]
     if (snprintf(cmd, sizeof(cmd), "AT+CSCS=\"%s\"", chset) < 0)
     {
-        chset
-            DEBUG_PRINTF("ERROR: in creating string \"AT+CSCS=\"%s\"\"\r\n", chset);
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CSCS=\"%s\"\"\r\n", chset);
         return EINVAL;
     }
 

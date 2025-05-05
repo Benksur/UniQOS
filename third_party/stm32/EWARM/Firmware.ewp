@@ -226,7 +226,7 @@
           <name>CCDefines</name>
           <state>USE_PWR_LDO_SUPPLY</state>
           <state>USE_HAL_DRIVER</state>
-          <state>STM32H730xx</state>
+          <state>STM32H733xx</state>
           <state></state>
         </option>
         <option>
@@ -1082,6 +1082,36 @@
         <name>Core</name>
         <file>
           <name>$PROJ_DIR$/../Core/Src/main.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/gpio.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/dma.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/fmc.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/i2c.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/i2s.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/memorymap.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/rtc.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/sdmmc.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/tim.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/usart.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../Core/Src/stm32h7xx_it.c</name>
