@@ -320,7 +320,7 @@ uint8_t rc7620_get_phonebook_info(rc7620_phonebook__t *phonebook)
         return EBADMSG;
     }
 
-    matches = sscanf(response, "+CPBR: (%hd-%hd),%hd,%hd",
+    matches = sscanf(response, "+CPBR: (%hd-%hd),%hd,%hd,%hd,%hd,%hd",
                      &index_min, &index_max, &nlength, &tlength);
 
     if (matches != 4)
@@ -557,11 +557,6 @@ uint8_t rc7620_init(void)
     DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
-    // TEMP: find out what are the supported charsets
-    DEBUG_PRINTF("Sending: AT+CSCS=?\r\n");
-    rc7620_send_command("AT+CSCS=?", response, sizeof(response), default_timeout);
-    DEBUG_PRINTF("Response: %s\r\n", response);
-    HAL_Delay(100);
     return ret; // Initialization successful
 }
 

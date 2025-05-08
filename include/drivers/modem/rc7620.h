@@ -31,6 +31,7 @@ typedef struct
     char *number;     // string type phone number of format `type`
     uint16_t type;    // default 145 when dialling string includes international access code character "+", otherwise 129
     char *text;       // string type field of maximum length <tlength>; character set as specified by command select TE character set +CSCS
+    //supported char sets +CSCS: ("IRA","GSM","UCS2")
 } rc7620_phonebook_entry_t;
 
 typedef struct
