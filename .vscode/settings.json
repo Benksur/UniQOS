@@ -9,7 +9,9 @@
         "lv_st7789.h": "c",
         "ios": "c",
         "stdbool.h": "c",
-        "nau88c22.h": "c"
+        "nau88c22.h": "c",
+        "modem_terminal.h": "c",
+        "gpio.h": "c"
     },
     "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",

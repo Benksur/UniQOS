@@ -18,7 +18,7 @@ endif
 
 # Combine common and board-specific C definitions
 # These will override the C_DEFS in the sub-makefile
-COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DLV_LVGL_H_INCLUDE_SIMPLE
+COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DLV_LVGL_H_INCLUDE_SIMPLE -DDEBUG
 SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
 				  -I../../include/board \
                   -I../../include/drivers \
@@ -43,6 +43,9 @@ TARGET := test_nau88c22
 else ifeq ($(TEST), mobile)
 TEST_FILE_PATH := ../../tests/test_rc7620.c
 TARGET := test_rc7620
+else ifeq ($(TEST), terminal)
+TEST_FILE_PATH := ../../tests/test_terminal.c
+TARGET := test_terminal
 else
 $(error Invalid TEST specified: $(TEST))
 endif
