@@ -3,7 +3,7 @@
 
 #include "stm32_config.h"
 #include "lvgl.h"
-#include "lv_st7789.h"
+#include "src/drivers/display/st7789/lv_st7789.h"
 #include "tim.h"
 #include "fmc.h"
 #include <stdint.h>

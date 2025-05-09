@@ -2,6 +2,8 @@
 TARGET = Firmware
 BOARD ?= dev
 
+include ../third_party/lvgl-master/lvgl.mk
+
 # Define Linker Script and Startup file based on BOARD
 ifeq ($(BOARD), pcb)
 LDSCRIPT = STM32H730XX_FLASH.ld
@@ -16,12 +18,6 @@ else
 $(error Invalid BOARD specified: $(BOARD). Use 'pcb' or 'dev')
 endif
 
-# include ../third_party/lvgl-master/component.mk
-include ../third_party/lvgl-master/lvgl.mk
-
-# $(info AFLAGS=$(AFLAGS))
-
-
 # Combine common and board-specific C definitions
 # These will override the C_DEFS in the sub-makefile
 COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DLV_LVGL_H_INCLUDE_SIMPLE -DDEBUG
@@ -29,13 +25,12 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
 				  -I../../include/board \
                   -I../../include/drivers \
                   -I../../include/drivers/audio \
-                  -I../../include/drivers/display \
                   -I../../include/drivers/power \
                   -I../../include/drivers/modem \
+                  -I../../include/drivers/display \
                   -I../../include/drivers/peripherals \
                   -I../../include/kernel \
                   -I../../third_party/lvgl-master \
-
 
 TEST ?=
 
@@ -56,7 +51,7 @@ TEST_FILE_PATH := ../../tests/test_terminal.c
 TARGET := test_terminal
 else ifeq ($(TEST), display)
 TEST_FILE_PATH := ../../tests/test_st7789v.c
-TARGET := test_terminal
+TARGET := test_display
 else
 $(error Invalid TEST specified: $(TEST))
 endif
@@ -66,6 +61,7 @@ endif
 SUBMAKE_C_SOURCES := \
 $(TEST_FILE_PATH) \
 $(CSRCS) \
+../../drivers/display/st7789v.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \
@@ -74,7 +70,6 @@ $(CSRCS) \
 ../../drivers/peripherals/lsm6dsvtr.c \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
-../../drivers/display/st7789v.c \
 Core/Src/main.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
@@ -127,17 +122,10 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 Core/Src/system_stm32h7xx.c
 
+# $(info AFLAGS=$(AFLAGS))
 
 all clean:
-	$(MAKE) -C ../third_party/stm32 $@ TARGET="$(TARGET)" \
-    C_SOURCES="$(SUBMAKE_C_SOURCES)" \
-    LDSCRIPT=$(LDSCRIPT) \
-    ASM_SOURCES=$(STARTUP_FILE) \
-    C_DEFS="$(SUBMAKE_C_DEFS)" \
-    AFLAGS="$(AFLAGS)" \
-    CFLAGS="$(CFLAGS)" \
-    CXXFLAGS="$(CXXFLAGS)" \
-    BUILD_DIR="../../build" 
+	$(MAKE) -C ../third_party/stm32 $@ TARGET="$(TARGET)" C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build" 
 
 flash: all
 	STM32_Programmer_CLI -c port=SWD -w ../build/$(TARGET).bin 0x08000000 -v -rst

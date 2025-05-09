@@ -1,6 +1,6 @@
 
-#include "fmc.h"
 #include "st7789v.h"
+#include "fmc.h"
 
 int main(void)
 {
