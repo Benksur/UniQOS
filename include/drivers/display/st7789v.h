@@ -66,5 +66,7 @@ void st7789v_write_data(const uint8_t data);
 void st7789v_write_data_buffer(const uint8_t *data, size_t len);
 void st7789v_display_on(void);
 void st7789v_display_off(void);
+void my_lcd_send_cmd(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, const uint8_t *param, size_t param_size);
+void my_lcd_send_color(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, uint8_t *param, size_t param_size);
 
 #endif

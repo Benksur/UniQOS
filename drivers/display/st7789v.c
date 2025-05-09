@@ -49,7 +49,7 @@ void st7789v_display_off(void) {
 }
 
 /* Send short command to the LCD. This function shall wait until the transaction finishes. */
-static void my_lcd_send_cmd(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, const uint8_t *param, size_t param_size)
+void my_lcd_send_cmd(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, const uint8_t *param, size_t param_size)
 {
     LV_UNUSED(disp);
     st7789v_write_cmd_buffer(cmd, cmd_size);
@@ -57,7 +57,7 @@ static void my_lcd_send_cmd(lv_display_t *disp, const uint8_t *cmd, size_t cmd_s
 }
 
 /* Send large array of pixel data to the LCD. If necessary, this function has to do the byte-swapping. This function can do the transfer in the background. */
-static void my_lcd_send_color(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, uint8_t *param, size_t param_size)
+void my_lcd_send_color(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, uint8_t *param, size_t param_size)
 {
     LV_UNUSED(disp);
     st7789v_write_cmd_buffer(cmd, cmd_size);
