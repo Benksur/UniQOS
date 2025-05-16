@@ -31,11 +31,15 @@
 
 /* USER CODE END Includes */
 
+extern SRAM_HandleTypeDef hsram1;
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
 void MX_FMC_Init(void);
+void HAL_SRAM_MspInit(SRAM_HandleTypeDef* hsram);
+void HAL_SRAM_MspDeInit(SRAM_HandleTypeDef* hsram);
 
 /* USER CODE BEGIN Prototypes */
 
