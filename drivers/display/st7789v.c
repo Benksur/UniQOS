@@ -37,7 +37,6 @@ static void st7789v_io_init(void) {
 void st7789v_init(void) {
     st7789v_io_init();
     lv_tick_set_cb(HAL_GetTick);
-
 }
 
 void st7789v_display_on(void) {
