@@ -14,13 +14,8 @@
 #define LCD_V_RES       320
 
 //FMC memory bank addresses
-#define ST7789V_CMD_REG_ADDR  ((uint32_t)0x60000000)
-#define ST7789V_DATA_REG_ADDR ((uint32_t)0x60020000) // might need to check this address
-
-#define ST7789V_CMDWRITE(command)   *(volatile uint16_t *) (ST7789V_CMD_REG_ADDR) = (command)
-#define ST7789V_DATAWRITE(data)     *(volatile uint16_t *) (ST7789V_DATA_REG_ADDR) = (data)
-#define ST7789V_CMDREAD(command)    *(volatile uint16_t *) (ST7789V_CMD_REG_ADDR)
-#define ST7789V_DATAREAD(data)      *(volatile uint16_t *) (ST7789V_DATA_REG_ADDR)
+#define ST7789V_CMD_REG_ADDR  ((uint16_t *)0x60000000)
+#define ST7789V_DATA_REG_ADDR ((uint16_t *)0x60020000)
 
 
 #define ST7789V_CMD_NOP     0x00
@@ -57,7 +52,10 @@
 #define ST7789V_MADCTL_BGR 0x08
 #define ST7789V_MADCTL_MH  0x04
 
-
+void ST7789V_CMDWRITE(uint8_t reg);
+void ST7789V_DATAWRITE(uint16_t data);
+uint8_t ST7789V_CMDREAD(void);
+uint16_t ST7789V_DATAREAD(void);
 void st7789v_init(void);
 void st7789v_reset(void);
 void st7789v_write_cmd(const uint8_t cmd);

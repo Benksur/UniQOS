@@ -1,6 +1,23 @@
 #include <stdint.h>
 #include "st7789v.h"
 
+
+void ST7789V_CMDWRITE(uint8_t reg) {
+    *ST7789V_CMD_REG_ADDR = reg;
+}
+
+void ST7789V_DATAWRITE(uint16_t data) {
+    *ST7789V_DATA_REG_ADDR = data;
+}
+
+uint8_t ST7789V_CMDREAD(void) {
+    return *ST7789V_CMD_REG_ADDR;
+}
+
+uint16_t ST7789V_DATAREAD(void) {
+    return *ST7789V_DATA_REG_ADDR;
+}
+
 void st7789v_write_cmd(const uint8_t cmd) {
     ST7789V_CMDWRITE(cmd);
 }
@@ -23,9 +40,9 @@ void st7789v_write_data_buffer(const uint8_t *data, size_t len) {
 
 void st7789v_reset(void) {
     HAL_GPIO_WritePin(ST7789V_RES_GPIO_Port, ST7789V_RES_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
+    HAL_Delay(5);
     HAL_GPIO_WritePin(ST7789V_RES_GPIO_Port, ST7789V_RES_Pin, GPIO_PIN_SET);
-    HAL_Delay(120);
+    HAL_Delay(10);
 }
 
 static void st7789v_io_init(void) {

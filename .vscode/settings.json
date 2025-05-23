@@ -12,6 +12,10 @@
         "nau88c22.h": "c",
         "modem_terminal.h": "c",
         "gpio.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "vector": "c"
     },
     "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
