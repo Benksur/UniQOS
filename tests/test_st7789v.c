@@ -97,3 +97,69 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
+
+
+// void LCD_Fill(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height)
+// {
+//     ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
+    
+//     ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t*)NULL, 0);
+    
+//     uint32_t total_pixels = (uint32_t)width * height;
+//     for (uint32_t i = 0; i < total_pixels; i++)
+//     {
+//         LCD_IO_WriteData(RGBCode);
+//     }
+// }
+
+
+// void LCD_Test_ReadRegister(uint8_t reg)
+// {
+//     uint16_t read_value;
+//     LCD_IO_WriteReg(reg);
+//     read_value = LCD_IO_ReadData();
+//     uint8_t low3bits = read_value & 0x7;
+//     if (low3bits == 0x5)
+//     {
+//         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+//     }
+//     else
+//     {
+//         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+//     }
+// }
+
+// int main(void)
+// {
+//   HAL_Init();
+
+//   SystemClock_Config();
+//   MX_GPIO_Init();
+//   MX_FMC_Init();
+//   MX_TIM2_Init();
+
+//   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+//   htim2.Instance->CCR3 = 80;
+//   ST7789V_Init();
+//   ST7789V_SetDisplayWindow(0, 0, 240, 320);
+  
+
+//   HAL_Delay(1000);
+  
+//   while (1)
+//   {
+//     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LD1
+//     HAL_Delay(1000);
+    
+//     // Test different colors and fill areas
+//     LCD_Fill(0xF800, 0, 0, 240, 320);    // Red square
+//     HAL_Delay(500);
+//     LCD_Fill(0x07E0, 0, 0, 240, 320);    // Green square
+//     HAL_Delay(500);
+//     LCD_Fill(0x001F, 0, 0, 240, 320);    // Blue square
+//     HAL_Delay(500);
+//     LCD_Fill(0xFFE0, 0, 0, 240, 320);    // Yellow square
+//     HAL_Delay(500);
+//     LCD_Fill(0x0000, 0, 0, 240, 320);    // Clear screen (black)
+//     HAL_Delay(500);
+//   }
