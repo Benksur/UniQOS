@@ -5,6 +5,7 @@ uint8_t at_set_function_mode(enum FunctionModes mode)
 {
     char response[32];
     char cmd[10];
+    uint8_t ret = 0;
 
     // Only defined modes for RC7620
     if (mode != 0 && mode != 1 && mode != 4 && mode != 5 && mode != 6 && mode != 7)
@@ -19,13 +20,15 @@ uint8_t at_set_function_mode(enum FunctionModes mode)
         return EINVAL;
     }
 
-    if (modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S) || !modem_check_response_ok(response)) // not sure this will actually respond with OK but ig we can see
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !modem_check_response_ok(response)) // not sure this will actually respond with OK but ig we can see
     {
         DEBUG_PRINTF("Response: %s\r\n", response);
         return EBADMSG;
     }
 
-    return 0;
+    return ret;
 }
 
 uint8_t at_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
@@ -512,5 +515,27 @@ uint8_t at_send_sms(const char *sms_address, const char *sms_message)
     }
 
     DEBUG_PRINTF("SMS sent successfully.\r\n");
+    return ret;
+}
+
+uint8_t at_dial(char* dial_string){
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    if (snprintf(cmd, sizeof(cmd), "ATD%d;", dial_string) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"ATD%s\"\r\n", dial_string);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+    
+    if (ret || !modem_check_response_ok(response)) // not sure this will actually respond with OK but ig we can see
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
     return ret;
 }

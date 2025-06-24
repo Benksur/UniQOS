@@ -109,5 +109,6 @@ uint8_t at_get_modem_info(modeminfo_t *modem_info);
 uint8_t at_get_sms(int index);
 uint8_t at_send_sms(const char *sms_address, const char *sms_message);
 
+uint8_t at_dial(char* dial_string);
 
 #endif

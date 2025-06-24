@@ -24,7 +24,6 @@ uint8_t modem_toggle_airplane_mode(void)
     return ret;
 }
 
-
 uint8_t modem_init(void)
 {
     char response[128];
