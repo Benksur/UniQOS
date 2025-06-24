@@ -2,7 +2,7 @@
 #define MODEM_TERMINAL_H
 
 #include "stm32h7xx_hal.h"
-#include "rc7620.h"
+#include "modem.h"
 #include "usart.h"
 #include <stdbool.h>
 #include <stdio.h>

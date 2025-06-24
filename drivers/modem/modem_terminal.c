@@ -68,7 +68,7 @@ void modem_terminal_run(void)
     printf("\r\n--- RC7620 AT Command Terminal ---\r\n");
 
     DEBUG_PRINTF("Initializing RC7620...\r\n");
-    if (rc7620_init())
+    if (modem_init())
     {
         DEBUG_PRINTF("Modem initialized successfully.\r\n");
     }
@@ -109,7 +109,7 @@ void modem_terminal_run(void)
         }
 
         DEBUG_PRINTF("Sending: %s\r\n", input_buffer);
-        if (!rc7620_send_command(input_buffer, response_buffer, RESPONSE_BUFFER_SIZE, 2000))
+        if (!modem_send_command(input_buffer, response_buffer, RESPONSE_BUFFER_SIZE, 2000))
         {
             DEBUG_PRINTF("Failed to send command (write error or buffer overflow).\r\n");
         }
@@ -196,7 +196,7 @@ void modem_terminal_test(void) {
                     //     len--;
                     // }
                     
-                    if (rc7620_send_command(input_buffer, response_buffer, RESPONSE_BUFFER_SIZE, 10000) != 0)
+                    if (modem_send_command(input_buffer, response_buffer, RESPONSE_BUFFER_SIZE, 10000) != 0)
                     {
                         DEBUG_PRINTF("Failed to send command\r\n");
                     }
