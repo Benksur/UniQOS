@@ -34,7 +34,7 @@ uint8_t modem_read_response(uint8_t *buffer, uint16_t max_len, uint32_t timeout)
 
 uint8_t modem_send_command(const char *command, char *response, uint16_t response_size, uint32_t read_timeout)
 {
-    char cmd_buffer[128];
+    char cmd_buffer[128]; // may need to dynamically allocate
     int cmd_len = snprintf(cmd_buffer, sizeof(cmd_buffer), "%s\r\n", command);
     uint8_t ret = 0;
     if (cmd_len < 0 || cmd_len >= sizeof(cmd_buffer))
@@ -43,6 +43,7 @@ uint8_t modem_send_command(const char *command, char *response, uint16_t respons
         return E2BIG;
     }
 
+    DEBUG_PRINTF("Writing AT command: %s\r\n", cmd_buffer);
     ret |= modem_write_command(cmd_buffer);
     if (ret)
     {
@@ -52,10 +53,7 @@ uint8_t modem_send_command(const char *command, char *response, uint16_t respons
     HAL_Delay(100);
 
     ret |= modem_read_response((uint8_t *)response, response_size, read_timeout);
-    if (ret)
-    {
-        return ret;
-    }
+    DEBUG_PRINTF("Got AT command response: %s\r\n", response);
 
     return ret;
 }
@@ -78,4 +76,94 @@ void modem_power_off(void)
     char response[32];
     modem_send_command("AT!POWERDOWN", response, sizeof(response), 2000);
     HAL_Delay(1000);
+}
+
+uint8_t at_enter_module_pwd(char *password)
+{
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    // set pwd and enter pwd require different lengths?
+    if (strlen(password) < 4 || strlen(password) > 15)
+    {
+        DEBUG_PRINTF("Password wrong length");
+        return EINVAL;
+    }
+
+    if (snprintf(cmd, sizeof(cmd), "AT!ENTERCND=\"%s\"", password) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT!ENTERCND=\"%s\"\"\r\n", password);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), 2000);
+
+    if (ret || !modem_check_response_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
+}
+
+uint8_t at_set_module_pwd(char *password)
+{
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    if (strlen(password) < 8 || strlen(password) > 64)
+    {
+        DEBUG_PRINTF("Password wrong length");
+        return EINVAL;
+    }
+
+    if (snprintf(cmd, sizeof(cmd), "AT!SETCND=\"%s\"", password) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT!SETCND=\"%s\"\"\r\n", password);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), 2000);
+
+    if (ret || !modem_check_response_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
+}
+
+uint8_t at_custom(char *customization, uint8_t value)
+{
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    ret |= at_enter_module_pwd(RC7620_AT_PASSWORD);
+
+    if (ret)
+    {
+        DEBUG_PRINTF("ERROR: password attempt failed");
+        return EACCES;
+    }
+
+    if (snprintf(cmd, sizeof(cmd), "AT!CUSTOM\"%s\",%d", customization, value) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT!CUSTOM\"%s\",%d\"\r\n", customization, value);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), 30000);
+
+    if (ret || !modem_check_response_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
 }

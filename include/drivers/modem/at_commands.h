@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "errornum.h"
 #include "stm32_config.h"
 
@@ -29,6 +30,12 @@ enum FunctionModes
     MODE_TEST = 5,     // Factory Test Mode
     MODE_RST = 6,      // Reset UE
     MODE_OFFLINE = 7,  // Offline mode
+};
+
+enum TextModes
+{
+    TEXTMODE_PDU = 0,
+    TEXTMODE_TEXT = 1,
 };
 
 /* -------------------------------- Phone Book -------------------------------- */
@@ -89,6 +96,7 @@ typedef struct modeminfo_t
 
 uint8_t at_set_function_mode(enum FunctionModes mode);
 
+uint8_t at_set_auto_timezone(bool set_atz);
 uint8_t at_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
 
 uint8_t at_get_signal_strength(int16_t *rssi, uint8_t *ber);
@@ -103,12 +111,17 @@ uint8_t at_write_phonebook_entry_index(uint16_t index, phonebook_entry_t *entry)
 uint8_t at_write_phonebook_entry_first(phonebook_entry_t *entry);
 uint8_t at_delete_phonebook_entry(uint16_t index);
 
+uint8_t at_check_cpin(void);
 uint8_t at_get_sim_info(siminfo_t *sim_info);
 uint8_t at_get_modem_info(modeminfo_t *modem_info);
+uint8_t at_check_net_reg(void);
+uint8_t at_check_eps_net_reg(void);
 
+uint8_t at_set_message_format(enum TextModes mode);
 uint8_t at_get_sms(int index);
 uint8_t at_send_sms(const char *sms_address, const char *sms_message);
 
 uint8_t at_dial(char* dial_string);
+uint8_t at_set_echo(bool echo);
 
 #endif

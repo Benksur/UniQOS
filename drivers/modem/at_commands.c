@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "at_commands.h"
 #include "stm32h7xx_hal.h"
 
@@ -17,6 +18,29 @@ uint8_t at_set_function_mode(enum FunctionModes mode)
     if (snprintf(cmd, sizeof(cmd), "AT+CFUN=%d", mode) < 0)
     {
         DEBUG_PRINTF("ERROR: in creating string \"AT+CFUN=%d\"\r\n", mode);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+
+    if (ret || !modem_check_response_ok(response)) // not sure this will actually respond with OK but ig we can see
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
+}
+
+uint8_t at_set_auto_timezone(bool set_atz)
+{
+    char response[32];
+    char cmd[10];
+    uint8_t ret = 0;
+
+    if (snprintf(cmd, sizeof(cmd), "AT+CTZU=%d", (uint8_t)set_atz) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CTZU=%d\"\r\n", (uint8_t)set_atz);
         return EINVAL;
     }
 
@@ -364,6 +388,24 @@ uint8_t at_write_phonebook_entry_first(phonebook_entry_t *entry)
     return ret;
 }
 
+uint8_t at_check_cpin(void){
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    ret |= modem_send_command("AT+CPIN?", response, sizeof(response), TIMEOUT_30S);
+
+    // Currently not a functional method, does not need to return data
+    DEBUG_PRINTF("Response: %s\r\n", response);
+
+    if (!strstr(response, "READY"))
+    {
+        return EBUSY;
+    }
+
+    return ret;
+}
+
 uint8_t at_get_sim_info(siminfo_t *sim_info)
 {
 
@@ -398,6 +440,57 @@ uint8_t at_get_modem_info(modeminfo_t *modem_info)
     // modem_info->manufactureId;
     DEBUG_PRINTF("NOT IMPLIMENTED!");
     return ENOSYS;
+}
+
+uint8_t at_check_net_reg(void){
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    ret |= modem_send_command("AT+CREG?", response, sizeof(response), TIMEOUT_30S);
+
+    // Currently not a functional method, does not need to return data
+    DEBUG_PRINTF("Response: %s\r\n", response);
+
+    return ret;
+}
+
+uint8_t at_check_eps_net_reg(void){
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    ret |= modem_send_command("AT+CEREG?", response, sizeof(response), TIMEOUT_30S);
+
+    // Currently not a functional method, does not need to return data
+    DEBUG_PRINTF("Response: %s\r\n", response);
+
+    return ret;
+}
+
+uint8_t at_set_message_format(enum TextModes mode)
+{
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    //Verify Dialable correct?
+
+    if (snprintf(cmd, sizeof(cmd), "AT+CMGF%d;", mode) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CMGF%d\"\r\n", mode);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+    
+    if (ret || !modem_check_response_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;  
 }
 
 uint8_t at_get_sms(int index, char* sms_buff)
@@ -523,15 +616,41 @@ uint8_t at_dial(char* dial_string){
     char cmd[32];
     uint8_t ret = 0;
 
-    if (snprintf(cmd, sizeof(cmd), "ATD%d;", dial_string) < 0)
+    //Verify Dialable correct?
+
+    if (snprintf(cmd, sizeof(cmd), "ATD%s;", dial_string) < 0)
     {
         DEBUG_PRINTF("ERROR: in creating string \"ATD%s\"\r\n", dial_string);
         return EINVAL;
     }
 
+    //CMOD needed - 
+
     ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
     
-    if (ret || !modem_check_response_ok(response)) // not sure this will actually respond with OK but ig we can see
+    if (ret || !modem_check_response_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+
+    return ret;
+}
+
+uint8_t at_set_echo(bool echo){
+    char response[32];
+    char cmd[32];
+    uint8_t ret = 0;
+
+    if (snprintf(cmd, sizeof(cmd), "ATE%d;", (uint8_t)echo) < 0)
+    {
+        DEBUG_PRINTF("ERROR: in creating string \"ATE%s\"\r\n", (uint8_t)echo);
+        return EINVAL;
+    }
+
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
+    
+    if (ret || !modem_check_response_ok(response))
     {
         DEBUG_PRINTF("Response: %s\r\n", response);
         return EBADMSG;
