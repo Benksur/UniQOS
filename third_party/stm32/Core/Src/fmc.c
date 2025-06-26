@@ -63,8 +63,8 @@ void MX_FMC_Init(void)
   /* Timing */
   Timing.AddressSetupTime = 1;
   Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 1;
-  Timing.BusTurnAroundDuration = 1;
+  Timing.DataSetupTime = 15;
+  Timing.BusTurnAroundDuration = 2;
   Timing.CLKDivision = 16;
   Timing.DataLatency = 17;
   Timing.AccessMode = FMC_ACCESS_MODE_A;

@@ -67,6 +67,7 @@ SUBMAKE_C_SOURCES := \
 $(TEST_FILE_PATH) \
 $(CSRCS) \
 ../../drivers/display/st7789v.c \
+../../drivers/display/LCD_Controller.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \

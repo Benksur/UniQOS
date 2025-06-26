@@ -14,8 +14,8 @@
 #define LCD_V_RES       320
 
 //FMC memory bank addresses
-#define ST7789V_CMD_REG_ADDR  ((uint16_t *)0x60000000)
-#define ST7789V_DATA_REG_ADDR ((uint16_t *)0x60020000)
+#define ST7789V_CMD_REG_ADDR  ((volatile uint16_t *) 0xC0000000)
+#define ST7789V_DATA_REG_ADDR ((volatile uint16_t *) 0xC0020000)
 
 
 #define ST7789V_CMD_NOP     0x00

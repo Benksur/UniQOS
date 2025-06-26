@@ -1,9 +1,10 @@
 #include <stdint.h>
 #include "st7789v.h"
+#include "LCD_Controller.h"
 
 
 void ST7789V_CMDWRITE(uint8_t reg) {
-    *ST7789V_CMD_REG_ADDR = reg;
+    *ST7789V_CMD_REG_ADDR = (uint16_t)reg;
 }
 
 void ST7789V_DATAWRITE(uint16_t data) {
@@ -40,9 +41,9 @@ void st7789v_write_data_buffer(const uint8_t *data, size_t len) {
 
 void st7789v_reset(void) {
     HAL_GPIO_WritePin(ST7789V_RES_GPIO_Port, ST7789V_RES_Pin, GPIO_PIN_RESET);
-    HAL_Delay(5);
-    HAL_GPIO_WritePin(ST7789V_RES_GPIO_Port, ST7789V_RES_Pin, GPIO_PIN_SET);
     HAL_Delay(10);
+    HAL_GPIO_WritePin(ST7789V_RES_GPIO_Port, ST7789V_RES_Pin, GPIO_PIN_SET);
+    HAL_Delay(120);
 }
 
 static void st7789v_io_init(void) {
@@ -68,19 +69,45 @@ void st7789v_display_off(void) {
 void my_lcd_send_cmd(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, const uint8_t *param, size_t param_size)
 {
     LV_UNUSED(disp);
-    st7789v_write_cmd_buffer(cmd, cmd_size);
-    st7789v_write_data_buffer(param, param_size);
+    
+    // Debug: Toggle LED to show function is called
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    
+    // Send command
+    if (cmd_size > 0) {
+        LCD_IO_WriteReg(cmd[0]);
+    }
+    
+    // Send parameters as 16-bit data (LCD_IO_WriteData expects 16-bit)
+    for (size_t i = 0; i < param_size; i++) {
+        LCD_IO_WriteData((uint16_t)param[i]);
+    }
+    
+    // Debug: Toggle LED again to show function completed
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 }
 
 /* Send large array of pixel data to the LCD. If necessary, this function has to do the byte-swapping. This function can do the transfer in the background. */
 void my_lcd_send_color(lv_display_t *disp, const uint8_t *cmd, size_t cmd_size, uint8_t *param, size_t param_size)
 {
     LV_UNUSED(disp);
+    
+    // Debug: Toggle LED to show function is called
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    
     st7789v_write_cmd_buffer(cmd, cmd_size);
 
+    // param contains 16-bit RGB565 data, so we need to cast it properly
+    uint16_t *pixel_data = (uint16_t *)param;
     size_t pixel_count = param_size / sizeof(uint16_t);
-    st7789v_write_data_buffer(param, pixel_count);
+    
+    // Use the working LCD_IO_WriteMultipleData function for efficient bulk transfer
+    LCD_IO_WriteMultipleData(pixel_data, pixel_count);
+    
     lv_display_flush_ready(disp);
+    
+    // Debug: Toggle LED again to show function completed
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 }
 
 /*
