@@ -388,7 +388,8 @@ uint8_t at_write_phonebook_entry_first(phonebook_entry_t *entry)
     return ret;
 }
 
-uint8_t at_check_cpin(void){
+uint8_t at_check_cpin(void)
+{
     char response[32];
     char cmd[32];
     uint8_t ret = 0;
@@ -410,9 +411,6 @@ uint8_t at_get_sim_info(siminfo_t *sim_info)
 {
 
     // commands used in the freertos implimentation
-
-    //     "AT+QCCID",
-    //     sim_info->iccid,
 
     //     "AT+CIMI",
     //     sim_info->imsi,
@@ -442,7 +440,8 @@ uint8_t at_get_modem_info(modeminfo_t *modem_info)
     return ENOSYS;
 }
 
-uint8_t at_check_net_reg(void){
+uint8_t at_check_net_reg(void)
+{
     char response[32];
     char cmd[32];
     uint8_t ret = 0;
@@ -455,7 +454,8 @@ uint8_t at_check_net_reg(void){
     return ret;
 }
 
-uint8_t at_check_eps_net_reg(void){
+uint8_t at_check_eps_net_reg(void)
+{
     char response[32];
     char cmd[32];
     uint8_t ret = 0;
@@ -474,7 +474,7 @@ uint8_t at_set_message_format(enum TextModes mode)
     char cmd[32];
     uint8_t ret = 0;
 
-    //Verify Dialable correct?
+    // Verify Dialable correct?
 
     if (snprintf(cmd, sizeof(cmd), "AT+CMGF%d;", mode) < 0)
     {
@@ -483,17 +483,17 @@ uint8_t at_set_message_format(enum TextModes mode)
     }
 
     ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
-    
+
     if (ret || !modem_check_response_ok(response))
     {
         DEBUG_PRINTF("Response: %s\r\n", response);
         return EBADMSG;
     }
 
-    return ret;  
+    return ret;
 }
 
-uint8_t at_get_sms(int index, char* sms_buff)
+uint8_t at_get_sms(int index, char *sms_buff)
 {
     char command_buffer[32];
     char response[256]; // Internal buffer
@@ -518,7 +518,7 @@ uint8_t at_get_sms(int index, char* sms_buff)
     // <CR><LF>
     // OK<CR><LF>
     if (strstr(response, "+CMGR:") != NULL)
-    {   
+    {
         DEBUG_PRINTF("--- SMS Index %d ---\r\n%s\r\n--- End SMS ---\r\n", index, response);
         // TODO: extract text info properly into a struct
     }
@@ -611,12 +611,13 @@ uint8_t at_send_sms(const char *sms_address, const char *sms_message)
     return ret;
 }
 
-uint8_t at_dial(char* dial_string){
+uint8_t at_call_dial(char *dial_string, enum ATV0ResultCodes *result_code)
+{
     char response[32];
     char cmd[32];
     uint8_t ret = 0;
 
-    //Verify Dialable correct?
+    // Verify Dialable correct?
 
     if (snprintf(cmd, sizeof(cmd), "ATD%s;", dial_string) < 0)
     {
@@ -624,20 +625,129 @@ uint8_t at_dial(char* dial_string){
         return EINVAL;
     }
 
-    //CMOD needed - 
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_2S);
 
-    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
-    
-    if (ret || !modem_check_response_ok(response))
+    if (ret)
     {
-        DEBUG_PRINTF("Response: %s\r\n", response);
+        DEBUG_PRINTF("ERROR IN SEND");
+        return EBADMSG;
+    }
+
+    if (strstr(response, "CONNECT") != NULL)
+    {
+        DEBUG_PRINTF("CONNECTED");
+        *result_code = CONNECT;
+        return 0;
+    }
+    else if (strstr(response, "NO CARRIER") != NULL)
+    {
+        DEBUG_PRINTF("NO CARRIER");
+        *result_code = NO_CARRIER;
+        return 0;
+    }
+    else if (strstr(response, "ERROR") != NULL)
+    {
+        DEBUG_PRINTF("ERROR");
+        *result_code = ERROR;
+        return 0;
+    }
+    else if (strstr(response, "BUSY") != NULL)
+    {
+        DEBUG_PRINTF("BUSY");
+        *result_code = BUSY;
+        return 0;
+    }
+    else if (strstr(response, "NO ANSWER") != NULL)
+    {
+        DEBUG_PRINTF("NO ANSWER");
+        *result_code = NO_ANSWER;
+        return 0;
+    }
+    else if (strstr(response, "NO DAILTONE") != NULL)
+    {
+        DEBUG_PRINTF("NO DAILTONE");
+        *result_code = NO_DAILTONE;
+        return 0;
+    }
+    else if (strstr(response, "OK") != NULL)
+    {
+        DEBUG_PRINTF("OK");
+        *result_code = OK;
+        return 0;
+    }
+    else
+    {
+        DEBUG_PRINTF("CRITICAL ERROR: COULD NOT MATCH RETURN ON DIAL");
         return EBADMSG;
     }
 
     return ret;
 }
 
-uint8_t at_set_echo(bool echo){
+uint8_t at_call_answer(enum ATV0ResultCodes *result_code)
+{
+    char response[32];
+    uint8_t ret = 0;
+
+    ret |= modem_send_command("ATA", response, sizeof(response), TIMEOUT_2S);
+
+    if (ret)
+    {
+        DEBUG_PRINTF("ERROR IN SEND");
+        return EBADMSG;
+    }
+
+    if (strstr(response, "CONNECT") != NULL)
+    {
+        DEBUG_PRINTF("CONNECTED");
+        *result_code = CONNECT;
+        return 0;
+    }
+    else if (strstr(response, "NO CARRIER") != NULL)
+    {
+        DEBUG_PRINTF("NO CARRIER");
+        *result_code = NO_CARRIER;
+        return 0;
+    }
+    else if (strstr(response, "ERROR") != NULL)
+    {
+        DEBUG_PRINTF("ERROR");
+        *result_code = ERROR;
+        return 0;
+    }
+    else if (strstr(response, "OK") != NULL)
+    {
+        DEBUG_PRINTF("OK");
+        *result_code = OK;
+        return 0;
+    }
+    else
+    {
+        DEBUG_PRINTF("CRITICAL ERROR: COULD NOT MATCH RETURN ON DIAL");
+        return EBADMSG;
+    }
+    return ret;
+}
+
+uint8_t at_call_hook(void)
+{
+    char response[32];
+    uint8_t ret = 0;
+
+    ret |= modem_send_command("ATH0", response, sizeof(response), TIMEOUT_2S);
+
+    if (ret || !modem_check_response_ok(response))
+    {
+        DEBUG_PRINTF("Response: %s\r\n", response);
+        return EBADMSG;
+    }
+ 
+    return ret;
+}
+
+
+uint8_t at_set_echo(bool echo)
+{
     char response[32];
     char cmd[32];
     uint8_t ret = 0;
@@ -648,8 +758,8 @@ uint8_t at_set_echo(bool echo){
         return EINVAL;
     }
 
-    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_30S);
-    
+    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_2S);
+
     if (ret || !modem_check_response_ok(response))
     {
         DEBUG_PRINTF("Response: %s\r\n", response);

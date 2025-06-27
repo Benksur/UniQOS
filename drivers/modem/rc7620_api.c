@@ -50,6 +50,7 @@ uint8_t modem_send_command(const char *command, char *response, uint16_t respons
         return ret;
     }
 
+    // Do we need this delay?
     HAL_Delay(100);
 
     ret |= modem_read_response((uint8_t *)response, response_size, read_timeout);
@@ -60,7 +61,8 @@ uint8_t modem_send_command(const char *command, char *response, uint16_t respons
 
 uint8_t modem_check_response_ok(const char *response)
 {
-    return (strstr(response, "OK") != NULL);
+    //may want to adjust
+    return (strstr(response, "\r\nOK\r\n") != NULL);
 }
 
 void modem_power_on(void)

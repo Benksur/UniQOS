@@ -38,6 +38,18 @@ enum TextModes
     TEXTMODE_TEXT = 1,
 };
 
+enum ATV0ResultCodes
+{
+    OK = 0,
+    CONNECT = 1,
+    RING = 2,
+    NO_CARRIER = 3,
+    ERROR = 4,
+    NO_DAILTONE = 6,
+    BUSY = 7,
+    NO_ANSWER = 8,    
+};
+
 /* -------------------------------- Phone Book -------------------------------- */
 
 // TODO: Determine max string sizes to set a fixed size
@@ -61,9 +73,8 @@ typedef struct phonebook_t
 
 /* ------------------------------- Sim Card info ------------------------------ */
 
-#define RC7620_MCC_MAX          // TODO: give these values
+#define RC7620_MCC_MAX // TODO: give these values
 #define RC7620_MNC_MAX
-#define RC7620_ICCID_MAX
 #define RC7620_IMSI_MAX
 
 typedef struct plminfo_t
@@ -74,14 +85,13 @@ typedef struct plminfo_t
 
 typedef struct siminfo_t
 {
-    char iccid[RC7620_ICCID_MAX + 1]; // Integrated Circuit Card Identifier/SIM Card Number
-    char imsi[RC7620_IMSI_MAX + 1];   // International Mobile Subscriber Identity
-    plminfo_t plmn;            // Public Land Mobile Network Info
+    char imsi[RC7620_IMSI_MAX + 1]; // International Mobile Subscriber Identity
+    plminfo_t plmn;                 // Public Land Mobile Network Info
 } siminfo_t;
 
 /* -------------------------------- Modem info -------------------------------- */
 
-#define RC7620_FW_VERSION_MAX_SIZE      // TODO: give these values
+#define RC7620_FW_VERSION_MAX_SIZE // TODO: give these values
 #define RC7620_IMEI_MAX_SIZE
 #define RC7620_MANUFACTURE_ID_MAX_SIZE
 #define RC7620_MODEL_ID_MAX_SIZE
@@ -94,6 +104,7 @@ typedef struct modeminfo_t
     char modelId[RC7620_MODEL_ID_MAX_SIZE + 1];             // Model Identity
 } modeminfo_t;
 
+/* Governed By 3GPP TS 27.007*/
 uint8_t at_set_function_mode(enum FunctionModes mode);
 
 uint8_t at_set_auto_timezone(bool set_atz);
@@ -117,11 +128,15 @@ uint8_t at_get_modem_info(modeminfo_t *modem_info);
 uint8_t at_check_net_reg(void);
 uint8_t at_check_eps_net_reg(void);
 
+/* Governed By 3GPP TS 27.005*/
 uint8_t at_set_message_format(enum TextModes mode);
 uint8_t at_get_sms(int index);
 uint8_t at_send_sms(const char *sms_address, const char *sms_message);
 
-uint8_t at_dial(char* dial_string);
+/* Governed By ITU-T Recommendation V.250*/
+uint8_t at_call_dial(char *dial_string, enum ATV0ResultCodes *result_code);
+uint8_t at_call_answer(enum ATV0ResultCodes *result_code);
+uint8_t at_call_hook(void);
 uint8_t at_set_echo(bool echo);
 
 #endif
