@@ -8,14 +8,14 @@ uint8_t modem_toggle_airplane_mode(void)
     uint8_t ret;
     if (curr_function_mode == MODE_AIRPLANE)
     {
-        ret = modem_set_function_mode(MODE_FULL);
+        ret = at_set_function_mode(MODE_FULL);
         if (!ret) {
             curr_function_mode = MODE_FULL;
         }
     }
     else
     {
-        ret = modem_set_function_mode(MODE_AIRPLANE);
+        ret = at_set_function_mode(MODE_AIRPLANE);
         if (!ret) {
             curr_function_mode = MODE_AIRPLANE;
         }

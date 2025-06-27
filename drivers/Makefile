@@ -72,7 +72,9 @@ $(CSRCS) \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \
 ../../drivers/modem/modem_terminal.c \
-../../drivers/modem/rc7620.c \
+../../drivers/modem/modem.c \
+../../drivers/modem/at_commands.c \
+../../drivers/modem/rc7620_api.c \
 ../../drivers/peripherals/lsm6dsvtr.c \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \

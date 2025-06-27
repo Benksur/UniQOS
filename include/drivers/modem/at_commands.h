@@ -40,14 +40,14 @@ enum TextModes
 
 enum ATV0ResultCodes
 {
-    OK = 0,
-    CONNECT = 1,
-    RING = 2,
-    NO_CARRIER = 3,
-    ERROR = 4,
-    NO_DAILTONE = 6,
-    BUSY = 7,
-    NO_ANSWER = 8,    
+    ATV0_OK = 0,
+    ATV0_CONNECT = 1,
+    ATV0_RING = 2,
+    ATV0_NO_CARRIER = 3,
+    ATV0_ERROR = 4,
+    ATV0_NO_DAILTONE = 6,
+    ATV0_BUSY = 7,
+    ATV0_NO_ANSWER = 8,    
 };
 
 /* -------------------------------- Phone Book -------------------------------- */
@@ -130,7 +130,7 @@ uint8_t at_check_eps_net_reg(void);
 
 /* Governed By 3GPP TS 27.005*/
 uint8_t at_set_message_format(enum TextModes mode);
-uint8_t at_get_sms(int index);
+uint8_t at_get_sms(int index, char *sms_buff);
 uint8_t at_send_sms(const char *sms_address, const char *sms_message);
 
 /* Governed By ITU-T Recommendation V.250*/

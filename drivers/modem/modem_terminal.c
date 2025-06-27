@@ -1,4 +1,5 @@
 #include "modem_terminal.h"
+#include "modem.h"
 
 #define INPUT_BUFFER_SIZE 128
 #define RESPONSE_BUFFER_SIZE 256

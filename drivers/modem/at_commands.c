@@ -636,43 +636,43 @@ uint8_t at_call_dial(char *dial_string, enum ATV0ResultCodes *result_code)
     if (strstr(response, "CONNECT") != NULL)
     {
         DEBUG_PRINTF("CONNECTED");
-        *result_code = CONNECT;
+        *result_code = ATV0_CONNECT;
         return 0;
     }
     else if (strstr(response, "NO CARRIER") != NULL)
     {
         DEBUG_PRINTF("NO CARRIER");
-        *result_code = NO_CARRIER;
+        *result_code = ATV0_NO_CARRIER;
         return 0;
     }
     else if (strstr(response, "ERROR") != NULL)
     {
         DEBUG_PRINTF("ERROR");
-        *result_code = ERROR;
+        *result_code = ATV0_ERROR;
         return 0;
     }
     else if (strstr(response, "BUSY") != NULL)
     {
         DEBUG_PRINTF("BUSY");
-        *result_code = BUSY;
+        *result_code = ATV0_BUSY;
         return 0;
     }
     else if (strstr(response, "NO ANSWER") != NULL)
     {
         DEBUG_PRINTF("NO ANSWER");
-        *result_code = NO_ANSWER;
+        *result_code = ATV0_NO_ANSWER;
         return 0;
     }
     else if (strstr(response, "NO DAILTONE") != NULL)
     {
         DEBUG_PRINTF("NO DAILTONE");
-        *result_code = NO_DAILTONE;
+        *result_code = ATV0_NO_DAILTONE;
         return 0;
     }
     else if (strstr(response, "OK") != NULL)
     {
         DEBUG_PRINTF("OK");
-        *result_code = OK;
+        *result_code = ATV0_OK;
         return 0;
     }
     else
@@ -700,13 +700,13 @@ uint8_t at_call_answer(enum ATV0ResultCodes *result_code)
     if (strstr(response, "CONNECT") != NULL)
     {
         DEBUG_PRINTF("CONNECTED");
-        *result_code = CONNECT;
+        *result_code = ATV0_CONNECT;
         return 0;
     }
     else if (strstr(response, "NO CARRIER") != NULL)
     {
         DEBUG_PRINTF("NO CARRIER");
-        *result_code = NO_CARRIER;
+        *result_code = ATV0_NO_CARRIER;
         return 0;
     }
     else if (strstr(response, "ERROR") != NULL)
@@ -718,7 +718,7 @@ uint8_t at_call_answer(enum ATV0ResultCodes *result_code)
     else if (strstr(response, "OK") != NULL)
     {
         DEBUG_PRINTF("OK");
-        *result_code = OK;
+        *result_code = ATV0_OK;
         return 0;
     }
     else

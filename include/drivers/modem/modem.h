@@ -8,6 +8,6 @@
 #include "stm32_config.h"
 #include "at_commands.h"
 
-uint8_t rc7620_init(void);
+uint8_t modem_init(void);
 
 #endif
