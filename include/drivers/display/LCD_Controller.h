@@ -8,6 +8,9 @@
 #ifndef INC_LCD_CONTROLLER_H_
 #define INC_LCD_CONTROLLER_H_
 
+#define FMC_BANK1_REG  ((volatile uint16_t *) 0xC0000000)  // A0 = 0: Register
+#define FMC_BANK1_DATA ((volatile uint16_t *) 0xC0020000)  // A0 = 1: Data
+
 #include "main.h"
 
  void     LCD_IO_Init(void);

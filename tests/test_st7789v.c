@@ -2,141 +2,117 @@
 #include "fmc.h"
 #include "gpio.h"
 
+
+static uint16_t fill_color = 0;
+void LCD_Fill(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height)
+{
+    ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
+    ST7789V_WriteReg(ST7789V_RAMWR, NULL, 0); 
+    uint32_t total_pixels = (uint32_t)width * height;
+    for (uint32_t i = 0; i < total_pixels; i++) {
+        LCD_IO_WriteData(RGBCode);
+    }
+}
+
+#include <stdio.h>  // for printf, or replace with your debug print method
+
+// Test reading a register and checking the lowest 3 data bits
+void LCD_Test_ReadRegister(uint8_t reg)
+{
+    uint16_t read_value;
+    LCD_IO_WriteReg(reg);
+    read_value = LCD_IO_ReadData();
+    uint8_t low3bits = read_value & 0x7;
+    if (low3bits == 0x5)
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+    }
+}
+
+#define MAX_RED     31  // 5 bits
+#define MAX_GREEN   63  // 6 bits
+#define MAX_BLUE    31  // 5 bits
+#define COLOR_STEP  1   // Smaller step for smoother transitions
+
+// Global or static variables to maintain state
+static uint8_t red = 0;
+static uint8_t green = 0;
+static uint8_t blue = 0;
+static int8_t color_phase = 0; // 0:R->Y, 1:Y->G, 2:G->C, 3:C->B, 4:B->M, 5:M->R
+
+uint16_t GetNextRainbowColor() {
+    switch (color_phase) {
+        case 0: // Red to Yellow (R=MAX, G increases, B=0)
+            green += COLOR_STEP;
+            if (green >= MAX_GREEN) {
+                green = MAX_GREEN;
+                color_phase = 1;
+            }
+            break;
+        case 1: // Yellow to Green (R decreases, G=MAX, B=0)
+            red -= COLOR_STEP;
+            if (red <= 0) { // Using <= 0 because it might go negative if COLOR_STEP is large
+                red = 0;
+                color_phase = 2;
+            }
+            break;
+        case 2: // Green to Cyan (R=0, G=MAX, B increases)
+            blue += COLOR_STEP;
+            if (blue >= MAX_BLUE) {
+                blue = MAX_BLUE;
+                color_phase = 3;
+            }
+            break;
+        case 3: // Cyan to Blue (R=0, G decreases, B=MAX)
+            green -= COLOR_STEP;
+            if (green <= 0) {
+                green = 0;
+                color_phase = 4;
+            }
+            break;
+        case 4: // Blue to Magenta (R increases, G=0, B=MAX)
+            red += COLOR_STEP;
+            if (red >= MAX_RED) {
+                red = MAX_RED;
+                color_phase = 5;
+            }
+            break;
+        case 5: // Magenta to Red (R=MAX, G=0, B decreases)
+            blue -= COLOR_STEP;
+            if (blue <= 0) {
+                blue = 0;
+                color_phase = 0; // Cycle back to start
+            }
+            break;
+    }
+    // Combine R, G, B components into a 16-bit color (RGB 5-6-5 format)
+    return ((red & 0x1F) << 11) | ((green & 0x3F) << 5) | (blue & 0x1F);
+}
+
+
 int main(void)
 {
 
   HAL_Init();
-  SystemClock_Config();
   MX_GPIO_Init();
   MX_FMC_Init();
-
-  st7789v_init();
-  st7789v_display_on();
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-
-  // Debug: Toggle LED before lv_st7789_create
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-  HAL_Delay(100);
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-
-  // Initialize LVGL
-  lv_init();
-
-  lv_display_t *lcd_disp = lv_st7789_create(LCD_H_RES, LCD_V_RES, LV_LCD_FLAG_NONE, my_lcd_send_cmd, my_lcd_send_color);
-  
-  // Debug: Toggle LED after lv_st7789_create (if we get here)
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-  HAL_Delay(100);
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-  
-  while (1) {
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LD1
-    HAL_Delay(500);
-  }
-
-  lv_color_t * buf1 = NULL;
-  lv_color_t * buf2 = NULL;
-
-  uint32_t buf_size = LCD_H_RES * LCD_V_RES / 10 * lv_color_format_get_size(lv_display_get_color_format(lcd_disp));
-
-  
-  buf1 = lv_malloc(buf_size);
-  if(buf1 == NULL) {
-      LV_LOG_ERROR("display draw buffer malloc failed");
-       return 1;
-  }
-
+  MX_TIM2_Init();
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  htim2.Instance->CCR3 = 80;
+  ST7789V_Init();
   
 
-  buf2 = lv_malloc(buf_size);
-  if(buf2 == NULL) {
-    LV_LOG_ERROR("display buffer malloc failed");
-    lv_free(buf1);
-    return 1;
-  }
-  lv_display_set_buffers(lcd_disp, buf1, buf2, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
-
-  // ui_init(lcd_disp);
-
-  for(;;) {
-    lv_timer_handler();
-    HAL_Delay(10);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LD1
-    HAL_Delay(100);
-  }
-
+  HAL_Delay(1000);
+  uint16_t current_rainbow_color;
   while (1)
   {
-    /* USER CODE END WHILE */
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LD1
-  HAL_Delay(100);
-    /* USER CODE BEGIN 3 */
+      current_rainbow_color = GetNextRainbowColor();
+      LCD_Fill(current_rainbow_color, 0, 0, 240, 320);
+      
+      HAL_Delay(8);
   }
-  /* USER CODE END 3 */
 }
-
-
-// void LCD_Fill(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height)
-// {
-//     ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
-    
-//     ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t*)NULL, 0);
-    
-//     uint32_t total_pixels = (uint32_t)width * height;
-//     for (uint32_t i = 0; i < total_pixels; i++)
-//     {
-//         LCD_IO_WriteData(RGBCode);
-//     }
-// }
-
-
-// void LCD_Test_ReadRegister(uint8_t reg)
-// {
-//     uint16_t read_value;
-//     LCD_IO_WriteReg(reg);
-//     read_value = LCD_IO_ReadData();
-//     uint8_t low3bits = read_value & 0x7;
-//     if (low3bits == 0x5)
-//     {
-//         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-//     }
-//     else
-//     {
-//         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-//     }
-// }
-
-// int main(void)
-// {
-//   HAL_Init();
-
-//   SystemClock_Config();
-//   MX_GPIO_Init();
-//   MX_FMC_Init();
-//   MX_TIM2_Init();
-
-//   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-//   htim2.Instance->CCR3 = 80;
-//   ST7789V_Init();
-//   ST7789V_SetDisplayWindow(0, 0, 240, 320);
-  
-
-//   HAL_Delay(1000);
-  
-//   while (1)
-//   {
-//     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LD1
-//     HAL_Delay(1000);
-    
-//     // Test different colors and fill areas
-//     LCD_Fill(0xF800, 0, 0, 240, 320);    // Red square
-//     HAL_Delay(500);
-//     LCD_Fill(0x07E0, 0, 0, 240, 320);    // Green square
-//     HAL_Delay(500);
-//     LCD_Fill(0x001F, 0, 0, 240, 320);    // Blue square
-//     HAL_Delay(500);
-//     LCD_Fill(0xFFE0, 0, 0, 240, 320);    // Yellow square
-//     HAL_Delay(500);
-//     LCD_Fill(0x0000, 0, 0, 240, 320);    // Clear screen (black)
-//     HAL_Delay(500);
-//   }
