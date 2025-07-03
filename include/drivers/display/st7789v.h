@@ -1,172 +1,265 @@
-/**
-  ******************************************************************************
-  * @file    st7789v.h
-  * @author  Modified for ST7789V
-  * @brief   This file contains all the functions prototypes for the st7789v.c
-  *          driver.
-  ******************************************************************************
-  */ 
+#ifndef __ST7789_H
+#define __ST7789_H
+#include "stm32h7xx_hal.h"
+#include "spi.h"
+/* choose a Hardware SPI port to use. */
+#define ST7789_SPI_PORT hspi4
+extern SPI_HandleTypeDef ST7789_SPI_PORT;
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __ST7789V_H
-#define __ST7789V_H
 
-#ifdef __cplusplus
- extern "C" {
-#endif 
+/* choose whether use DMA or not */
+// #define USE_DMA
 
-/* Includes ------------------------------------------------------------------*/
-#include <stdio.h>
-#include "LCD_Controller.h"
+/* If u need CS control, comment below*/
+//#define CFG_NO_CS
 
-/** @defgroup ST7789V_Exported_Constants ST7789V Exported Constants
-  * @{
-  */
-/**
-  * @brief  ST7789V ID  
-  */
-#define  ST7789V_ID    0x85
+/* Pin connection*/
+#define ST7789_RST_PORT GPIOE
+#define ST7789_RST_PIN  GPIO_PIN_13
+// #define ST7789_DC_PORT  ST7789_DC_GPIO_Port
+// #define ST7789_DC_PIN   ST7789_DC_Pin
 
-/** 
-  * @brief  ST7789V Size  
-  */
-#define  ST7789V_LCD_PIXEL_WIDTH    ((uint16_t)240)
-#define  ST7789V_LCD_PIXEL_HEIGHT   ((uint16_t)320)
-
-/**
- *  @brief LCD_OrientationTypeDef
- *  Possible values of Display Orientation
- */
-#define ST7789V_ORIENTATION_PORTRAIT         ((uint32_t)0x00) /* Portrait orientation choice of LCD screen  */
-#define ST7789V_ORIENTATION_LANDSCAPE        ((uint32_t)0x01) /* Landscape orientation choice of LCD screen */
-#define ST7789V_ORIENTATION_LANDSCAPE_ROT180 ((uint32_t)0x02) /* Landscape rotated 180° orientation choice of LCD screen */
-
-/** 
-  * @brief  ST7789V Registers  
-  */
-#define ST7789V_NOP             0x00
-#define ST7789V_SWRESET         0x01
-#define ST7789V_RDDID           0x04
-#define ST7789V_RDDST           0x09
-#define ST7789V_SLPIN           0x10
-#define ST7789V_SLPOUT          0x11
-#define ST7789V_PTLON           0x12
-#define ST7789V_NORON           0x13
-#define ST7789V_INVOFF          0x20
-#define ST7789V_INVON           0x21
-#define ST7789V_DISPOFF         0x28
-#define ST7789V_DISPON          0x29
-#define ST7789V_CASET           0x2A
-#define ST7789V_RASET           0x2B
-#define ST7789V_RAMWR           0x2C
-#define ST7789V_RAMRD           0x2E
-#define ST7789V_PTLAR           0x30
-#define ST7789V_VSCRDEF         0x33
-#define ST7789V_MADCTL          0x36
-#define ST7789V_VSCRSADD        0x37
-#define ST7789V_IDMOFF          0x38
-#define ST7789V_IDMON           0x39
-#define ST7789V_COLMOD          0x3A
-#define ST7789V_RAMWRC          0x3C
-#define ST7789V_RAMRDC          0x3E
-#define ST7789V_TESCAN          0x44
-#define ST7789V_RDTESCAN        0x45
-#define ST7789V_WRDISBV         0x51
-#define ST7789V_RDDISBV         0x52
-#define ST7789V_WRCTRLD         0x53
-#define ST7789V_RDCTRLD         0x54
-#define ST7789V_WRCACE          0x55
-#define ST7789V_RDCABC          0x56
-#define ST7789V_WRCABCMB        0x5E
-#define ST7789V_RDCABCMB        0x5F
-#define ST7789V_RDABCSDR        0x68
-#define ST7789V_RDID1           0xDA
-#define ST7789V_RDID2           0xDB
-#define ST7789V_RDID3           0xDC
-
-// Extended commands
-#define ST7789V_RAMCTRL         0xB0
-#define ST7789V_RGBCTRL         0xB1
-#define ST7789V_PORCTRL         0xB2
-#define ST7789V_FRCTRL1         0xB3
-#define ST7789V_PARCTRL         0xB5
-#define ST7789V_GCTRL           0xB7
-#define ST7789V_GTADJ           0xB8
-#define ST7789V_DGMEN           0xBA
-#define ST7789V_VCOMS           0xBB
-#define ST7789V_LCMCTRL         0xC0
-#define ST7789V_IDSET           0xC1
-#define ST7789V_VDVVRHEN        0xC2
-#define ST7789V_VRHS            0xC3
-#define ST7789V_VDVS            0xC4
-#define ST7789V_VMCTR1          0xC5
-#define ST7789V_FRCTRL2         0xC6
-#define ST7789V_CABCCTRL        0xC7
-#define ST7789V_REGSEL1         0xC8
-#define ST7789V_REGSEL2         0xCA
-#define ST7789V_PWMFRSEL        0xCC
-#define ST7789V_PWCTRL1         0xD0
-#define ST7789V_VAPVANEN        0xD2
-#define ST7789V_CMD2EN          0xDF
-#define ST7789V_PVGAMCTRL       0xE0
-#define ST7789V_NVGAMCTRL       0xE1
-#define ST7789V_DGMLUTR         0xE2
-#define ST7789V_DGMLUTB         0xE3
-#define ST7789V_GATECTRL        0xE4
-#define ST7789V_SPI2EN          0xE7
-#define ST7789V_PWCTRL2         0xE8
-#define ST7789V_EQCTRL          0xE9
-#define ST7789V_PROMCTRL        0xEC
-#define ST7789V_PROMEN          0xFA
-#define ST7789V_NVMSET          0xFC
-#define ST7789V_PROMACT         0xFE
-
-#define ST7789V_TEON            0x35
-#define ST7789V_TEOFF           0x34
-/**
-  * @}
-  */
-
-/** @defgroup ST7789V_Exported_Functions ST7789V Exported Functions
-  * @{
-  */ 
-void     ST7789V_Init(void);
-void     ST7789V_SetOrientation(uint32_t orientation);
-uint16_t ST7789V_ReadID(void);
-void     ST7789V_WriteReg(uint8_t Command, uint8_t *Parameters, uint8_t NbParameters);
-uint8_t  ST7789V_ReadReg(uint8_t Command);
-
-void     ST7789V_DisplayOn(void);
-void     ST7789V_DisplayOff(void);
-void     ST7789V_SetCursor(uint16_t Xpos, uint16_t Ypos);
-void     ST7789V_WritePixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode);
-uint16_t ST7789V_ReadPixel(uint16_t Xpos, uint16_t Ypos);
-
-void     ST7789V_DrawHLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length);
-void     ST7789V_DrawVLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length);
-void     ST7789V_DrawBitmap(uint16_t Xpos, uint16_t Ypos, uint8_t *pbmp);
-void     ST7789V_DrawRGBImage(uint16_t Xpos, uint16_t Ypos, uint16_t Xsize, uint16_t Ysize, uint8_t *pdata);
-
-void     ST7789V_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height);
-void     ST7789V_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-
-uint16_t ST7789V_GetLcdPixelWidth(void);
-uint16_t ST7789V_GetLcdPixelHeight(void);
-
-/* LCD IO functions */
-extern void     LCD_IO_Init(void);
-extern void     LCD_IO_WriteMultipleData(uint16_t *pData, uint32_t Size);
-extern void     LCD_IO_WriteReg(uint8_t Reg);
-extern void     LCD_IO_WriteData(uint16_t RegValue);
-extern uint16_t LCD_IO_ReadData(void);
-extern void     LCD_IO_Delay(uint32_t delay);
-
-/**
-  * @}
-  */ 
-
-#ifdef __cplusplus
-}
+#ifndef CFG_NO_CS
+#define ST7789_CS_PORT  GPIOE
+#define ST7789_CS_PIN   GPIO_PIN_11
 #endif
 
-#endif /* __ST7789V_H */
+/* If u need Backlight control, uncomment below */
+//#define BLK_PORT
+//#define BLK_PIN
+
+
+/*
+ * Comment one to use another.
+ * 3 parameters can be choosed
+ * 135x240(0.96 inch) & 240x240(1.3inch) & 170x320(1.9inch)
+ * X_SHIFT & Y_SHIFT are used to adapt different display's resolution
+ */
+
+/* Choose a type you are using */
+//#define USING_135X240
+#define USING_240X240
+//#define USING_170X320
+
+/* Choose a display rotation you want to use: (0-3) */
+//#define ST7789_ROTATION 0
+//#define ST7789_ROTATION 1
+#define ST7789_ROTATION 2				//  use Normally on 240x240
+//#define ST7789_ROTATION 3
+
+#ifdef USING_135X240
+
+    #if ST7789_ROTATION == 0
+        #define ST7789_WIDTH 135
+        #define ST7789_HEIGHT 240
+        #define X_SHIFT 53
+        #define Y_SHIFT 40
+    #endif
+
+    #if ST7789_ROTATION == 1
+        #define ST7789_WIDTH 240
+        #define ST7789_HEIGHT 135
+        #define X_SHIFT 40
+        #define Y_SHIFT 52
+    #endif
+
+    #if ST7789_ROTATION == 2
+        #define ST7789_WIDTH 135
+        #define ST7789_HEIGHT 240
+        #define X_SHIFT 52
+        #define Y_SHIFT 40
+    #endif
+
+    #if ST7789_ROTATION == 3
+        #define ST7789_WIDTH 240
+        #define ST7789_HEIGHT 135
+        #define X_SHIFT 40
+        #define Y_SHIFT 53
+    #endif
+
+#endif
+
+#ifdef USING_240X240
+
+    #define ST7789_WIDTH 240
+    #define ST7789_HEIGHT 240
+
+		#if ST7789_ROTATION == 0
+			#define X_SHIFT 0
+			#define Y_SHIFT 80
+		#elif ST7789_ROTATION == 1
+			#define X_SHIFT 80
+			#define Y_SHIFT 0
+		#elif ST7789_ROTATION == 2
+			#define X_SHIFT 0
+			#define Y_SHIFT 0
+		#elif ST7789_ROTATION == 3
+			#define X_SHIFT 0
+			#define Y_SHIFT 0
+		#endif
+
+#endif
+
+#ifdef USING_170X320
+
+	#if ST7789_ROTATION == 0
+        #define ST7789_WIDTH 170
+        #define ST7789_HEIGHT 320
+        #define X_SHIFT 35
+        #define Y_SHIFT 0
+    #endif
+
+    #if ST7789_ROTATION == 1
+        #define ST7789_WIDTH 320
+        #define ST7789_HEIGHT 170
+        #define X_SHIFT 0
+        #define Y_SHIFT 35
+    #endif
+
+    #if ST7789_ROTATION == 2
+        #define ST7789_WIDTH 170
+        #define ST7789_HEIGHT 320
+        #define X_SHIFT 35
+        #define Y_SHIFT 0
+    #endif
+
+    #if ST7789_ROTATION == 3
+        #define ST7789_WIDTH 320
+        #define ST7789_HEIGHT 170
+        #define X_SHIFT 0
+        #define Y_SHIFT 35
+    #endif
+
+#endif
+
+/**
+ *Color of pen
+ *If you want to use another color, you can choose one in RGB565 format.
+ */
+
+#define WHITE       0xFFFF
+#define BLACK       0x0000
+#define BLUE        0x001F
+#define RED         0xF800
+#define MAGENTA     0xF81F
+#define GREEN       0x07E0
+#define CYAN        0x7FFF
+#define YELLOW      0xFFE0
+#define GRAY        0X8430
+#define BRED        0XF81F
+#define GRED        0XFFE0
+#define GBLUE       0X07FF
+#define BROWN       0XBC40
+#define BRRED       0XFC07
+#define DARKBLUE    0X01CF
+#define LIGHTBLUE   0X7D7C
+#define GRAYBLUE    0X5458
+
+#define LIGHTGREEN  0X841F
+#define LGRAY       0XC618
+#define LGRAYBLUE   0XA651
+#define LBBLUE      0X2B12
+
+/* Control Registers and constant codes */
+#define ST7789_NOP     0x00
+#define ST7789_SWRESET 0x01
+#define ST7789_RDDID   0x04
+#define ST7789_RDDST   0x09
+
+#define ST7789_SLPIN   0x10
+#define ST7789_SLPOUT  0x11
+#define ST7789_PTLON   0x12
+#define ST7789_NORON   0x13
+
+#define ST7789_INVOFF  0x20
+#define ST7789_INVON   0x21
+#define ST7789_DISPOFF 0x28
+#define ST7789_DISPON  0x29
+#define ST7789_CASET   0x2A
+#define ST7789_RASET   0x2B
+#define ST7789_RAMWR   0x2C
+#define ST7789_RAMRD   0x2E
+
+#define ST7789_PTLAR   0x30
+#define ST7789_COLMOD  0x3A
+#define ST7789_MADCTL  0x36
+
+/**
+ * Memory Data Access Control Register (0x36H)
+ * MAP:     D7  D6  D5  D4  D3  D2  D1  D0
+ * param:   MY  MX  MV  ML  RGB MH  -   -
+ *
+ */
+
+/* Page Address Order ('0': Top to Bottom, '1': the opposite) */
+#define ST7789_MADCTL_MY  0x80
+/* Column Address Order ('0': Left to Right, '1': the opposite) */
+#define ST7789_MADCTL_MX  0x40
+/* Page/Column Order ('0' = Normal Mode, '1' = Reverse Mode) */
+#define ST7789_MADCTL_MV  0x20
+/* Line Address Order ('0' = LCD Refresh Top to Bottom, '1' = the opposite) */
+#define ST7789_MADCTL_ML  0x10
+/* RGB/BGR Order ('0' = RGB, '1' = BGR) */
+#define ST7789_MADCTL_RGB 0x00
+
+#define ST7789_RDID1   0xDA
+#define ST7789_RDID2   0xDB
+#define ST7789_RDID3   0xDC
+#define ST7789_RDID4   0xDD
+
+/* Advanced options */
+#define ST7789_COLOR_MODE_16bit 0x55    //  RGB565 (16bit)
+#define ST7789_COLOR_MODE_18bit 0x66    //  RGB666 (18bit)
+
+/* Basic operations */
+#define ST7789_RST_Clr() HAL_GPIO_WritePin(ST7789_RST_PORT, ST7789_RST_PIN, GPIO_PIN_RESET)
+#define ST7789_RST_Set() HAL_GPIO_WritePin(ST7789_RST_PORT, ST7789_RST_PIN, GPIO_PIN_SET)
+
+#define ST7789_DC_Clr() HAL_GPIO_WritePin(ST7789_DC_PORT, ST7789_DC_PIN, GPIO_PIN_RESET)
+#define ST7789_DC_Set() HAL_GPIO_WritePin(ST7789_DC_PORT, ST7789_DC_PIN, GPIO_PIN_SET)
+#ifndef CFG_NO_CS
+#define ST7789_Select() HAL_GPIO_WritePin(ST7789_CS_PORT, ST7789_CS_PIN, GPIO_PIN_RESET)
+#define ST7789_UnSelect() HAL_GPIO_WritePin(ST7789_CS_PORT, ST7789_CS_PIN, GPIO_PIN_SET)
+#else
+#define ST7789_Select() asm("nop")
+#define ST7789_UnSelect() asm("nop")
+#endif
+
+#define ABS(x) ((x) > 0 ? (x) : -(x))
+
+/* Basic functions. */
+void ST7789_Init(void);
+void ST7789_SetRotation(uint8_t m);
+void ST7789_Fill_Color(uint16_t color);
+void ST7789_DrawPixel(uint16_t x, uint16_t y, uint16_t color);
+void ST7789_Fill(uint16_t xSta, uint16_t ySta, uint16_t xEnd, uint16_t yEnd, uint16_t color);
+void ST7789_DrawPixel_4px(uint16_t x, uint16_t y, uint16_t color);
+
+/* Graphical functions. */
+void ST7789_DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ST7789_DrawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color);
+void ST7789_DrawCircle(uint16_t x0, uint16_t y0, uint8_t r, uint16_t color);
+void ST7789_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data);
+void ST7789_InvertColors(uint8_t invert);
+
+/* Text functions. */
+// void ST7789_WriteChar(uint16_t x, uint16_t y, char ch, FontDef font, uint16_t color, uint16_t bgcolor);
+// void ST7789_WriteString(uint16_t x, uint16_t y, const char *str, FontDef font, uint16_t color, uint16_t bgcolor);
+
+/* Extented Graphical functions. */
+void ST7789_DrawFilledRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
+void ST7789_DrawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color);
+void ST7789_DrawFilledTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint16_t color);
+void ST7789_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+
+/* Command functions */
+void ST7789_TearEffect(uint8_t tear);
+
+/* Simple test function. */
+void ST7789_Test(void);
+
+#ifndef ST7789_ROTATION
+    #error You should at least choose a display rotation!
+#endif
+
+#endif

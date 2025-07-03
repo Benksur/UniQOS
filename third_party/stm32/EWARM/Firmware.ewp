@@ -1090,9 +1090,6 @@
           <name>$PROJ_DIR$/../Core/Src/dma.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../Core/Src/fmc.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$/../Core/Src/i2c.c</name>
         </file>
         <file>
@@ -1106,6 +1103,9 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../Core/Src/sdmmc.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../Core/Src/spi.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../Core/Src/tim.c</name>
@@ -1175,21 +1175,6 @@
         <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nor.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sram.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nand.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sdram.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2s.c</name>
       </file>
       <file>
@@ -1218,6 +1203,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c</name>

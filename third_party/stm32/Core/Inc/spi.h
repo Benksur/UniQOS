@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * File Name          : FMC.h
-  * Description        : This file provides code for the configuration
-  *                      of the FMC peripheral.
+  * @file    spi.h
+  * @brief   This file contains all the function prototypes for
+  *          the spi.c file
   ******************************************************************************
   * @attention
   *
@@ -18,10 +18,11 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __FMC_H
-#define __FMC_H
+#ifndef __SPI_H__
+#define __SPI_H__
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -31,15 +32,13 @@
 
 /* USER CODE END Includes */
 
-extern SRAM_HandleTypeDef hsram1;
+extern SPI_HandleTypeDef hspi4;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_FMC_Init(void);
-void HAL_SRAM_MspInit(SRAM_HandleTypeDef* hsram);
-void HAL_SRAM_MspDeInit(SRAM_HandleTypeDef* hsram);
+void MX_SPI4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
@@ -48,12 +47,6 @@ void HAL_SRAM_MspDeInit(SRAM_HandleTypeDef* hsram);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__FMC_H */
 
-/**
-  * @}
-  */
+#endif /* __SPI_H__ */
 
-/**
-  * @}
-  */

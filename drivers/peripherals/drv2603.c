@@ -29,7 +29,7 @@ void drv2603_set_strength(uint8_t strength_percent)
     {
         strength_percent = 100;
     }
-
+    
     // erm mode: strength 0-100% to PWM duty cycle 50%-91%
     // 50% = no rotation
     // 91% ~ 3.0V output limit on 3.3V supply

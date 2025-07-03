@@ -83,9 +83,9 @@ Core/Src/syscalls.c \
 Core/Src/sysmem.c \
 Core/Src/gpio.c \
 Core/Src/dma.c \
-Core/Src/fmc.c \
 Core/Src/i2c.c \
 Core/Src/i2s.c \
+Core/Src/spi.c \
 Core/Src/memorymap.c \
 Core/Src/rtc.c \
 Core/Src/sdmmc.c \
@@ -127,6 +127,7 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 Core/Src/system_stm32h7xx.c
 
