@@ -326,7 +326,7 @@ void ST7789V_WriteReg(uint8_t Command, uint8_t *Parameters, uint8_t NbParameters
   /* Send command's parameters if any */
   for (i = 0; i < NbParameters; i++)
   {
-    LCD_IO_WriteData(Parameters[i]);
+    LCD_IO_WriteData8(Parameters[i]);
   }
 }
 

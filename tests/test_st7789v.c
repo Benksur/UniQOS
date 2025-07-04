@@ -1,4 +1,5 @@
 #include "st7789v.h"
+#include "tim.h"
 #include "fmc.h"
 #include "gpio.h"
 
