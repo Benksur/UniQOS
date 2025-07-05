@@ -86,7 +86,7 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c \
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32h730xx.s
+startup_stm32h753xx.s
 
 # ASM sources
 ASMM_SOURCES = 
@@ -135,7 +135,7 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_PWR_LDO_SUPPLY \
 -DUSE_HAL_DRIVER \
--DSTM32H733xx
+-DSTM32H753xx
 
 
 # AS includes
@@ -168,7 +168,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32H733XG_FLASH.ld
+LDSCRIPT = STM32H753XG_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 

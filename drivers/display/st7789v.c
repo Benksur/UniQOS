@@ -205,7 +205,7 @@ void ST7789V_WritePixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode)
   ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
 
   /* Write RAM data */
-  LCD_IO_WriteData(RGBCode);
+  LCD_IO_WriteData16(RGBCode);
 }
 
 uint16_t ST7789V_ReadPixel(uint16_t Xpos, uint16_t Ypos)
@@ -301,7 +301,7 @@ void ST7789V_DrawHLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t 
   /* Send a complete line */
   for (counter = 0; counter < Length; counter++)
   {
-    LCD_IO_WriteData(RGBCode);
+    LCD_IO_WriteData16(RGBCode);
   }
 }
 
@@ -318,7 +318,7 @@ void ST7789V_DrawVLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t 
   /* Fill a complete vertical line */
   for (counter = 0; counter < Length; counter++)
   {
-    LCD_IO_WriteData(RGBCode);
+    LCD_IO_WriteData16(RGBCode);
   }
 }
 
