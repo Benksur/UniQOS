@@ -17,7 +17,7 @@
         "string_view": "c",
         "vector": "c"
     },
-    "files.autoSave": "onFocusChange",
+    // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
     "cortex-debug.variableUseNaturalFormat": true,
     "cmake.sourceDirectory": "/Users/tybehnke/reit4841/UniQOS/third_party/stm32/Drivers/CMSIS/DSP/DSP_Lib_TestSuite"

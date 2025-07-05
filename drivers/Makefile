@@ -2,8 +2,6 @@
 TARGET = Firmware
 BOARD ?= dev
 
-include ../third_party/lvgl-master/lvgl.mk
-
 # Define Linker Script and Startup file based on BOARD
 ifeq ($(BOARD), pcb)
 LDSCRIPT = STM32H730XX_FLASH.ld
@@ -25,7 +23,7 @@ endif
 
 # Combine common and board-specific C definitions
 # These will override the C_DEFS in the sub-makefile
-COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DLV_LVGL_H_INCLUDE_SIMPLE -DDEBUG
+COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DDEBUG
 SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
 				  -I../../include/board \
                   -I../../include/drivers \
@@ -35,7 +33,6 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/drivers/display \
                   -I../../include/drivers/peripherals \
                   -I../../include/kernel \
-                  -I../../third_party/lvgl-master \
 
 TEST ?=
 
@@ -78,12 +75,10 @@ $(CSRCS) \
 ../../drivers/peripherals/lsm6dsvtr.c \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
-Core/Src/main.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
 Core/Src/gpio.c \
 Core/Src/dma.c \
-Core/Src/fmc.c \
 Core/Src/i2c.c \
 Core/Src/i2s.c \
 Core/Src/memorymap.c \
@@ -91,6 +86,7 @@ Core/Src/rtc.c \
 Core/Src/sdmmc.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
+Core/Src/spi.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
@@ -122,6 +118,7 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_delayblock.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd_ex.c \
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \

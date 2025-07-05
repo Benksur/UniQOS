@@ -8,7 +8,7 @@
 #ifndef INC_LCD_CONTROLLER_H_
 #define INC_LCD_CONTROLLER_H_
 
-#include "main.h"
+#include "spi.h"
 
 /* FMC */
 
@@ -26,9 +26,6 @@ extern  SPI_HandleTypeDef ST7789_SPI_PORT;
 
 #define ST7789_Select() HAL_GPIO_WritePin(ST7789_CS_PORT, ST7789_CS_PIN, GPIO_PIN_RESET)
 #define ST7789_UnSelect() HAL_GPIO_WritePin(ST7789_CS_PORT, ST7789_CS_PIN, GPIO_PIN_SET)
-
-
-
 
  void     LCD_IO_Init(void);
  void     LCD_IO_WriteMultipleData(uint16_t *pData, uint32_t Size);

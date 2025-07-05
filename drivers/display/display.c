@@ -99,89 +99,109 @@ static const uint8_t font5x7[96][5] = {
     {0x00, 0x00, 0x00, 0x00, 0x00}  // DEL
 };
 
-static int16_t abs16(int16_t x) {
+static int16_t abs16(int16_t x)
+{
     return x < 0 ? -x : x;
 }
 
-static void swap16(uint16_t *a, uint16_t *b) {
+static void swap16(uint16_t *a, uint16_t *b)
+{
     uint16_t temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void display_init(void) {
+void display_init(void)
+{
     ST7789V_Init();
 }
 
-void display_fill(uint16_t colour) {
+void display_fill(uint16_t colour)
+{
     uint16_t x, y;
     ST7789V_SetAddressWindow(0, 0, ST7789V_LCD_PIXEL_WIDTH - 1, ST7789V_LCD_PIXEL_HEIGHT - 1);
-    ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t*)NULL, 0);
-    
-    for (y = 0; y < ST7789V_LCD_PIXEL_HEIGHT; y++) {
-        for (x = 0; x < ST7789V_LCD_PIXEL_WIDTH; x++) {
+    ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+
+    for (y = 0; y < ST7789V_LCD_PIXEL_HEIGHT; y++)
+    {
+        for (x = 0; x < ST7789V_LCD_PIXEL_WIDTH; x++)
+        {
             LCD_IO_WriteData(colour);
         }
     }
 }
 
-void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour) {
+void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour)
+{
     uint16_t i, j;
     uint16_t x_end = x + width - 1;
     uint16_t y_end = y + height - 1;
-    
-    if (x >= ST7789V_LCD_PIXEL_WIDTH || y >= ST7789V_LCD_PIXEL_HEIGHT) return;
-    if (x_end >= ST7789V_LCD_PIXEL_WIDTH) x_end = ST7789V_LCD_PIXEL_WIDTH - 1;
-    if (y_end >= ST7789V_LCD_PIXEL_HEIGHT) y_end = ST7789V_LCD_PIXEL_HEIGHT - 1;
-    
+
+    if (x >= ST7789V_LCD_PIXEL_WIDTH || y >= ST7789V_LCD_PIXEL_HEIGHT)
+        return;
+    if (x_end >= ST7789V_LCD_PIXEL_WIDTH)
+        x_end = ST7789V_LCD_PIXEL_WIDTH - 1;
+    if (y_end >= ST7789V_LCD_PIXEL_HEIGHT)
+        y_end = ST7789V_LCD_PIXEL_HEIGHT - 1;
+
     ST7789V_SetAddressWindow(x, y, x_end, y_end);
-    ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t*)NULL, 0);
-    
-    for (j = y; j <= y_end; j++) {
-        for (i = x; i <= x_end; i++) {
+    ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+
+    for (j = y; j <= y_end; j++)
+    {
+        for (i = x; i <= x_end; i++)
+        {
             LCD_IO_WriteData(colour);
         }
     }
 }
 
-void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour) {
+void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour)
+{
     ST7789V_DrawHLine(colour, x, y, width);
     ST7789V_DrawHLine(colour, x, y + height - 1, width);
     ST7789V_DrawVLine(colour, x, y, height);
     ST7789V_DrawVLine(colour, x + width - 1, y, height);
 }
 
-void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour) {
+void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour)
+{
     int16_t dx = abs16(x1 - x0);
     int16_t dy = abs16(y1 - y0);
     int16_t sx = x0 < x1 ? 1 : -1;
     int16_t sy = y0 < y1 ? 1 : -1;
     int16_t err = dx - dy;
     int16_t e2;
-    
-    while (1) {
+
+    while (1)
+    {
         ST7789V_WritePixel(x0, y0, colour);
-        
-        if (x0 == x1 && y0 == y1) break;
-        
+
+        if (x0 == x1 && y0 == y1)
+            break;
+
         e2 = 2 * err;
-        if (e2 > -dy) {
+        if (e2 > -dy)
+        {
             err -= dy;
             x0 += sx;
         }
-        if (e2 < dx) {
+        if (e2 < dx)
+        {
             err += dx;
             y0 += sy;
         }
     }
 }
 
-void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour) {
+void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour)
+{
     int16_t x = radius;
     int16_t y = 0;
     int16_t err = 0;
-    
-    while (x >= y) {
+
+    while (x >= y)
+    {
         ST7789V_WritePixel(x0 + x, y0 + y, colour);
         ST7789V_WritePixel(x0 + y, y0 + x, colour);
         ST7789V_WritePixel(x0 - y, y0 + x, colour);
@@ -190,90 +210,126 @@ void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t col
         ST7789V_WritePixel(x0 - y, y0 - x, colour);
         ST7789V_WritePixel(x0 + y, y0 - x, colour);
         ST7789V_WritePixel(x0 + x, y0 - y, colour);
-        
-        if (err <= 0) {
+
+        if (err <= 0)
+        {
             y += 1;
-            err += 2*y + 1;
+            err += 2 * y + 1;
         }
-        if (err > 0) {
+        if (err > 0)
+        {
             x -= 1;
-            err -= 2*x + 1;
+            err -= 2 * x + 1;
         }
     }
 }
 
-void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour) {
+void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour)
+{
     int16_t x = radius;
     int16_t y = 0;
     int16_t err = 0;
-    
-    while (x >= y) {
-        ST7789V_DrawHLine(colour, x0 - x, y0 + y, 2*x + 1);
-        ST7789V_DrawHLine(colour, x0 - x, y0 - y, 2*x + 1);
-        ST7789V_DrawHLine(colour, x0 - y, y0 + x, 2*y + 1);
-        ST7789V_DrawHLine(colour, x0 - y, y0 - x, 2*y + 1);
-        
-        if (err <= 0) {
+
+    while (x >= y)
+    {
+        ST7789V_DrawHLine(colour, x0 - x, y0 + y, 2 * x + 1);
+        ST7789V_DrawHLine(colour, x0 - x, y0 - y, 2 * x + 1);
+        ST7789V_DrawHLine(colour, x0 - y, y0 + x, 2 * y + 1);
+        ST7789V_DrawHLine(colour, x0 - y, y0 - x, 2 * y + 1);
+
+        if (err <= 0)
+        {
             y += 1;
-            err += 2*y + 1;
+            err += 2 * y + 1;
         }
-        if (err > 0) {
+        if (err > 0)
+        {
             x -= 1;
-            err -= 2*x + 1;
+            err -= 2 * x + 1;
         }
     }
 }
 
-void display_draw_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour) {
+void display_draw_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour)
+{
     display_draw_line(x0, y0, x1, y1, colour);
     display_draw_line(x1, y1, x2, y2, colour);
     display_draw_line(x2, y2, x0, y0, colour);
 }
 
-void display_fill_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour) {
-    if (y0 > y1) { swap16(&y0, &y1); swap16(&x0, &x1); }
-    if (y1 > y2) { swap16(&y1, &y2); swap16(&x1, &x2); }
-    if (y0 > y1) { swap16(&y0, &y1); swap16(&x0, &x1); }
-    
+void display_fill_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour)
+{
+    if (y0 > y1)
+    {
+        swap16(&y0, &y1);
+        swap16(&x0, &x1);
+    }
+    if (y1 > y2)
+    {
+        swap16(&y1, &y2);
+        swap16(&x1, &x2);
+    }
+    if (y0 > y1)
+    {
+        swap16(&y0, &y1);
+        swap16(&x0, &x1);
+    }
+
     int16_t dx1 = x1 - x0;
     int16_t dy1 = y1 - y0;
     int16_t dx2 = x2 - x0;
     int16_t dy2 = y2 - y0;
-    
-    for (uint16_t y = y0; y <= y2; y++) {
+
+    for (uint16_t y = y0; y <= y2; y++)
+    {
         uint16_t xa = x0 + (y - y0) * dx1 / (dy1 ? dy1 : 1);
         uint16_t xb = x0 + (y - y0) * dx2 / (dy2 ? dy2 : 1);
-        
-        if (y > y1) {
+
+        if (y > y1)
+        {
             int16_t dx3 = x2 - x1;
             int16_t dy3 = y2 - y1;
             xa = x1 + (y - y1) * dx3 / (dy3 ? dy3 : 1);
         }
-        
-        if (xa > xb) swap16(&xa, &xb);
+
+        if (xa > xb)
+            swap16(&xa, &xb);
         ST7789V_DrawHLine(colour, xa, y, xb - xa + 1);
     }
 }
 
-void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t bg_colour, uint8_t size) {
-    if (c < 32 || c > 127) c = 32;
-    
+void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t bg_colour, uint8_t size)
+{
+    if (c < 32 || c > 127)
+        c = 32;
+
     const uint8_t *glyph = font5x7[c - 32];
     uint8_t i, j;
-    
-    for (i = 0; i < 5; i++) {
+
+    for (i = 0; i < 5; i++)
+    {
         uint8_t line = glyph[i];
-        for (j = 0; j < 8; j++) {
-            if (line & 0x01) {
-                if (size == 1) {
+        for (j = 0; j < 8; j++)
+        {
+            if (line & 0x01)
+            {
+                if (size == 1)
+                {
                     ST7789V_WritePixel(x + i, y + j, colour);
-                } else {
+                }
+                else
+                {
                     display_fill_rect(x + i * size, y + j * size, size, size, colour);
                 }
-            } else {
-                if (size == 1) {
+            }
+            else
+            {
+                if (size == 1)
+                {
                     ST7789V_WritePixel(x + i, y + j, bg_colour);
-                } else {
+                }
+                else
+                {
                     display_fill_rect(x + i * size, y + j * size, size, size, bg_colour);
                 }
             }
@@ -282,79 +338,97 @@ void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t
     }
 }
 
-void display_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t colour, uint16_t bg_colour, uint8_t size) {
+void display_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t colour, uint16_t bg_colour, uint8_t size)
+{
     uint16_t pos_x = x;
-    while (*str) {
+    while (*str)
+    {
         display_draw_char(pos_x, y, *str, colour, bg_colour, size);
         pos_x += 6 * size;
         str++;
     }
 }
 
-void display_set_rotation(uint8_t rotation) {
-    switch (rotation & 3) {
-        case 0:
-            ST7789V_SetOrientation(ST7789V_ORIENTATION_PORTRAIT);
-            break;
-        case 1:
-            ST7789V_SetOrientation(ST7789V_ORIENTATION_LANDSCAPE);
-            break;
-        case 2:
-            ST7789V_SetOrientation(ST7789V_ORIENTATION_LANDSCAPE_ROT180);
-            break;
-        case 3:
-            ST7789V_SetOrientation(ST7789V_ORIENTATION_PORTRAIT);
-            break;
+void display_set_rotation(uint8_t rotation)
+{
+    switch (rotation & 3)
+    {
+    case 0:
+        ST7789V_SetOrientation(ST7789V_ORIENTATION_PORTRAIT);
+        break;
+    case 1:
+        ST7789V_SetOrientation(ST7789V_ORIENTATION_LANDSCAPE);
+        break;
+    case 2:
+        ST7789V_SetOrientation(ST7789V_ORIENTATION_LANDSCAPE_ROT180);
+        break;
+    case 3:
+        ST7789V_SetOrientation(ST7789V_ORIENTATION_PORTRAIT);
+        break;
     }
 }
 
-uint16_t display_colour565(uint8_t r, uint8_t g, uint8_t b) {
+uint16_t display_colour565(uint8_t r, uint8_t g, uint8_t b)
+{
     return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 }
 
-void display_scroll_text(uint16_t x, uint16_t y, uint16_t width, const char *text, uint16_t colour, uint16_t bg_colour, uint8_t size, int16_t offset) {
+void display_scroll_text(uint16_t x, uint16_t y, uint16_t width, const char *text, uint16_t colour, uint16_t bg_colour, uint8_t size, int16_t offset)
+{
     display_fill_rect(x, y, width, 8 * size, bg_colour);
-    
+
     uint16_t text_len = 0;
     const char *ptr = text;
-    while (*ptr++) text_len++;
-    
+    while (*ptr++)
+        text_len++;
+
     uint16_t text_width = text_len * 6 * size;
     int16_t draw_x = x - offset;
-    
-    if (draw_x < x + width && draw_x + text_width > x) {
+
+    if (draw_x < x + width && draw_x + text_width > x)
+    {
         display_draw_string(draw_x, y, text, colour, bg_colour, size);
     }
 }
 
-void display_draw_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t percent, uint16_t fill_colour, uint16_t bg_colour) {
+void display_draw_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t percent, uint16_t fill_colour, uint16_t bg_colour)
+{
     display_draw_rect(x, y, width, height, COLOUR_WHITE);
     display_fill_rect(x + 1, y + 1, width - 2, height - 2, bg_colour);
-    
-    if (percent > 100) percent = 100;
+
+    if (percent > 100)
+        percent = 100;
     uint16_t fill_width = ((width - 2) * percent) / 100;
     display_fill_rect(x + 1, y + 1, fill_width, height - 2, fill_colour);
 }
 
-void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t colour) {
+void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t colour)
+{
     display_draw_rect(x, y + 2, 20, 10, colour);
     display_fill_rect(x + 20, y + 4, 2, 6, colour);
-    
-    if (percent > 100) percent = 100;
+
+    if (percent > 100)
+        percent = 100;
     uint16_t fill_width = (18 * percent) / 100;
-    
-    if (percent > 20) {
+
+    if (percent > 20)
+    {
         display_fill_rect(x + 1, y + 3, fill_width, 8, COLOUR_GREEN);
-    } else {
+    }
+    else
+    {
         display_fill_rect(x + 1, y + 3, fill_width, 8, COLOUR_RED);
     }
 }
 
-void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t colour) {
+void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t colour)
+{
     uint8_t i;
-    if (strength > 5) strength = 5;
-    
-    for (i = 0; i < 5; i++) {
+    if (strength > 5)
+        strength = 5;
+
+    for (i = 0; i < 5; i++)
+    {
         uint16_t bar_height = (i + 1) * 3;
         uint16_t bar_colour = (i < strength) ? colour : COLOUR_GRAY;
         display_fill_rect(x + i * 4, y + 15 - bar_height, 2, bar_height, bar_colour);
