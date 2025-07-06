@@ -5,8 +5,6 @@
         "rc7620.h": "c",
         "st7789v.h": "c",
         "stdint.h": "c",
-        "lvgl.h": "c",
-        "lv_st7789.h": "c",
         "ios": "c",
         "stdbool.h": "c",
         "nau88c22.h": "c",
@@ -15,7 +13,8 @@
         "array": "c",
         "string": "c",
         "string_view": "c",
-        "vector": "c"
+        "vector": "c",
+        "menu_bubble.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",

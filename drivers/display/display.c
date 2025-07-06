@@ -250,6 +250,119 @@ void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t col
     }
 }
 
+void display_draw_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint16_t colour)
+{
+    if (radius > width / 2) radius = width / 2;
+    if (radius > height / 2) radius = height / 2;
+    
+    ST7789V_DrawHLine(colour, x + radius, y, width - 2 * radius);
+    ST7789V_DrawHLine(colour, x + radius, y + height - 1, width - 2 * radius);
+    ST7789V_DrawVLine(colour, x, y + radius, height - 2 * radius);
+    ST7789V_DrawVLine(colour, x + width - 1, y + radius, height - 2 * radius);
+    
+    int16_t cx, cy;
+    int16_t r = radius;
+    int16_t xc = r;
+    int16_t yc = 0;
+    int16_t err = 0;
+    
+    while (xc >= yc)
+    {
+        // Top-left corner
+        cx = x + radius;
+        cy = y + radius;
+        if (cx - xc >= x && cy - yc >= y)
+            ST7789V_WritePixel(cx - xc, cy - yc, colour);
+        if (cx - yc >= x && cy - xc >= y)
+            ST7789V_WritePixel(cx - yc, cy - xc, colour);
+        
+        // Top-right corner
+        cx = x + width - radius - 1;
+        cy = y + radius;
+        if (cx + xc < x + width && cy - yc >= y)
+            ST7789V_WritePixel(cx + xc, cy - yc, colour);
+        if (cx + yc < x + width && cy - xc >= y)
+            ST7789V_WritePixel(cx + yc, cy - xc, colour);
+        
+        // Bottom-left corner
+        cx = x + radius;
+        cy = y + height - radius - 1;
+        if (cx - xc >= x && cy + yc < y + height)
+            ST7789V_WritePixel(cx - xc, cy + yc, colour);
+        if (cx - yc >= x && cy + xc < y + height)
+            ST7789V_WritePixel(cx - yc, cy + xc, colour);
+        
+        // Bottom-right corner
+        cx = x + width - radius - 1;
+        cy = y + height - radius - 1;
+        if (cx + xc < x + width && cy + yc < y + height)
+            ST7789V_WritePixel(cx + xc, cy + yc, colour);
+        if (cx + yc < x + width && cy + xc < y + height)
+            ST7789V_WritePixel(cx + yc, cy + xc, colour);
+        
+        if (err <= 0)
+        {
+            yc += 1;
+            err += 2 * yc + 1;
+        }
+        if (err > 0)
+        {
+            xc -= 1;
+            err -= 2 * xc + 1;
+        }
+    }
+}
+
+void display_fill_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint16_t colour)
+{
+    if (radius > width / 2) radius = width / 2;
+    if (radius > height / 2) radius = height / 2;
+    
+    display_fill_rect(x, y + radius, width, height - 2 * radius, colour);
+    display_fill_rect(x + radius, y, width - 2 * radius, radius, colour);
+    display_fill_rect(x + radius, y + height - radius, width - 2 * radius, radius, colour);
+
+    int16_t cx, cy;
+    int16_t r = radius;
+    int16_t xc = r;
+    int16_t yc = 0;
+    int16_t err = 0;
+    
+    while (xc >= yc)
+    {
+        cx = x + radius;
+        cy = y + radius;
+        ST7789V_DrawHLine(colour, cx - xc, cy - yc, xc - yc + 1);
+        ST7789V_DrawHLine(colour, cx - yc, cy - xc, yc + 1);
+        
+        cx = x + width - radius - 1;
+        cy = y + radius;
+        ST7789V_DrawHLine(colour, cx + yc, cy - xc, xc - yc + 1);
+        ST7789V_DrawHLine(colour, cx, cy - yc, yc + 1);
+
+        cx = x + radius;
+        cy = y + height - radius - 1;
+        ST7789V_DrawHLine(colour, cx - xc, cy + yc, xc - yc + 1);
+        ST7789V_DrawHLine(colour, cx - yc, cy + xc, yc + 1);
+        
+        cx = x + width - radius - 1;
+        cy = y + height - radius - 1;
+        ST7789V_DrawHLine(colour, cx + yc, cy + xc, xc - yc + 1);
+        ST7789V_DrawHLine(colour, cx, cy + yc, yc + 1);
+        
+        if (err <= 0)
+        {
+            yc += 1;
+            err += 2 * yc + 1;
+        }
+        if (err > 0)
+        {
+            xc -= 1;
+            err -= 2 * xc + 1;
+        }
+    }
+}
+
 void display_draw_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour)
 {
     display_draw_line(x0, y0, x1, y1, colour);

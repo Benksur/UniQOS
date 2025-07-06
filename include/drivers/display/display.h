@@ -13,7 +13,7 @@
 #define COLOUR_CYAN      0x07FF
 #define COLOUR_MAGENTA   0xF81F
 #define COLOUR_GRAY      0x7BEF
-#define COLOUR_ORANGE    0xFD20
+#define COLOUR_ORANGE    0xFC20
 
 typedef struct {
     uint16_t x;
@@ -34,6 +34,8 @@ void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
 void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour);
 void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour);
 void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour);
+void display_draw_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint16_t colour);
+void display_fill_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint16_t colour);
 void display_draw_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour);
 void display_fill_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour);
 void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t bg_colour, uint8_t size);

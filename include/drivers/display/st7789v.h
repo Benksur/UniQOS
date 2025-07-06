@@ -1,13 +1,4 @@
-/**
-  ******************************************************************************
-  * @file    st7789v.h
-  * @author  Modified for ST7789V
-  * @brief   This file contains all the functions prototypes for the st7789v.c
-  *          driver.
-  ******************************************************************************
-  */ 
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __ST7789V_H
 #define __ST7789V_H
 
@@ -15,35 +6,22 @@
  extern "C" {
 #endif 
 
-/* Includes ------------------------------------------------------------------*/
+
 #include <stdio.h>
 #include "LCD_Controller.h"
 
-/** @defgroup ST7789V_Exported_Constants ST7789V Exported Constants
-  * @{
-  */
-/**
-  * @brief  ST7789V ID  
-  */
+
 #define  ST7789V_ID    0x85
 
-/** 
-  * @brief  ST7789V Size  
-  */
 #define  ST7789V_LCD_PIXEL_WIDTH    ((uint16_t)240)
 #define  ST7789V_LCD_PIXEL_HEIGHT   ((uint16_t)320)
 
-/**
- *  @brief LCD_OrientationTypeDef
- *  Possible values of Display Orientation
- */
-#define ST7789V_ORIENTATION_PORTRAIT         ((uint32_t)0x00) /* Portrait orientation choice of LCD screen  */
-#define ST7789V_ORIENTATION_LANDSCAPE        ((uint32_t)0x01) /* Landscape orientation choice of LCD screen */
-#define ST7789V_ORIENTATION_LANDSCAPE_ROT180 ((uint32_t)0x02) /* Landscape rotated 180° orientation choice of LCD screen */
 
-/** 
-  * @brief  ST7789V Registers  
-  */
+#define ST7789V_ORIENTATION_PORTRAIT         ((uint32_t)0x00) 
+#define ST7789V_ORIENTATION_LANDSCAPE        ((uint32_t)0x01) 
+#define ST7789V_ORIENTATION_LANDSCAPE_ROT180 ((uint32_t)0x02) 
+
+
 #define ST7789V_NOP             0x00
 #define ST7789V_SWRESET         0x01
 #define ST7789V_RDDID           0x04
@@ -123,13 +101,8 @@
 
 #define ST7789V_TEON            0x35
 #define ST7789V_TEOFF           0x34
-/**
-  * @}
-  */
 
-/** @defgroup ST7789V_Exported_Functions ST7789V Exported Functions
-  * @{
-  */ 
+
 void     ST7789V_Init(void);
 void     ST7789V_SetOrientation(uint32_t orientation);
 uint16_t ST7789V_ReadID(void);
@@ -153,7 +126,7 @@ void     ST7789V_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_
 uint16_t ST7789V_GetLcdPixelWidth(void);
 uint16_t ST7789V_GetLcdPixelHeight(void);
 
-/* LCD IO functions */
+
 extern void     LCD_IO_Init(void);
 extern void     LCD_IO_WriteMultipleData(uint16_t *pData, uint32_t Size);
 extern void     LCD_IO_WriteReg(uint8_t Reg);
@@ -161,12 +134,9 @@ extern void     LCD_IO_WriteData(uint16_t RegValue);
 extern uint16_t LCD_IO_ReadData(void);
 extern void     LCD_IO_Delay(uint32_t delay);
 
-/**
-  * @}
-  */ 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ST7789V_H */
+#endif
