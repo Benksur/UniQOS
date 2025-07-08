@@ -60,6 +60,12 @@ TARGET := test_microsd
 else ifeq ($(TEST), keypad)
 TEST_FILE_PATH := ../../tests/test_keypad.c
 TARGET := test_keypad
+else ifeq ($(TEST), imu)
+TEST_FILE_PATH := ../../tests/test_imu.c
+TARGET := test_imu
+else ifeq ($(TEST), vib)
+TEST_FILE_PATH := ../../tests/test_vib.c
+TARGET := test_vib
 else
 $(error Invalid TEST specified: $(TEST))
 endif
