@@ -4,9 +4,9 @@ BOARD ?= dev
 
 # Define Linker Script and Startup file based on BOARD
 ifeq ($(BOARD), pcb)
-LDSCRIPT = STM32H730XX_FLASH.ld
-STARTUP_FILE = startup_stm32h730xx.s
-BOARD_C_DEF = -DSTM32H730xx
+LDSCRIPT = STM32H733XG_FLASH.ld
+STARTUP_FILE = startup_stm32h733xx.s
+BOARD_C_DEF = -DSTM32H733xx
 else ifeq ($(BOARD), dev)
 LDSCRIPT = STM32H753XX_FLASH.ld
 STARTUP_FILE = startup_stm32h753xx.s
@@ -54,6 +54,12 @@ TARGET := test_terminal
 else ifeq ($(TEST), display)
 TEST_FILE_PATH := ../../tests/test_st7789v.c
 TARGET := test_display
+else ifeq ($(TEST), microsd)
+TEST_FILE_PATH := ../../tests/test_microsd.c
+TARGET := test_microsd
+else ifeq ($(TEST), keypad)
+TEST_FILE_PATH := ../../tests/test_keypad.c
+TARGET := test_keypad
 else
 $(error Invalid TEST specified: $(TEST))
 endif
@@ -125,8 +131,17 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
-Core/Src/system_stm32h7xx.c
-
+Core/Src/system_stm32h7xx.c \
+Core/Src/main.c \
+FATFS/App/fatfs.c \
+FATFS/Target/bsp_driver_sd.c \
+FATFS/Target/sd_diskio.c \
+FATFS/Target/fatfs_platform.c \
+Middlewares/Third_Party/FatFs/src/diskio.c \
+Middlewares/Third_Party/FatFs/src/ff.c \
+Middlewares/Third_Party/FatFs/src/ff_gen_drv.c \
+Middlewares/Third_Party/FatFs/src/option/syscall.c \
+Middlewares/Third_Party/FatFs/src/option/ccsbcs.c
 # $(info AFLAGS=$(AFLAGS))
 
 all clean:
