@@ -1,148 +1,53 @@
 
+#include <string.h>
+#include <stdio.h>
 #include "gpio.h"
+#include "stm32_config.h"
+#include "main.h"
 
-void SystemClock_Config(void);
-void Error_Handler(void);
-static void MPU_Config(void);
+void read_button(GPIO_TypeDef *port, int pin, char *name) {
+    // placeholders for actual button logic
+    if (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET) {
+      printf("got press on %s", name);
+    }
+}
 
 
 int main(void)
 {
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* Configure the system clock */
   SystemClock_Config();
 
-
-  /* Initialize all configured peripherals */
   MX_GPIO_Init();
 
   while (1)
   {
-
+    read_button(PB_HASH_GPIO_Port, PB_HASH_Pin, "PB_HASH");
+    read_button(PB_1_GPIO_Port, PB_1_Pin, "PB_1");
+    read_button(PB_2_GPIO_Port, PB_2_Pin, "PB_2");
+    read_button(PB_3_GPIO_Port, PB_3_Pin, "PB_3");
+    read_button(PB_4_GPIO_Port, PB_4_Pin, "PB_4");
+    read_button(PB_5_GPIO_Port, PB_5_Pin, "PB_5");
+    read_button(PB_6_GPIO_Port, PB_6_Pin, "PB_6");
+    read_button(PB_7_GPIO_Port, PB_7_Pin, "PB_7");
+    read_button(PB_8_GPIO_Port, PB_8_Pin, "PB_8");
+    read_button(PB_9_GPIO_Port, PB_9_Pin, "PB_9");
+    read_button(PB_MENU_L_GPIO_Port, PB_MENU_L_Pin, "PB_MENU_L");
+    read_button(PB_MENU_R_GPIO_Port, PB_MENU_R_Pin, "PB_MENU_R");
+    read_button(PB_PWR_GPIO_Port, PB_PWR_Pin, "PB_PWR");
+    read_button(PB_VOL_DOWN_GPIO_Port, PB_VOL_DOWN_Pin, "PB_VOL_DOWN");
+    read_button(PB_VOL_UP_GPIO_Port, PB_VOL_UP_Pin, "PB_VOL_UP");
+    read_button(PB_HANG_GPIO_Port, PB_HANG_Pin, "PB_HANG");
+    read_button(PB_CALL_GPIO_Port, PB_CALL_Pin, "PB_CALL");
+    read_button(PB_DPAD_UP_GPIO_Port, PB_DPAD_UP_Pin, "PB_DPAD_UP");
+    read_button(PB_DPAD_DOWN_GPIO_Port, PB_DPAD_DOWN_Pin, "PB_DPAD_DOWN");
+    read_button(PB_DPAD_RIGHT_GPIO_Port, PB_DPAD_RIGHT_Pin, "PB_DPAD_RIGHT");
+    read_button(PB_DPAD_LEFT_GPIO_Port, PB_DPAD_LEFT_Pin, "PB_DPAD_LEFT");
+    read_button(PB_DPAD_SELECT_GPIO_Port, PB_DPAD_SELECT_Pin, "PB_DPAD_SELECT");
+    read_button(PB_STAR_GPIO_Port, PB_STAR_Pin, "PB_STAR");
+    read_button(PB_0_GPIO_Port, PB_0_Pin, "PB_0");
   }
 
 }
-
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-
-  /** Supply configuration update enable
-  */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
-
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
-
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = 64;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 12;
-  RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
-  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV1;
-
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
- /* MPU Configuration */
-
-void MPU_Config(void)
-{
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
-
-  /* Disables the MPU */
-  HAL_MPU_Disable();
-
-  /** Initializes and configures the Region and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-  MPU_InitStruct.SubRegionDisable = 0x87;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  /* Enables the MPU */
-  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
-}
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
-}
-
-#ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
-{
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
-}
-#endif /* USE_FULL_ASSERT */
