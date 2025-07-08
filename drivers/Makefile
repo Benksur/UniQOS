@@ -66,6 +66,9 @@ TARGET := test_imu
 else ifeq ($(TEST), vib)
 TEST_FILE_PATH := ../../tests/test_vib.c
 TARGET := test_vib
+else ifeq ($(TEST), leds)
+TEST_FILE_PATH := ../../tests/test_leds.c
+TARGET := test_leds
 else
 $(error Invalid TEST specified: $(TEST))
 endif
