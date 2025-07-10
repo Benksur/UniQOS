@@ -114,4 +114,7 @@
 
 uint8_t lsm6dsv_init(void);
 
+uint8_t lsm6dsv_read_reg(uint8_t reg_addr, uint8_t *reg_data);
+uint8_t lsm6dsv_write_reg(uint8_t reg_addr, uint8_t reg_data);
+
 #endif

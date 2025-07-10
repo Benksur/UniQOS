@@ -69,6 +69,9 @@ TARGET := test_vib
 else ifeq ($(TEST), leds)
 TEST_FILE_PATH := ../../tests/test_leds.c
 TARGET := test_leds
+else ifeq ($(TEST), batt)
+TEST_FILE_PATH := ../../tests/test_batt.c
+TARGET := test_batt
 else
 $(error Invalid TEST specified: $(TEST))
 endif
@@ -87,7 +90,7 @@ $(CSRCS) \
 ../../drivers/modem/modem.c \
 ../../drivers/modem/at_commands.c \
 ../../drivers/modem/rc7620_api.c \
-../../drivers/peripherals/lsm6dsvtr.c \
+../../drivers/peripherals/lsm6dsv.c \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
 Core/Src/syscalls.c \

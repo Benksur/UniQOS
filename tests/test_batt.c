@@ -5,7 +5,8 @@
 #include "i2c.h"
 #include "stm32_config.h"
 #include "main.h"
-#include "lsm6dsv.h"
+#include "bq27441.h"
+#include "mcp73871.h"
 
 int main(void)
 {
@@ -17,13 +18,9 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
 
-  uint8_t databuff;
-  uint8_t databuff2;
+  enum MCP73871_States status = mcp73871_status();
   while (1)
   {
-    lsm6dsv_read_reg(0x0f, &databuff);
-    HAL_Delay(1000);
-    lsm6dsv_read_reg(0x0f, &databuff2);
     HAL_Delay(1000);
   }
 
