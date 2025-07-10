@@ -17,13 +17,25 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
 
-  uint8_t databuff;
-  uint8_t databuff2;
+  uint8_t databuff, databuff2;
+  HAL_StatusTypeDef ret;
   while (1)
   {
-    lsm6dsv_read_reg(0x0f, &databuff);
+    ret = lsm6dsv_read_reg(LSM6DSV_WHO_AM_I, &databuff); // returns 0b01110000 always
     HAL_Delay(1000);
-    lsm6dsv_read_reg(0x0f, &databuff2);
+    if (ret || databuff != 0b01110000){
+      printf("FAILED SOMEWHERE\n\r");
+      HAL_Delay(1);
+    }
+
+    ret = lsm6dsv_read_reg(LSM6DSV_OUT_TEMP_L, &databuff);
+    ret |= lsm6dsv_read_reg(LSM6DSV_OUT_TEMP_H, &databuff2);
+    if (ret){
+      printf("FAILED SOMEWHERE\n\r");
+      HAL_Delay(1);
+    }
+
+    printf("DONE!");
     HAL_Delay(1000);
   }
 

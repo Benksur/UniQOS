@@ -112,9 +112,16 @@
 #define LSM6DSV_FIFO_DATA_OUT_Z_L 0x7D
 #define LSM6DSV_FIFO_DATA_OUT_Z_H 0x7E
 
+// STATUS_REG bitmasks
+#define LSM6DSV_TSTAMP_END (1 << 7)
+#define LSM6DSV_OIS_DRDY (1 << 5)
+#define LSM6DSV_GDA_EIS (1 << 4)
+#define LSM6DSV_TDA (1 << 2)
+#define LSM6DSV_GFA (1 << 1)
+#define LSM6DSV_XLDA (1 << 0)
+
 uint8_t lsm6dsv_init(void);
 
+uint8_t lsm6dsv_write_reg(uint8_t reg_addr, uint8_t *reg_data, uint16_t data_size);
 uint8_t lsm6dsv_read_reg(uint8_t reg_addr, uint8_t *reg_data);
-uint8_t lsm6dsv_write_reg(uint8_t reg_addr, uint8_t reg_data);
-
 #endif
