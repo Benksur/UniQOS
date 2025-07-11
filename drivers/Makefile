@@ -144,7 +144,6 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 Core/Src/system_stm32h7xx.c \
-Core/Src/main.c \
 FATFS/App/fatfs.c \
 FATFS/Target/bsp_driver_sd.c \
 FATFS/Target/sd_diskio.c \
