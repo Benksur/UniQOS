@@ -98,7 +98,6 @@ $(CSRCS) \
 # we are overwriting the C_SOURCES in the generated stm makefile
 STM32_BASE_SOURCES := \
 Core/Src/gpio.c \
-Core/Src/dma.c \
 Core/Src/i2c.c \
 Core/Src/i2s.c \
 Core/Src/memorymap.c \

@@ -10,7 +10,7 @@
 // Need to match Counter Period in WS2812_TIM Period in IOC
 // calculated by: (ABP2 Timer Clocks MHZ/0.8) - 1
 // e.g. for 272MHZ ABP2 Timer Clock -> (272/0.8) - 1 = 339
-#define BIT_TOTAL_PERIOD (339)   
+#define BIT_TOTAL_PERIOD (htim5.Init.Period)   
 
 // 2/3 BIT_TOTAL_PERIOD and 1/3 Respectively
 #define LED_PIN_HIGH_TIME_1 ((BIT_TOTAL_PERIOD*2)/3) 
