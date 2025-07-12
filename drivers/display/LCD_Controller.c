@@ -60,30 +60,24 @@ void LCD_IO_Init(void)
 void LCD_IO_WriteReg(uint8_t Reg)
 {
 	ST7789_Select();
-    uint16_t cmd2 = Reg;
-	HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&cmd2, 1, HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&Reg, 1, HAL_MAX_DELAY);
 	ST7789_UnSelect();
 }
 
 void LCD_IO_WriteData8(uint8_t data)
 {
 	ST7789_Select();
-    uint16_t data2 = data|(1<<8);
-	HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&data2, 1, HAL_MAX_DELAY);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+	HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&data, 1, HAL_MAX_DELAY);
 	ST7789_UnSelect();
 }
 
 void LCD_IO_WriteData16(uint16_t data)
 {
     ST7789_Select();
-
-    uint16_t high_chunk = ((data >> 8) & 0xFF) | (1 << 8);
-    uint16_t low_chunk = (data & 0xFF) | (1 << 8); 
-
-    HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&high_chunk, 1, HAL_MAX_DELAY);
-
-    HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&low_chunk, 1, HAL_MAX_DELAY);
-    
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+    HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t*)&data, 2, HAL_MAX_DELAY);
     ST7789_UnSelect();
 }
 

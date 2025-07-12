@@ -109,8 +109,6 @@ extern SPI_HandleTypeDef hspi4;
 #define MOB_WAKE_GPIO_Port GPIOB
 #define MOB_PWR_Pin GPIO_PIN_2
 #define MOB_PWR_GPIO_Port GPIOB
-#define DISP_D12_Pin GPIO_PIN_15
-#define DISP_D12_GPIO_Port GPIOE
 #define DISP_BL_Pin GPIO_PIN_10
 #define DISP_BL_GPIO_Port GPIOB
 #define MOB_RST_Pin GPIO_PIN_11

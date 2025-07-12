@@ -2,7 +2,7 @@
 TARGET = Firmware
 BOARD ?= dev
 
-# Define Linker Script and Startup file based on BOARD
+# Define linker and startup file based on BOARD
 ifeq ($(BOARD), pcb)
 LDSCRIPT = STM32H733XG_FLASH.ld
 STARTUP_FILE = startup_stm32h733xx.s
@@ -76,9 +76,8 @@ else
 $(error Invalid TEST specified: $(TEST))
 endif
 
-# Make sure these sources match makefile in third_party/stm32
-# add syscalls.c and $(TEST_FILE_PATH)
-SUBMAKE_C_SOURCES := \
+# Custom driver sources - files specific to project
+CUSTOM_DRIVER_SOURCES := \
 $(TEST_FILE_PATH) \
 $(CSRCS) \
 ../../drivers/display/st7789v.c \
@@ -93,8 +92,11 @@ $(CSRCS) \
 ../../drivers/peripherals/lsm6dsv.c \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
-Core/Src/syscalls.c \
-Core/Src/sysmem.c \
+
+
+# copy and pasted from third_party/stm32 makefile. this NEEDS to be redefined because 
+# we are overwriting the C_SOURCES in the generated stm makefile
+STM32_BASE_SOURCES := \
 Core/Src/gpio.c \
 Core/Src/dma.c \
 Core/Src/i2c.c \
@@ -104,7 +106,6 @@ Core/Src/rtc.c \
 Core/Src/sdmmc.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
-Core/Src/spi.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
@@ -123,11 +124,6 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2c_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_exti.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nor.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sram.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_nand.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sdram.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2s.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_i2s_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_rtc.c \
@@ -136,7 +132,6 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_delayblock.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd_ex.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_mmc_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
@@ -144,7 +139,9 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 Core/Src/system_stm32h7xx.c \
-Core/Src/main.c \
+Core/Src/spi.c \
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c \
 FATFS/App/fatfs.c \
 FATFS/Target/bsp_driver_sd.c \
 FATFS/Target/sd_diskio.c \
@@ -154,10 +151,13 @@ Middlewares/Third_Party/FatFs/src/ff.c \
 Middlewares/Third_Party/FatFs/src/ff_gen_drv.c \
 Middlewares/Third_Party/FatFs/src/option/syscall.c \
 Middlewares/Third_Party/FatFs/src/option/ccsbcs.c
+
+# Combined sources for passing to third_party makefile
+ALL_C_SOURCES := $(STM32_BASE_SOURCES) $(CUSTOM_DRIVER_SOURCES)
 # $(info AFLAGS=$(AFLAGS))
 
 all clean:
-	$(MAKE) -C ../third_party/stm32 $@ TARGET="$(TARGET)" C_SOURCES="$(SUBMAKE_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build" 
+	$(MAKE) -C ../third_party/stm32 $@ TARGET="$(TARGET)" C_SOURCES="$(ALL_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build" 
 
 flash: all
 	STM32_Programmer_CLI -c port=SWD -w ../build/$(TARGET).bin 0x08000000 -v -rst

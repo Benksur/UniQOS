@@ -42,34 +42,34 @@ void ST7789V_Init(void)
   ST7789V_WriteReg(ST7789V_GCTRL, parameter, 1);
 
   /* VCOM Setting */
-  parameter[0] = 0x19;
+  parameter[0] = 0x20;
   ST7789V_WriteReg(ST7789V_VCOMS, parameter, 1);
 
   /* LCM Control */
   parameter[0] = 0x2C;
   ST7789V_WriteReg(ST7789V_LCMCTRL, parameter, 1);
 
-  /* VDV and VRH Command Enable */
-  parameter[0] = 0x01;
-  parameter[1] = 0xC3;
-  ST7789V_WriteReg(ST7789V_VDVVRHEN, parameter, 2);
+  // /* VDV and VRH Command Enable */
+  // parameter[0] = 0x01;
+  // parameter[1] = 0xFF;
+  // ST7789V_WriteReg(ST7789V_VDVVRHEN, parameter, 2);
 
-  /* VRH Set */
-  parameter[0] = 0x12;
-  ST7789V_WriteReg(ST7789V_VRHS, parameter, 1);
+  // /* VRH Set */
+  // parameter[0] = 0x12;
+  // ST7789V_WriteReg(ST7789V_VRHS, parameter, 1);
 
-  /* VDV Set */
-  parameter[0] = 0x20;
-  ST7789V_WriteReg(ST7789V_VDVS, parameter, 1);
+  // /* VDV Set */
+  // parameter[0] = 0x20;
+  // ST7789V_WriteReg(ST7789V_VDVS, parameter, 1);
 
   /* Frame Rate Control */
-  parameter[0] = 0x00;
+  parameter[0] = 0x02;
   ST7789V_WriteReg(ST7789V_FRCTRL2, parameter, 1);
 
-  /* Power Control 1 */
-  parameter[0] = 0xA4;
-  parameter[1] = 0xA1;
-  ST7789V_WriteReg(ST7789V_PWCTRL1, parameter, 2);
+  // /* Power Control 1 */
+  // parameter[0] = 0xA4;
+  // parameter[1] = 0xA1;
+  // ST7789V_WriteReg(ST7789V_PWCTRL1, parameter, 2);
 
   /* Positive Voltage Gamma Control */
   parameter[0] = 0xD0;
