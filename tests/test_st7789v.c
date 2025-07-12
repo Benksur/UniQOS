@@ -116,27 +116,27 @@ int main(void)
   while (1)
   {
       HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LED for visual feedback
-    //   current_rainbow_color = GetNextRainbowColor();
-    //   LCD_Fill(current_rainbow_color, 0, 0, 240, 320);
+      current_rainbow_color = GetNextRainbowColor();
+      LCD_Fill(current_rainbow_color, 0, 0, 240, 320);
       
-    LCD_Fill(0xFFFF, 0, 0, 240, 320);
-    HAL_Delay(1000);
+    // LCD_Fill(0xFFFF, 0, 0, 240, 320);
+    // HAL_Delay(1000);
     
-    LCD_Fill(0x0000, 0, 0, 240, 30);
+    // LCD_Fill(0x0000, 0, 0, 240, 30);
     
-    LCD_Fill(0x0000, 0, 60, 240, 30);
-    LCD_Fill(0x0000, 0, 120, 240, 30);
-    LCD_Fill(0x0000, 0, 180, 240, 30);
-    LCD_Fill(0x0000, 0, 240, 240, 30);
-    LCD_Fill(0x0000, 0, 300, 240, 20);
+    // LCD_Fill(0x0000, 0, 60, 240, 30);
+    // LCD_Fill(0x0000, 0, 120, 240, 30);
+    // LCD_Fill(0x0000, 0, 180, 240, 30);
+    // LCD_Fill(0x0000, 0, 240, 240, 30);
+    // LCD_Fill(0x0000, 0, 300, 240, 20);
     
-    HAL_Delay(1000);
+    // HAL_Delay(1000);
 
-    LCD_Fill(0x0000, 30, 0, 30, 320);
-    LCD_Fill(0x0000, 90, 0, 30, 320);
-    LCD_Fill(0x0000, 150, 0, 30, 320);
-    LCD_Fill(0x0000, 210, 0, 30, 320);
-    HAL_Delay(1000);
+    // LCD_Fill(0x0000, 30, 0, 30, 320);
+    // LCD_Fill(0x0000, 90, 0, 30, 320);
+    // LCD_Fill(0x0000, 150, 0, 30, 320);
+    // LCD_Fill(0x0000, 210, 0, 30, 320);
+    // HAL_Delay(1000);
   }
 }
 
