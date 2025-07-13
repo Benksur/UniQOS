@@ -8,6 +8,7 @@ typedef struct {
     uint16_t text_colour;
     uint16_t fg_colour;
     uint16_t accent_colour;
+    uint16_t grid_colour;
 } Theme;
 
 extern Theme current_theme;

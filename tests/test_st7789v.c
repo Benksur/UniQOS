@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "gpio.h"
 #include "spi.h"
+#include "tile.h"
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -18,6 +19,17 @@ void LCD_Fill(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t width, ui
     uint32_t total_pixels = (uint32_t)width * height;
     for (uint32_t i = 0; i < total_pixels; i++) {
         LCD_IO_WriteData16(RGBCode);
+    }
+}
+
+void draw_grid(void) {
+    for (int i = 0; i < 9 * 8; i++) {
+        int tx = i % 8;
+        int ty = i / 8;
+        int px, py;
+        tile_to_pixels(tx, ty, &px, &py);
+        display_draw_vertical_line(px + 29, py , py + 30, 0x39c7);
+        display_draw_horizontal_line(px, py + 30, px + 30, 0x39c7);
     }
 }
 
@@ -40,13 +52,14 @@ int main(void)
   LCD_Fill(0x05F5, 0, 295, 240, 25);
   theme_set_dark();
   screen_init(&menu_page);
+  // draw_grid();
   
   while (1)
   {
       HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
       menu_page.handle_input(0, 0, 0);
-      menu_page.draw();
-      HAL_Delay(500);  // Reduced delay for faster cycling
+      screen_tick();
+      HAL_Delay(200);  // Reduced delay for faster cycling
       
   }
 }

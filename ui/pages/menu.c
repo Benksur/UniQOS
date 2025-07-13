@@ -1,10 +1,21 @@
 #include "menu.h"
 #include "screen.h"
+#include "display.h"
 #include "input.h"
 #include "tile.h"
 #include "menu_row.h"
 
 static int selected_index = 0;
+
+static const char* menu_items[] = {
+    "Phone",
+    "SMS",
+    "Contacts",
+    "Clock",
+    "Calculator",
+    "Calendar",
+    "Settings"
+};
 
 static const char* icon_files[] = {
     "phone.dat",
@@ -50,61 +61,35 @@ static void navigate_to_page(int index) {
 
 
 static void draw(void) {
-    // Draw all rows, but only even rows will be processed by draw_menu_row
-    for (int i = 0; i < TILE_ROWS; i++) {
-        draw_menu_row(i, i == selected_index);
+    for (int i = 0; i < TILE_ROWS * TILE_ROWS; i++) {
+        int tx = i % TILE_COLS;
+        int ty = i / TILE_COLS;
+        if (tx) continue;
+        draw_menu_row(ty, ty == selected_index, menu_items[ty/2]);
     }
 }
 
 static void draw_tile(int tile_x, int tile_y) {
-
+    if (tile_x == 0) {
+        int base_row = (tile_y % 2 == 0) ? tile_y : tile_y - 1;
+        draw_menu_row(base_row, base_row == selected_index, menu_items[base_row/2]);
+    }
 }
 
 static void handle_input(int event_type, int x, int y) {
-    // Cycle through all even rows (0, 2, 4, 6)
+    int old_selected_index = selected_index;
     selected_index += 2;
     if (selected_index >= TILE_ROWS || selected_index % 2 != 0) {
         selected_index = 0;
     }
-    // int old_selected_index = selected_index;
-    
-    // switch (event_type) {
-    //     case INPUT_UP:
-    //         if (selected_index >= 4) {
-    //             selected_index -= 4;
-    //         }
-    //         break;
-            
-    //     case INPUT_DOWN:
-    //         if (selected_index + 4 < NUM_ITEMS) {
-    //             selected_index += 4;
-    //         }
-    //         break;
-            
-    //     case INPUT_LEFT:
-    //         if (selected_index % 4 > 0) {
-    //             selected_index--;
-    //         }
-    //         break;
-            
-    //     case INPUT_RIGHT:
-    //         if (selected_index % 4 < 3 && selected_index + 1 < NUM_ITEMS) {
-    //             selected_index++;
-    //         }
-    //         break;
-            
-    //     case INPUT_SELECT:
-    //         navigate_to_page(selected_index);
-    //         break;
-            
-    //     case INPUT_BACK:
-    //         // do nothing, since menu is root
-    //         break;
-    // }
-    // if (old_selected_index != selected_index) {
-    //     mark_tile_dirty(old_selected_index % 4, old_selected_index / 4);
-    //     mark_tile_dirty(selected_index % 4, selected_index / 4);
-    // }
+
+    if (old_selected_index != selected_index) {
+        mark_tile_dirty(0, old_selected_index);
+        mark_tile_dirty(0, old_selected_index + 1);
+
+        mark_tile_dirty(0, selected_index);
+        mark_tile_dirty(0, selected_index + 1);
+    }
 }
 
 Page menu_page = {

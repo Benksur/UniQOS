@@ -17,7 +17,10 @@
         "menu_bubble.h": "c",
         "menu.h": "c",
         "stdio.h": "c",
-        "theme.h": "c"
+        "theme.h": "c",
+        "screen.h": "c",
+        "display.h": "c",
+        "tile.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
