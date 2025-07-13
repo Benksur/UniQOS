@@ -104,6 +104,7 @@ $(CSRCS) \
 ../../drivers/peripherals/lsm6dsv.c \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
+../../drivers/peripherals/sdcard.c \
 
 
 # copy and pasted from third_party/stm32 makefile. this NEEDS to be redefined because 
