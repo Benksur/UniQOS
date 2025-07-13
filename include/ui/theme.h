@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef struct {
-    uint16_t bg_color;
+    uint16_t bg_colour;
     uint16_t text_colour;
     uint16_t fg_colour;
     uint16_t accent_colour;

@@ -33,6 +33,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/drivers/display \
                   -I../../include/ui \
                   -I../../include/ui/pages \
+                  -I../../include/ui/components \
                   -I../../include/drivers/peripherals \
                   -I../../include/kernel \
 
@@ -91,6 +92,8 @@ $(CSRCS) \
 ../../ui/theme.c \
 ../../ui/tile.c \
 ../../ui/pages/default.c \
+../../ui/pages/menu.c \
+../../ui/components/menu_row.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \

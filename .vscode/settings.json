@@ -15,7 +15,9 @@
         "string_view": "c",
         "vector": "c",
         "menu_bubble.h": "c",
-        "stdio.h": "c"
+        "menu.h": "c",
+        "stdio.h": "c",
+        "theme.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
