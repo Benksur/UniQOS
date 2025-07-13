@@ -120,8 +120,18 @@
 #define LSM6DSV_GFA (1 << 1)
 #define LSM6DSV_XLDA (1 << 0)
 
+typedef struct {
+    float ax, ay, az;   // Acceleration in g
+    float gx, gy, gz;   // Gyroscope in dps
+    float temp;         // Temperature in °C
+} lsm6dsv_data_t;
+
 uint8_t lsm6dsv_init(void);
 
-uint8_t lsm6dsv_write_reg(uint8_t reg_addr, uint8_t *reg_data, uint16_t data_size);
-uint8_t lsm6dsv_read_reg(uint8_t reg_addr, uint8_t *reg_data);
+uint8_t lsm6dsv_write_reg(uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
+uint8_t lsm6dsv_read_reg(uint8_t reg_addr, uint8_t *reg_data, uint16_t len);
+uint8_t lsm6dsv_get_gyro(float *gx, float *gy, float *gz);
+uint8_t lsm6dsv_get_accel(float *ax, float *ay, float *az);
+uint8_t lsm6dsv_get_temp(float *temp);
+uint8_t lsm6dsv_get_all(lsm6dsv_data_t *data);
 #endif

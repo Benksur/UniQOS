@@ -33,6 +33,8 @@ int main(void)
     uint32_t TotalSize, FreeSpace;
     char RW_Buffer[200];
 
+    // test code pulled from https://deepbluembedded.com/stm32-sdio-sd-card-example-fatfs-tutorial/#stm32-sdio-4bit-example
+
     //------------------[ Mount The SD Card ]--------------------
     FR_Status = f_mount(&FatFs, SDPath, 1);
     if (FR_Status != FR_OK)
