@@ -5,13 +5,13 @@ Theme current_theme;
 void theme_set_light(void) {
     current_theme.bg_color        = 0xFFFF;
     current_theme.text_colour     = 0x0000; 
-    current_theme.fg_colour       = 0xFC20;
-    current_theme.accent_colour   = 0x881f; 
+    current_theme.fg_colour       = 0x05F5;
+    current_theme.accent_colour   = 0xffe0; 
 }
 
 void theme_set_dark(void) {
     current_theme.bg_color        = 0x0000;
     current_theme.text_colour     = 0xFFFF;
-    current_theme.fg_colour       = 0xFC20;
-    current_theme.accent_colour   = 0x881f;
+    current_theme.fg_colour       = 0x05F5;
+    current_theme.accent_colour   = 0xffe0;
 }

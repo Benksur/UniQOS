@@ -1,5 +1,8 @@
 #include "st7789v.h"
-#include "tim.h"
+#include "display.h"
+#include "theme.h"
+#include "screen.h"
+#include "default.h"
 #include "gpio.h"
 #include "spi.h"
 
@@ -103,7 +106,7 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
-  MX_TIM2_Init();
+  // MX_TIM2_Init();
   MX_SPI4_Init();
 //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 //   htim2.Instance->CCR3 = 80;
@@ -111,13 +114,19 @@ int main(void)
   
 
   HAL_Delay(1000);
-  uint16_t current_rainbow_color;
-  LCD_Fill(0xFFFF, 0, 0, 240, 320);
+  // uint16_t current_rainbow_color;
+  LCD_Fill(0x0000, 0, 0, 240, 320);
+  // display_draw_vertical_line(30, 25, 55, 0x39c7);
+  LCD_Fill(0x05F5, 0, 0, 240, 25);
+  LCD_Fill(0x05F5, 0, 295, 240, 25);
+  theme_set_dark();
+  screen_init(&default_page);
+  
   while (1)
   {
       HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Toggle LED for visual feedback
-      current_rainbow_color = GetNextRainbowColor();
-      LCD_Fill(current_rainbow_color, 0, 0, 240, 320);
+      // current_rainbow_color = GetNextRainbowColor();
+      // LCD_Fill(current_rainbow_color, 0, 0, 240, 320);
       
     // LCD_Fill(0xFFFF, 0, 0, 240, 320);
     // HAL_Delay(1000);

@@ -12,7 +12,7 @@ typedef struct {
 
 extern Theme current_theme;
 
-void theme_set_default(void);
+void theme_set_light(void);
 void theme_set_dark(void);
 
 #endif

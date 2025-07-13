@@ -126,7 +126,7 @@ void display_fill(uint16_t colour)
     {
         for (x = 0; x < ST7789V_LCD_PIXEL_WIDTH; x++)
         {
-            LCD_IO_WriteData(colour);
+            LCD_IO_WriteData16(colour);
         }
     }
 }
@@ -151,7 +151,7 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
     {
         for (i = x; i <= x_end; i++)
         {
-            LCD_IO_WriteData(colour);
+            LCD_IO_WriteData16(colour);
         }
     }
 }
@@ -162,6 +162,24 @@ void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
     ST7789V_DrawHLine(colour, x, y + height - 1, width);
     ST7789V_DrawVLine(colour, x, y, height);
     ST7789V_DrawVLine(colour, x + width - 1, y, height);
+}
+
+void display_draw_vertical_line(uint16_t x, uint16_t y0, uint16_t y1, uint16_t colour)
+{
+    if (y0 > y1) swap16(&y0, &y1);
+    if (x > ST7789V_LCD_PIXEL_WIDTH || y0 > ST7789V_LCD_PIXEL_HEIGHT || y1 > ST7789V_LCD_PIXEL_HEIGHT)
+        return;
+
+    ST7789V_DrawVLine(colour, x, y0, y1 - y0 + 1);
+}
+
+void display_draw_horizontal_line(uint16_t x0, uint16_t y, uint16_t x1, uint16_t colour)
+{
+    if (x0 > x1) swap16(&x0, &x1);
+    if (y > ST7789V_LCD_PIXEL_HEIGHT || x0 > ST7789V_LCD_PIXEL_WIDTH || x1 > ST7789V_LCD_PIXEL_WIDTH)
+        return;
+
+    ST7789V_DrawHLine(colour, x0, y, x1 - x0 + 1);
 }
 
 void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour)

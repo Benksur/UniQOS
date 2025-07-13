@@ -1,11 +1,11 @@
 #ifndef TILE_H
 #define TILE_H
 
-#define TILE_WIDTH 60
-#define TILE_HEIGHT 60
-#define NAVBAR_HEIGHT 20
-#define TILE_ROWS 5
-#define TILE_COLS 4
+#define TILE_WIDTH 30
+#define TILE_HEIGHT 30
+#define NAVBAR_HEIGHT 25
+#define TILE_ROWS 9
+#define TILE_COLS 8
 
 static inline void tile_to_pixels(int tx, int ty, int* out_x, int* out_y) {
     *out_x = tx * TILE_WIDTH;

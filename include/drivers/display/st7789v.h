@@ -126,15 +126,6 @@ void     ST7789V_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_
 uint16_t ST7789V_GetLcdPixelWidth(void);
 uint16_t ST7789V_GetLcdPixelHeight(void);
 
-
-extern void     LCD_IO_Init(void);
-extern void     LCD_IO_WriteMultipleData(uint16_t *pData, uint32_t Size);
-extern void     LCD_IO_WriteReg(uint8_t Reg);
-extern void     LCD_IO_WriteData(uint16_t RegValue);
-extern uint16_t LCD_IO_ReadData(void);
-extern void     LCD_IO_Delay(uint32_t delay);
-
-
 #ifdef __cplusplus
 }
 #endif

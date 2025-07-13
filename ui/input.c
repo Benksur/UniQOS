@@ -2,6 +2,16 @@
 #include "input.h"
 #include "screen.h"
 
+#define PIN_KEY_UP        0x01 // Placeholder for actual pin number
+#define PIN_KEY_DOWN      0x02 // Placeholder for actual pin number
+#define PIN_KEY_SELECT    0x03 // Placeholder for actual pin number
+
+bool is_button_pressed(int pin) {
+    // Placeholder for actual GPIO read logic
+    // This should return true if the button connected to the pin is pressed
+    return false; // Replace with actual logic
+}
+
 bool read_keypad(InputEvent* out_event) {
     // placeholders for actual button logic
     if (is_button_pressed(PIN_KEY_UP)) {
