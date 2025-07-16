@@ -13,7 +13,7 @@ enum Icons {
 uint8_t sdcard_init(void);
 uint8_t sdcard_get_space(uint32_t *free_space);
 uint8_t sdcard_list_files(char *path);
-uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff);
+uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff, uint32_t len);
 
 
 #endif

@@ -25,11 +25,11 @@ int main(void)
     //     printf("failed");
     // }
     
-
+    uint8_t buffer[128];
     sdcard_init();
     // sdcard_get_space(uint32_t *free_space);
     sdcard_list_files("/");
-    sdcard_get_icon("logo")
+    sdcard_get_icon(LOGO, buffer, 128);
     // FATFS FatFs;
     // FIL Fil;
     // FRESULT FR_Status;

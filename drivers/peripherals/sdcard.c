@@ -99,7 +99,7 @@ uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff, uint32_t len)
     char folder_name[MAX_FILENAME_LEN];
     char filename[MAX_FILENAME_LEN];
     char path[MAX_FILENAME_LEN * 2 + 1];
-    uint32_t bytes_read;
+    UINT bytes_read;
 
     FRESULT res;
     int ret;
