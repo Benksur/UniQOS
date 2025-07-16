@@ -29,7 +29,7 @@ int main(void)
     sdcard_init();
     // sdcard_get_space(uint32_t *free_space);
     sdcard_list_files("/");
-
+    sdcard_get_icon("logo")
     // FATFS FatFs;
     // FIL Fil;
     // FRESULT FR_Status;

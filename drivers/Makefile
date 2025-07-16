@@ -36,6 +36,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/ui/components \
                   -I../../include/drivers/peripherals \
                   -I../../include/kernel \
+                  -I../../third_party/minIni/dev \
 
 TEST ?=
 
@@ -105,6 +106,7 @@ $(CSRCS) \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
 ../../drivers/peripherals/sdcard.c \
+../../third_party/minIni/dev/minIni.c \
 
 
 # copy and pasted from third_party/stm32 makefile. this NEEDS to be redefined because 

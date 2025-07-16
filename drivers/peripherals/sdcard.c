@@ -6,20 +6,20 @@
 #include "stm32_config.h"
 #include "main.h"
 #include "errornum.h"
+#include "sdcard.h"
 
 // Main FatFS instance
 FATFS FatFs;
-
-// Current open file
 FIL File;
-
-// Custer info
 DWORD clusters;
+
+const char config_file[] = "config.ini";
 
 uint8_t sdcard_init(void)
 {
     FRESULT ret;
 
+    // may need to play with the card detect pin
     ret = f_mount(&FatFs, SDPath, 1);
     if (ret != FR_OK)
     {
@@ -87,9 +87,62 @@ uint8_t sdcard_list_files(char *path)
         if ((ret != FR_OK) || (fno.fname[0] == 0))
             break;
 
-        // Do something with the names put into string list? 
+        // Do something with the names put into string list?
         // fno.fname until null char
         // other file info here
     }
+    return 0;
+}
+
+uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff, uint32_t len)
+{
+    char folder_name[MAX_FILENAME_LEN];
+    char filename[MAX_FILENAME_LEN];
+    char path[MAX_FILENAME_LEN * 2 + 1];
+    uint32_t bytes_read;
+
+    FRESULT res;
+    int ret;
+
+    // I believe these are case sensitive be warned
+    ini_gets("Icons", "Folder", DEFAULT_ICON_FOLDER, folder_name, MAX_FILENAME_LEN, config_file);
+
+    switch (icon)
+    {
+    case LOGO:
+        ini_gets("Icons", "Logo", "uniq_logo", filename, MAX_FILENAME_LEN, config_file);
+        break;
+
+    default:
+        return EINVAL;
+    }
+
+    ret = snprintf(path, sizeof(path), "%s/%s", folder_name, filename);
+    if (ret < 0 || ret >= sizeof(path))
+    {
+        return E2BIG;
+    }
+
+    res = f_open(&File, path, FA_READ);
+    if (res != FR_OK)
+    {
+        return ENOENT;
+    }
+
+    if (f_size(&File) > sizeof(buff)) 
+    {
+        f_close(&File);
+        return E2BIG;
+    }
+
+    res = f_read(&File, buff, len, &bytes_read);
+    if (res != FR_OK)
+    {
+        f_close(&File);
+        return EIO;
+    }
+
+    f_close(&File);
+
     return 0;
 }
