@@ -51,8 +51,8 @@
 #define BQ27441_CNTL_EXIT_CFGUPDATE 0x0043
 #define BQ27441_CNTL_EXIT_RESIM 0x0044
 
-/* 
- * Extended Data Commands 
+/*
+ * Extended Data Commands
  * NOTE: the following are 2 bytes wide
  * OP_CONFIG, DESIGN_CAPACITY, BLOCK_DATA
  */
@@ -64,6 +64,9 @@
 #define BQ27441_CMD_BLOCK_DATA_CHECKSUM 0x60
 #define BQ27441_CMD_BLOCK_DATA_CONTROL 0x61
 
-uint8_t bq27441drzr_init(void);
+uint8_t bq27441_init(void);
+uint8_t bq27441_write_reg(uint8_t reg_addr, uint16_t *reg_data);
+uint8_t bq27441_read_reg(uint8_t reg_addr, uint16_t *reg_data);
+uint8_t bq27441_read_ctrl_reg(uint16_t subcmd, uint16_t *response);
 
 #endif
