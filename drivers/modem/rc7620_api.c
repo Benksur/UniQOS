@@ -1,8 +1,6 @@
 #include "rc7620_api.h"
 #include "stm32h7xx_hal.h"
 
-static uint8_t curr_function_mode = 0;
-
 uint8_t modem_write_command(const char *command)
 {
     if (HAL_UART_Transmit(&MODEM_UART_HANDLE, (uint8_t *)command, strlen(command), 2000) != HAL_OK)

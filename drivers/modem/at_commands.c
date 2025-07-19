@@ -238,7 +238,7 @@ uint8_t at_get_phonebook_info(phonebook_t *phonebook)
     char response[100];
     uint8_t ret = 0;
     int matches = 0;
-    uint16_t index_min, index_max, nlength, tlength;
+    uint16_t index_min, index_max, nlength, tlength, glength, slength, elength;
 
     ret |= modem_send_command("AT+CPBR=?", response, sizeof(response), TIMEOUT_30S) || !modem_check_response_ok(response);
 
@@ -249,7 +249,7 @@ uint8_t at_get_phonebook_info(phonebook_t *phonebook)
     }
 
     matches = sscanf(response, "+CPBR: (%hd-%hd),%hd,%hd,%hd,%hd,%hd",
-                     &index_min, &index_max, &nlength, &tlength);
+                     &index_min, &index_max, &nlength, &tlength, &glength, &slength, &elength);
 
     if (matches != 4)
     {
@@ -270,7 +270,7 @@ uint8_t at_get_phonebook_entry_range(uint16_t index1, uint16_t index2, phonebook
     char response[100];
     char cmd[24];
     uint8_t ret = 0;
-    int matches = 0;
+    // int matches = 0;
 
     // TODO: verfy index vals
 
@@ -301,7 +301,7 @@ uint8_t at_write_phonebook_entry_index(uint16_t index, phonebook_entry_t *entry)
     char response[100];
     char cmd[100];
     uint8_t ret = 0;
-    int matches = 0;
+    // int matches = 0;
 
     // TODO: verfy index vals
 
@@ -309,7 +309,7 @@ uint8_t at_write_phonebook_entry_index(uint16_t index, phonebook_entry_t *entry)
     if (snprintf(cmd, sizeof(cmd), "AT+CPBW=%hd,%s,%hd,%s",
                  entry->index, entry->number, entry->type, entry->text) < 0)
     {
-        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBW=%s,%hd,%s\"\r\n",
+        DEBUG_PRINTF("ERROR: in creating string \"AT+CPBW=%hd,%s,%hd,%s\"\r\n",
                      entry->index, entry->number, entry->type, entry->text);
         return EINVAL;
     }
@@ -334,7 +334,7 @@ uint8_t at_delete_phonebook_entry(uint16_t index)
     char response[100];
     char cmd[100];
     uint8_t ret = 0;
-    int matches = 0;
+    // int matches = 0;
 
     // TODO: verfy index vals
 
@@ -361,7 +361,7 @@ uint8_t at_write_phonebook_entry_first(phonebook_entry_t *entry)
     char response[100];
     char cmd[100];
     uint8_t ret = 0;
-    int matches = 0;
+    // int matches = 0;
 
     // TODO: verfy index vals
 
@@ -391,7 +391,6 @@ uint8_t at_write_phonebook_entry_first(phonebook_entry_t *entry)
 uint8_t at_check_cpin(void)
 {
     char response[32];
-    char cmd[32];
     uint8_t ret = 0;
 
     ret |= modem_send_command("AT+CPIN?", response, sizeof(response), TIMEOUT_30S);
@@ -443,7 +442,6 @@ uint8_t at_get_modem_info(modeminfo_t *modem_info)
 uint8_t at_check_net_reg(void)
 {
     char response[32];
-    char cmd[32];
     uint8_t ret = 0;
 
     ret |= modem_send_command("AT+CREG?", response, sizeof(response), TIMEOUT_30S);
@@ -457,7 +455,6 @@ uint8_t at_check_net_reg(void)
 uint8_t at_check_eps_net_reg(void)
 {
     char response[32];
-    char cmd[32];
     uint8_t ret = 0;
 
     ret |= modem_send_command("AT+CEREG?", response, sizeof(response), TIMEOUT_30S);
@@ -754,7 +751,7 @@ uint8_t at_set_echo(bool echo)
 
     if (snprintf(cmd, sizeof(cmd), "ATE%d;", (uint8_t)echo) < 0)
     {
-        DEBUG_PRINTF("ERROR: in creating string \"ATE%s\"\r\n", (uint8_t)echo);
+        DEBUG_PRINTF("ERROR: in creating string \"ATE%d\"\r\n", (uint8_t)echo);
         return EINVAL;
     }
 

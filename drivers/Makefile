@@ -50,8 +50,8 @@ else ifeq ($(TEST), codec)
 TEST_FILE_PATH := ../../tests/test_nau88c22.c
 TARGET := test_nau88c22
 else ifeq ($(TEST), mobile)
-TEST_FILE_PATH := ../../tests/test_rc7620.c
-TARGET := test_rc7620
+TEST_FILE_PATH := ../../tests/test_mobile.c
+TARGET := test_mobile
 else ifeq ($(TEST), terminal)
 TEST_FILE_PATH := ../../tests/test_terminal.c
 TARGET := test_terminal

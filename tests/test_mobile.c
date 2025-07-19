@@ -1,91 +1,64 @@
-
 #include <string.h>
 #include <stdio.h>
+#include "modem.h"
 #include "gpio.h"
-#include "i2c.h"
 #include "stm32_config.h"
-#include "bq27441.h"
-#include "mcp73871.h"
-
+#include "usart.h"
 
 void MPU_Config(void);
 void SystemClock_Config(void);
 
-char* enumstrings[] = {
-    "UNKNOWN",
-    "SHUTDOWN," 
-    "STANDBY",
-    "LOW_BATTERY_OUT",
-    "CHARGING",
-    "FAULT",
-    "CHARGE_COMPLETE"
-};
-
 int main(void)
 {
+    uint8_t status;
+    
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_USART1_UART_Init();
+    
+    modem_power_on();
+    // status = modem_init();
 
-  HAL_Init();
+    char response[128];
+    const uint32_t default_timeout = TIMEOUT_2S;
+    uint8_t ret = 0;
+    modeminfo_t modem_info;
+    HAL_StatusTypeDef res;
+    GPIO_PinState stat;
+     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+    
+    while(1) {
+    //DSR
+    stat = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8);
+    printf("%d", stat);
+    //RI
+    stat = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+    printf("%d", stat);
+    //DCD
+    stat = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_12);
+    printf("%d", stat);
+    //DTR
+    stat = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_13);
+    printf("%d", stat);
 
-  SystemClock_Config();
+    memset(response, 0, sizeof(response));
+    res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 100);
+    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT\r\n", 20, HAL_MAX_DELAY); 
+    res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+    
+    printf("%s, %d", response, res);
+        // test AT startup
+    // DEBUG_PRINTF("Sending: AT\r\n");
+    // ret |= modem_send_command("AT", response, sizeof(response), TIMEOUT_2S);
 
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-
-  uint16_t data;
-  uint8_t ret;
-
-  enum MCP73871_States status;
-  
-
-  while (1)
-  {
-    status = mcp73871_status();
-    printf("temp: %smV\n", enumstrings[status]);
-
-    ret = bq27441_read_reg(BQ27441_CMD_VOLTAGE, &data);
-    if (ret == 0)
-    {
-      printf("voltage: %dmV\n", data);
+    // if (ret || !modem_check_response_ok(response))
+    // {
+    //     DEBUG_PRINTF("Response: %s\r\n", response);
+    //     // return ret;
+    // }
     }
-    else
-    {
-      printf("bq27441_read_reg() failed: %d\n", ret);
-    }
-
-    ret = bq27441_read_reg(BQ27441_CMD_AVERAGE_CURRENT, &data);
-    if (ret == 0)
-    {
-      printf("voltage: %dmV\n", data);
-    }
-    else
-    {
-      printf("bq27441_read_reg() failed: %d\n", ret);
-    }
-
-    ret = bq27441_read_reg(BQ27441_CMD_STATE_OF_CHARGE, &data);
-    if (ret == 0)
-    {
-      printf("voltage: %dmV\n", data);
-    }
-    else
-    {
-      printf("bq27441_read_reg() failed: %d\n", ret);
-    }
-
-    ret = bq27441_read_ctrl_reg(BQ27441_CNTL_CONTROL_STATUS, &data);
-    if (ret == 0)
-    {
-      printf("temp: %d\n", data);
-    }
-    else
-    {
-      printf("bq27441_read_ctrl_reg() failed: %d\n", ret);
-    }
-
-
-    HAL_Delay(1000);
-
-  }
 }
 
 
