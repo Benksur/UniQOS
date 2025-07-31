@@ -38,51 +38,10 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/kernel \
                   -I../../third_party/minIni/dev \
 
-TEST ?=
 
-# Specify test file (TEST=blinky, codec, )
-ifeq ($(TEST), )
-# Ignore empty - no test
-else ifeq ($(TEST), blinky)
-TEST_FILE_PATH := ../../tests/test_blinky.c
-TARGET := test_blinky
-else ifeq ($(TEST), codec)
-TEST_FILE_PATH := ../../tests/test_nau88c22.c
-TARGET := test_nau88c22
-else ifeq ($(TEST), mobile)
-TEST_FILE_PATH := ../../tests/test_mobile.c
-TARGET := test_mobile
-else ifeq ($(TEST), terminal)
-TEST_FILE_PATH := ../../tests/test_terminal.c
-TARGET := test_terminal
-else ifeq ($(TEST), display)
-TEST_FILE_PATH := ../../tests/test_st7789v.c
-TARGET := test_display
-else ifeq ($(TEST), microsd)
-TEST_FILE_PATH := ../../tests/test_microsd.c
-TARGET := test_microsd
-else ifeq ($(TEST), keypad)
-TEST_FILE_PATH := ../../tests/test_keypad.c
-TARGET := test_keypad
-else ifeq ($(TEST), imu)
-TEST_FILE_PATH := ../../tests/test_imu.c
-TARGET := test_imu
-else ifeq ($(TEST), vib)
-TEST_FILE_PATH := ../../tests/test_vib.c
-TARGET := test_vib
-else ifeq ($(TEST), leds)
-TEST_FILE_PATH := ../../tests/test_leds.c
-TARGET := test_leds
-else ifeq ($(TEST), batt)
-TEST_FILE_PATH := ../../tests/test_batt.c
-TARGET := test_batt
-else
-$(error Invalid TEST specified: $(TEST))
-endif
 
-# Custom driver sources - files specific to project
+# Custom driver sources - files specific to project. filenames are relative to third_party/stm32 makefile
 CUSTOM_DRIVER_SOURCES := \
-$(TEST_FILE_PATH) \
 $(CSRCS) \
 ../../drivers/display/st7789v.c \
 ../../drivers/display/LCD_Controller.c \
@@ -107,6 +66,7 @@ $(CSRCS) \
 ../../drivers/peripherals/ws2812.c \
 ../../drivers/peripherals/sdcard.c \
 ../../third_party/minIni/dev/minIni.c \
+../../kernel/main.c 
 
 
 # copy and pasted from third_party/stm32 makefile. this NEEDS to be redefined because 
@@ -178,9 +138,7 @@ Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 
-# Combined sources for passing to third_party makefile
 ALL_C_SOURCES := $(STM32_BASE_SOURCES) $(CUSTOM_DRIVER_SOURCES)
-# $(info AFLAGS=$(AFLAGS))
 
 all clean:
 	$(MAKE) -C ../third_party/stm32 $@ TARGET="$(TARGET)" C_SOURCES="$(ALL_C_SOURCES)" LDSCRIPT=$(LDSCRIPT) ASM_SOURCES=$(STARTUP_FILE) C_DEFS="$(SUBMAKE_C_DEFS)" BUILD_DIR="../../build" 
