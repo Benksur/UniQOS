@@ -5,6 +5,25 @@ static uint8_t nau88c22_is_muted(uint8_t reg_addr);
 static uint8_t nau88c22_save_and_mute_all(nau88c22_codec_t *codec);
 static uint8_t nau88c22_restore_mute_state(nau88c22_codec_t *codec);
 
+// uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
+// {
+//     HAL_StatusTypeDef status;
+
+//     if (reg_data == NULL || reg_addr > LSM6DSV_FIFO_DATA_OUT_Z_H)
+//     {
+//         return EINVAL;
+//     }
+
+//     status = HAL_I2C_Mem_Write(&IMU_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, reg_addr, I2C_MEMADD_SIZE_8BIT, reg_data, 2, 1000);
+
+//     if (status != HAL_OK)
+//     {
+//         return EIO;
+//     }
+
+//     return 0;
+// }
+
 uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
 {
     uint8_t data[2];

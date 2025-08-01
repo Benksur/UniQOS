@@ -16,50 +16,66 @@ uint8_t modem_read_response(uint8_t *buffer, uint16_t max_len, uint32_t timeout)
     memset(buffer, 0, max_len);
     HAL_StatusTypeDef result = HAL_UART_Receive(&MODEM_UART_HANDLE, buffer, max_len - 1, timeout);
 
-    if (result == HAL_TIMEOUT)
+    if (result == HAL_TIMEOUT && buffer[0] == '\0')
     {
         DEBUG_PRINTF("ERROR: Timed out reading response\r\n");
         return ETIMEDOUT;
     }
-    else if (result != HAL_OK)
+    else if (result != HAL_OK && result != HAL_TIMEOUT)
     {
         DEBUG_PRINTF("ERROR: Error reading response\r\n");
         return EIO;
     }
 
+    // probably need more sanity checking in here
+
     return 0;
 }
 
-uint8_t modem_send_command(const char *command, char *response, uint16_t response_size, uint32_t read_timeout)
+uint8_t modem_send_command(const char *command, char *response, uint16_t response_size, uint32_t timeout)
 {
     char cmd_buffer[128]; // may need to dynamically allocate
     int cmd_len = snprintf(cmd_buffer, sizeof(cmd_buffer), "%s\r\n", command);
     uint8_t ret = 0;
+    uint32_t start_tick = HAL_GetTick();
+
     if (cmd_len < 0 || cmd_len >= sizeof(cmd_buffer))
     {
         DEBUG_PRINTF("ERROR: Bad Command Size\r\n");
         return E2BIG;
     }
 
-    DEBUG_PRINTF("Writing AT command: %s\r\n", cmd_buffer);
-    ret |= modem_write_command(cmd_buffer);
-    if (ret)
+    // clear RX
+    HAL_UART_Receive(&MODEM_UART_HANDLE, response, 100, 10);
+    // ret |= modem_write_command(cmd_buffer);
+    // if (ret)
+    // {
+    //     return ret;
+    // }
+
+    while (HAL_GetTick() - start_tick < timeout)
     {
-        return ret;
+        DEBUG_PRINTF("Writing AT command: %s\r\n", cmd_buffer);
+        ret |= modem_write_command(cmd_buffer);
+        if (ret)
+        {
+            return ret;
+        }
+
+        ret = modem_read_response((uint8_t *)response, response_size, 100);
+        if (ret == 0)
+        {
+            return ret;
+            DEBUG_PRINTF("Got AT command response: %s\r\n", response);
+        }
     }
-
-    // Do we need this delay?
-    HAL_Delay(100);
-
-    ret |= modem_read_response((uint8_t *)response, response_size, read_timeout);
-    DEBUG_PRINTF("Got AT command response: %s\r\n", response);
 
     return ret;
 }
 
 uint8_t modem_check_response_ok(const char *response)
 {
-    //may want to adjust
+    // may want to adjust
     return (strstr(response, "\r\nOK\r\n") != NULL);
 }
 
@@ -74,8 +90,10 @@ void modem_power_on(void)
 void modem_power_off(void)
 {
     char response[32];
+    HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, GPIO_PIN_RESET);
     modem_send_command("AT!POWERDOWN", response, sizeof(response), 2000);
     HAL_Delay(1000);
+    // HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, GPIO_PIN_SET);
 }
 
 uint8_t at_enter_module_pwd(char *password)

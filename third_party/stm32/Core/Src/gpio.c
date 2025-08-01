@@ -191,6 +191,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(UART_DSR_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PA11 PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PB_CALL_Pin */
   GPIO_InitStruct.Pin = PB_CALL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
