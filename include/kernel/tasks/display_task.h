@@ -7,18 +7,12 @@
 #include <stdbool.h>
 
 typedef enum {
-    DISPLAY_CMD_CLEAR,
-    DISPLAY_CMD_DRAW_TEXT,
-    DISPLAY_CMD_DRAW_BATTERY,
-    DISPLAY_CMD_DRAW_SIGNAL,
-    DISPLAY_CMD_SHOW_CALL
+    DISPLAY_HANDLE_INPUT,
 } display_cmd_t;
 
 typedef struct {
     display_cmd_t cmd;
-    uint16_t x;
-    uint16_t y;
-    char text[64];
+    void* data;
     uint8_t battery_percent;
     uint8_t signal_strength;
     RTC_TimeTypeDef time;
@@ -27,6 +21,6 @@ typedef struct {
 
 void display_task_main(void *pvParameters);
 void display_task_init(void);
-task_status_t display_send_command(display_cmd_t cmd, uint16_t x, uint16_t y, const char *text);
+task_status_t display_send_command(display_cmd_t cmd, void* data);
 
 #endif // DISPLAY_TASK_H_

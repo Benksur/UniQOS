@@ -18,9 +18,9 @@ void screen_set_page(Page* new_page) {
     current_page->draw();
 }
 
-void screen_handle_input(int event_type, int x, int y) {
+void screen_handle_input(int event_type) {
     if (current_page && current_page->handle_input) {
-        current_page->handle_input(event_type, x, y);
+        current_page->handle_input(event_type);
     }
 }
 
