@@ -19,7 +19,7 @@ static void draw_tile(int tile_x, int tile_y) {
     tile_to_pixels(tile_x, tile_y, &px, &py);
 }
 
-static void handle_input(int event_type, int x, int y) {}
+static void handle_input(int event_type) {}
 
 Page default_page = {
     .draw = draw,

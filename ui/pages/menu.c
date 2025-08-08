@@ -76,7 +76,7 @@ static void draw_tile(int tile_x, int tile_y) {
     }
 }
 
-static void handle_input(int event_type, int x, int y) {
+static void handle_input(int event_type) {
     int old_selected_index = selected_index;
     selected_index += 2;
     if (selected_index >= TILE_ROWS || selected_index % 2 != 0) {
