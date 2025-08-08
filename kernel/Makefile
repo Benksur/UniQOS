@@ -46,7 +46,6 @@ $(CSRCS) \
 ../../drivers/display/st7789v.c \
 ../../drivers/display/LCD_Controller.c \
 ../../drivers/display/display.c \
-../../ui/input.c \
 ../../ui/navbar.c \
 ../../ui/screen.c \
 ../../ui/theme.c \

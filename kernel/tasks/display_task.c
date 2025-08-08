@@ -5,6 +5,7 @@
 #include "task.h"
 #include "queue.h"
 #include "cmsis_os2.h"
+#include "pages/menu.h"
 #include <string.h>
 
 #define DISPLAY_TASK_STACK_SIZE 512
@@ -19,6 +20,8 @@ void display_task_main(void *pvParameters)
 
     display_init();
     display_fill(COLOUR_BLACK);
+    theme_set_dark();
+    screen_init(&menu_page);
 
     while (1)
     {
