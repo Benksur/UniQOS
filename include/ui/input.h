@@ -29,7 +29,4 @@ typedef enum {
     INPUT_KEYPAD_HASH,
 } input_event_t;
 
-void input_poll(void);
-void input_on_key(input_event_t event);
-
 #endif
