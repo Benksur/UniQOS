@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "ui/input.h"
+#include "input.h"
 
 // Function declarations
 void keypad_init(void);

@@ -31,6 +31,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/drivers/power \
                   -I../../include/drivers/modem \
                   -I../../include/drivers/display \
+                  -I../../include/drivers/peripherals \
                   -I../../include/ui \
                   -I../../include/ui/pages \
                   -I../../include/ui/components \
@@ -87,6 +88,7 @@ $(CSRCS) \
 ../../drivers/display/st7789v.c \
 ../../drivers/display/LCD_Controller.c \
 ../../drivers/display/display.c \
+../../drivers/peripherals/keypad.c \
 ../../ui/navbar.c \
 ../../ui/screen.c \
 ../../ui/theme.c \
