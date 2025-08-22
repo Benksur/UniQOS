@@ -2,19 +2,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "gpio.h"
+#include "tim.h"
 #include "keypad.h"
+#include "ws2812.h"
 
 void MPU_Config(void);
 void SystemClock_Config(void);
-
-// bool read_button(GPIO_TypeDef *port, int pin, char *name) {
-//     // placeholders for actual button logic
-//     if (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET) {
-//       printf("got press on %s", name);
-//       return true;
-//     }
-//     return false;
-// }
 
 
 int main(void)
@@ -26,44 +19,45 @@ int main(void)
   SystemClock_Config();
 
   MX_GPIO_Init();
+  MX_TIM5_Init();
   keypad_init();
+  ws2812_init();
 
-  uint8_t button_pressed = 0;
+  bool pressed = false;
+  uint8_t colour_index = 0;
+
+  ws2812_set_brightness(10);
+  ws2812_fill_led(0xFF, 0x00, 0x00);
+  ws2812_update_leds();
 
   while (1)
   {
-    // if (read_button(PB_HASH_GPIO_Port, PB_HASH_Pin, "PB_HASH")) break;
-    // if (read_button(PB_1_GPIO_Port, PB_1_Pin, "PB_1")) break;
-    // if (read_button(PB_2_GPIO_Port, PB_2_Pin, "PB_2")) break;
-    // if (read_button(PB_3_GPIO_Port, PB_3_Pin, "PB_3")) break;
-    // if (read_button(PB_4_GPIO_Port, PB_4_Pin, "PB_4")) break;
-    // if (read_button(PB_5_GPIO_Port, PB_5_Pin, "PB_5")) break;
-    // if (read_button(PB_6_GPIO_Port, PB_6_Pin, "PB_6")) break;
-    // if (read_button(PB_7_GPIO_Port, PB_7_Pin, "PB_7")) break;
-    // if (read_button(PB_8_GPIO_Port, PB_8_Pin, "PB_8")) break;
-    // if (read_button(PB_9_GPIO_Port, PB_9_Pin, "PB_9")) break;
-    // if (read_button(PB_MENU_L_GPIO_Port, PB_MENU_L_Pin, "PB_MENU_L")) break;
-    // if (read_button(PB_MENU_R_GPIO_Port, PB_MENU_R_Pin, "PB_MENU_R")) break;
-    // if (read_button(PB_PWR_GPIO_Port, PB_PWR_Pin, "PB_PWR")) break;
-    // if (read_button(PB_VOL_DOWN_GPIO_Port, PB_VOL_DOWN_Pin, "PB_VOL_DOWN")) break;
-    // if (read_button(PB_VOL_UP_GPIO_Port, PB_VOL_UP_Pin, "PB_VOL_UP")) break;
-    // if (read_button(PB_HANG_GPIO_Port, PB_HANG_Pin, "PB_HANG")) break;
-    // if (read_button(PB_CALL_GPIO_Port, PB_CALL_Pin, "PB_CALL")) break;
-    // if (read_button(PB_DPAD_UP_GPIO_Port, PB_DPAD_UP_Pin, "PB_DPAD_UP")) break;
-    // if (read_button(PB_DPAD_DOWN_GPIO_Port, PB_DPAD_DOWN_Pin, "PB_DPAD_DOWN")) break;
-    // if (read_button(PB_DPAD_RIGHT_GPIO_Port, PB_DPAD_RIGHT_Pin, "PB_DPAD_RIGHT")) break;
-    // if (read_button(PB_DPAD_LEFT_GPIO_Port, PB_DPAD_LEFT_Pin, "PB_DPAD_LEFT")) break;
-    // if (read_button(PB_DPAD_SELECT_GPIO_Port, PB_DPAD_SELECT_Pin, "PB_DPAD_SELECT")) break;
-    // if (read_button(PB_STAR_GPIO_Port, PB_STAR_Pin, "PB_STAR")) break;
-    // if (read_button(PB_0_GPIO_Port, PB_0_Pin, "PB_0")) break;
+
     keypad_update_states();
     for (int i = 0; i < 24; i++) {
       if (keypad_is_button_pressed(i)) {
-        button_pressed++;
+        pressed = true;
         break;
       }
     }
-    if (button_pressed > 5) break;
+    if (pressed) {
+      if (colour_index >= 2) colour_index = 0;
+      else colour_index++;
+      switch (colour_index) {
+        case 0:
+          ws2812_fill_led(0xFF, 0x00, 0x00);
+          break;
+        case 1:
+          ws2812_fill_led(0x00, 0xFF, 0x00);
+          break;
+        case 2:
+          ws2812_fill_led(0x00, 0x00, 0xFF);
+          break;
+      }
+      ws2812_update_leds();
+      
+      pressed = false;
+    }
     HAL_Delay(20);
   }
   

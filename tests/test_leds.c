@@ -94,6 +94,15 @@ void MPU_Config(void)
 
 }
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+
+  if (htim->Instance == TIM1)
+  {
+    HAL_IncTick();
+  }
+}
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
@@ -125,7 +134,7 @@ int main(void)
 
     while (1)
     {
-        ws2812_set_brightness(25);
+        ws2812_set_brightness(10);
         ws2812_fill_led(0xFF, 0x00, 0x00);
         ws2812_update_leds();
         HAL_Delay(2000);

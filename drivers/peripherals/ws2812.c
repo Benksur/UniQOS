@@ -24,6 +24,10 @@ void ws2812_update_leds(void)
 
     HAL_TIM_PWM_Start(WS2812_TIM, WS2812_TIM_CHANEL);
 
+    // Align to period and use update events for one bit per PWM period
+    __HAL_TIM_SET_COUNTER(WS2812_TIM, 0);
+    __HAL_TIM_CLEAR_FLAG(WS2812_TIM, TIM_FLAG_UPDATE);
+
     for (size_t i = 0; i < LED_BUFF_SIZE; i++)
     {
         uint8_t byte = scaled_buff[i];
@@ -33,16 +37,20 @@ void ws2812_update_leds(void)
 
             __HAL_TIM_SET_COMPARE(WS2812_TIM, WS2812_TIM_CHANEL, high_time);
 
-            // Wait for one PWM period
-            uint32_t start = __HAL_TIM_GET_COUNTER(WS2812_TIM);
-            while ((__HAL_TIM_GET_COUNTER(WS2812_TIM) - start) < BIT_TOTAL_PERIOD)
-                ;
+            // Wait exactly one PWM period
+            while (__HAL_TIM_GET_FLAG(WS2812_TIM, TIM_FLAG_UPDATE) == RESET) { }
+            __HAL_TIM_CLEAR_FLAG(WS2812_TIM, TIM_FLAG_UPDATE);
         }
     }
 
-    HAL_TIM_PWM_Stop(WS2812_TIM, WS2812_TIM_CHANEL);
+    // Drive line low for reset (>50us) while PWM is running
+    __HAL_TIM_SET_COMPARE(WS2812_TIM, WS2812_TIM_CHANEL, 0);
+    for (int i = 0; i < 80; i++) { // ~100us at 800kHz
+        while (__HAL_TIM_GET_FLAG(WS2812_TIM, TIM_FLAG_UPDATE) == RESET) { }
+        __HAL_TIM_CLEAR_FLAG(WS2812_TIM, TIM_FLAG_UPDATE);
+    }
 
-    HAL_Delay(1);
+    HAL_TIM_PWM_Stop(WS2812_TIM, WS2812_TIM_CHANEL);
 }
 
 uint8_t ws2812_set_brightness(uint8_t brightness)
