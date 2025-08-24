@@ -56,9 +56,35 @@ int main(void)
     //     }
     // }
 
-    nau88c22_mute_output(&codec, 0);
-    nau88c22_set_output_volume(&codec, 100, NAU_LSPKOUT_VOLUME, NAU_RSPKOUT_VOLUME);
-    nau88c22_set_output_volume(&codec, 100, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
+    // nau88c22_mute_output(&codec, 0);
+    // nau88c22_set_output_volume(&codec, 100, NAU_LSPKOUT_VOLUME, NAU_RSPKOUT_VOLUME);
+    // nau88c22_set_output_volume(&codec, 100, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
+
+    uint16_t lsp_reg = 0, rsp_reg = 0;
+    nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &lsp_reg);
+    nau88c22_read_reg(NAU_RSPKOUT_VOLUME, &rsp_reg);
+
+    lsp_reg &= ~(1 << 6); // Clear the mute bit
+    lsp_reg = (lsp_reg & ~0x3F) | 0x3F;
+    rsp_reg &= ~(1 << 6); // Clear the mute bit
+    rsp_reg = (rsp_reg & ~0x3F) | 0x3F;
+    rsp_reg |= 0x100;
+
+    nau88c22_write_reg(NAU_LSPKOUT_VOLUME, lsp_reg);
+    nau88c22_write_reg(NAU_RSPKOUT_VOLUME, rsp_reg);
+
+    HAL_Delay(100);
+
+    uint16_t check_reg = 0;
+    status = nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &check_reg);
+    if ((check_reg & 0x3F) == 0 || (check_reg & (1 << 6))) {
+        // Error setting volume - fast blink
+        for (int i = 0; i < 10; i++){
+            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+            HAL_Delay(20);
+        }
+    }
+
     
     while(1) {
 
