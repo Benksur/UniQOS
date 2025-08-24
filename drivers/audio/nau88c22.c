@@ -91,11 +91,13 @@ uint8_t nau88c22_init(nau88c22_codec_t *codec)
         {NAU_CLOCK2, 0x001},
         // {NAU_JACK_DETECT1, 0x040}, // disable now because jack detection is shit
         // {NAU_JACK_DETECT2, 0x021}, // toggle loudspeaker to headphones on jack detect
+        // for 44.1KHz sample rate
         // R = 9.408163070, f2 = 90.318MHz, f1 = 19.2/2 = 9.6MHz
         {NAU_PPL_N, 0x019},  // N of 9
-        {NAU_PPL_K1, 0x1A},  // 0.408163070
-        {NAU_PPL_K2, 0x039}, // 0.000000000
-        {NAU_PPL_K3, 0x0B0},
+        // fractional portion is 0x6872B0
+        {NAU_PPL_K1, 0x1A},  //highest 6 bits of fractional portion
+        {NAU_PPL_K2, 0x039}, // middle 9 bits of fractional portion
+        {NAU_PPL_K3, 0x0B0}, // lowest 9 bits of fractional portion
         {NAU_INPUT_CONTROL, 0x0B3}, // 0.65x microphone bias
         {NAU_OUTPUT_CONTROL, 0x002}, // May need to change, not sure how diff speak
         // PLL needs to be off until clock can be reduced
