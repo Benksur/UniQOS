@@ -1,70 +1,92 @@
 #include "display_task.h"
 #include "display.h"
 #include "input.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "cmsis_os2.h"
 #include "pages/menu.h"
 #include <string.h>
 
-#define DISPLAY_TASK_STACK_SIZE 512
-#define DISPLAY_QUEUE_SIZE 5
+struct DisplayTaskContext {
+    QueueHandle_t queue;
+};
 
-static TaskHandle_t display_task_handle = NULL;
-static QueueHandle_t display_queue = NULL;
+typedef void (*DisplayCmdHandler)(DisplayTaskContext* ctx, DisplayMessage* msg);
 
-void display_task_main(void *pvParameters)
-{
-    display_event_t event;
+/* ===== HANDLERS ===== */
+static void handle_input_event(DisplayTaskContext* ctx, DisplayMessage* msg) {
+    input_event_t* event = (input_event_t*)msg->data;
+    if (event) {
+        screen_handle_input(event);
+    }
+}
 
-    display_init();
+static void handle_set_page(DisplayTaskContext* ctx, DisplayMessage* msg) {
+    Page* page = (Page*)msg->data;
+    if (page) {
+        screen_set_page(page);
+    }
+}
+
+static void handle_clear_screen(DisplayTaskContext* ctx, DisplayMessage* msg) {
     display_fill(COLOUR_BLACK);
-    theme_set_dark();
-    screen_init(&menu_page);
+}
 
-    while (1)
-    {
-        if (xQueueReceive(display_queue, &event, pdMS_TO_TICKS(100)) == pdTRUE)
-        {
+static DisplayCmdHandler display_cmd_table[] = {
+    [DISPLAY_HANDLE_INPUT] = handle_input_event,
+    [DISPLAY_SET_PAGE] = handle_set_page,
+    [DISPLAY_CLEAR_SCREEN] = handle_clear_screen,
+};
 
-            switch (event.cmd)
-            {
-            case DISPLAY_HANDLE_INPUT:
-                screen_handle_input((input_event_t *)event.data);
-                break;
+static void dispatch_display_command(DisplayTaskContext* ctx, DisplayMessage* msg) {
+    if (msg->cmd < (sizeof(display_cmd_table) / sizeof(display_cmd_table[0]))) {
+        DisplayCmdHandler handler = display_cmd_table[msg->cmd];
+        if (handler) {
+            handler(ctx, msg);
+        }
+    }
+}
 
-            default:
-                break;
-            }
+static void display_task_main(void *pvParameters) {
+    DisplayTaskContext* ctx = (DisplayTaskContext*)pvParameters;
+    DisplayMessage msg;
+
+    // Task main loop - only handles messages and ticks
+    for(;;) {
+        if (xQueueReceive(ctx->queue, &msg, pdMS_TO_TICKS(100))) {
+            dispatch_display_command(ctx, &msg);
         }
         screen_tick();
     }
 }
 
-void display_task_init(void)
-{
-    display_queue = xQueueCreate(DISPLAY_QUEUE_SIZE, sizeof(display_event_t));
+DisplayTaskContext* DisplayTask_Init(void) {
+    static DisplayTaskContext display_ctx;
+    memset(&display_ctx, 0, sizeof(display_ctx));
 
-    xTaskCreate(display_task_main, "Display", DISPLAY_TASK_STACK_SIZE, NULL,
-                osPriorityNormal, &display_task_handle);
+    // Initialize hardware and state
+    display_init();
+    display_fill(COLOUR_BLACK);
+    theme_set_dark();
+    screen_init(&menu_page);
+
+    // Create queue
+    display_ctx.queue = xQueueCreate(5, sizeof(DisplayMessage));
+
+    // Create and start the task
+    osThreadAttr_t task_attr = {
+        .name = "DisplayTask",
+        .stack_size = 512,
+        .priority = osPriorityNormal
+    };
+    osThreadNew(display_task_main, &display_ctx, &task_attr);
+
+    return &display_ctx;
 }
 
-task_status_t display_send_command(display_cmd_t cmd, void *data)
-{
-    if (display_queue == NULL)
-    {
-        return TASK_ERROR;
-    }
+bool DisplayTask_PostCommand(DisplayTaskContext* ctx, DisplayCommand cmd, void* data) {
+    if (!ctx || !ctx->queue) return false;
 
-    display_event_t event = {0};
-    event.cmd = cmd;
-    event.data = data;
-
-    if (xQueueSend(display_queue, &event, pdMS_TO_TICKS(10)) == pdTRUE)
-    {
-        return TASK_OK;
-    }
-
-    return TASK_ERROR;
+    DisplayMessage msg = {
+        .cmd = cmd,
+        .data = data
+    };
+    return xQueueSend(ctx->queue, &msg, pdMS_TO_TICKS(10)) == pdTRUE;
 }
