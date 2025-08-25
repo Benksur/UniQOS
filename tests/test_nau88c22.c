@@ -43,8 +43,6 @@ int main(void)
 
     HAL_Delay(100);
 
-
-    
     while(1) {
 
         HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 7840, HAL_MAX_DELAY);

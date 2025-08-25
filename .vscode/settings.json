@@ -26,7 +26,8 @@
         "display_task.h": "c",
         "task_types.h": "c",
         "main.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "audio_task.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
