@@ -144,9 +144,7 @@ static void dispatch_audio_command(AudioTaskContext* ctx, AudioMessage* msg) {
     }
 }
 
-
-
-void audio_task_main(void *pvParameters) {
+static void audio_task_main(void *pvParameters) {
     AudioTaskContext* ctx = (AudioTaskContext*)pvParameters;
     AudioMessage msg;
 
@@ -157,7 +155,7 @@ void audio_task_main(void *pvParameters) {
     }
 }
 
-void audio_task_init(void) {
+AudioTaskContext* AudioTask_Init(void) {
     static AudioTaskContext audio_ctx;
     memset(&audio_ctx, 0, sizeof(audio_ctx));
 
@@ -180,4 +178,16 @@ void audio_task_init(void) {
         .priority = osPriorityNormal
     };
     osThreadNew(audio_task_main, &audio_ctx, &task_attr);
+
+    return &audio_ctx;
+}
+
+bool AudioTask_PostCommand(AudioTaskContext* ctx, AudioCommand cmd, void* data) {
+    if (!ctx || !ctx->queue) return false;
+
+    AudioMessage msg = {
+        .cmd = cmd,
+        .data = data
+    };
+    return xQueueSend(ctx->queue, &msg, 0) == pdTRUE;
 }

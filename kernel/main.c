@@ -12,11 +12,21 @@
 #include "usart.h"
 #include "gpio.h"
 #include "kernel.h"
+#include "stm32_config.h"
+#include "sm64_mario_boing.h"
 
 void SystemClock_Config(void);
 static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 
+void I2STestTask(void *argument)
+{
+  for (;;)
+  {
+    HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)audio, 7840, HAL_MAX_DELAY);
+    osDelay(2000); // 2 seconds delay
+  }
+}
 
 int main(void)
 {
@@ -37,18 +47,25 @@ int main(void)
   MX_SPI4_Init();
   MX_FATFS_Init();
 
-
   osKernelInitialize();
-  // dont want to use generated freertos init 
+  // dont want to use generated freertos init
   // MX_FREERTOS_Init();
   kernel_init();
+
+  osThreadAttr_t task_attr = {
+      .name = "TestTask",
+      .stack_size = 256,
+      .priority = osPriorityLow};
+  osThreadNew(I2STestTask, NULL, &task_attr);
+
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
-  while (1){}
+  while (1)
+  {
+  }
 }
-
 
 void SystemClock_Config(void)
 {
@@ -58,9 +75,11 @@ void SystemClock_Config(void)
   HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+  while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
+  {
+  }
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = 64;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -79,9 +98,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
@@ -116,9 +133,7 @@ void MPU_Config(void)
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
 }
-
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -128,7 +143,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
 }
-
 
 void Error_Handler(void)
 {
@@ -140,14 +154,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

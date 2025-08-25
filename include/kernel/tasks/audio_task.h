@@ -57,7 +57,7 @@ typedef struct {
     IAudioDriver_t* codec;
 } AudioTaskContext;
 
-void audio_task_main(void *pvParameters);
-void audio_task_init(void);
+AudioTaskContext* AudioTask_Init(void);
+bool AudioTask_PostCommand(AudioTaskContext* ctx, AudioCommand cmd, void* data);
 
 #endif
