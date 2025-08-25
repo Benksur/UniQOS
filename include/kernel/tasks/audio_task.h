@@ -54,7 +54,7 @@ typedef struct {
     AudioUserSettings settings;
     // msg queue and codec driver instances
     QueueHandle_t queue;
-    IAudioDriver_t* codec;
+    const IAudioDriver_t* codec;
 } AudioTaskContext;
 
 AudioTaskContext* AudioTask_Init(void);

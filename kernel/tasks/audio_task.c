@@ -8,20 +8,24 @@ typedef void (*AudioCmdHandler)(AudioTaskContext* ctx, AudioMessage* msg);
 /* ===== HANDLERS ===== */
 static void handle_volume_up(AudioTaskContext* ctx, AudioMessage* msg) {
     if (ctx->settings.selected_output == AUDIO_OUTPUT_SPK) {
-        if (ctx->settings.volume_speaker < 100) ctx->settings.volume_speaker += 5;
+        uint8_t v = ctx->settings.volume_speaker;
+        ctx->settings.volume_speaker = (v > 95) ? 100 : (uint8_t)(v + 5);
         ctx->codec->speaker.set_volume(ctx->settings.volume_speaker);
     } else {
-        if (ctx->settings.volume_headphones < 100) ctx->settings.volume_headphones += 5;
+        uint8_t v = ctx->settings.volume_headphones;
+        ctx->settings.volume_headphones = (v > 95) ? 100 : (uint8_t)(v + 5);
         ctx->codec->headphones.set_volume(ctx->settings.volume_headphones);
     }
 }
 
 static void handle_volume_down(AudioTaskContext* ctx, AudioMessage* msg) {
     if (ctx->settings.selected_output == AUDIO_OUTPUT_SPK) {
-        if (ctx->settings.volume_speaker > 0) ctx->settings.volume_speaker -= 5;
+        uint8_t v = ctx->settings.volume_speaker;
+        ctx->settings.volume_speaker = (v < 5) ? 0 : (uint8_t)(v - 5);
         ctx->codec->speaker.set_volume(ctx->settings.volume_speaker);
     } else {
-        if (ctx->settings.volume_headphones > 0) ctx->settings.volume_headphones -= 5;
+        uint8_t v = ctx->settings.volume_headphones;
+        ctx->settings.volume_headphones = (v < 5) ? 0 : (uint8_t)(v - 5);
         ctx->codec->headphones.set_volume(ctx->settings.volume_headphones);
     }
 }
@@ -169,7 +173,7 @@ AudioTaskContext* AudioTask_Init(void) {
     audio_ctx.settings.selected_mic = AUDIO_MIC_INT;
 
     audio_ctx.queue = xQueueCreate(8, sizeof(AudioMessage));
-    audio_ctx.codec = (IAudioDriver_t*)nau88c22_get_driver();
+    audio_ctx.codec = nau88c22_get_driver();
     audio_ctx.codec->init();
 
     osThreadAttr_t task_attr = {
