@@ -2,9 +2,7 @@
 #define NAU88C22_H
 
 #include <stdint.h>
-#include <stdbool.h>
 #include "stm32_config.h"
-#include "iaudio_driver.h"
 
 #define NAU88C22_I2C_ADDR 0x1A
 
@@ -73,11 +71,36 @@
 
 typedef struct
 {
-    bool speaker;
-    bool mic;
-    bool hp_out;
-    bool hp_mic;
-} nau_mute_states_t;
+    uint8_t output_muted;
+    uint8_t mic_muted;
+    uint8_t hp_mic_muted;
+} nau88c22_mute_state_t;
 
-const IAudioDriver_t* nau88c22_get_driver(void);
+typedef struct {
+    uint8_t initialized;
+    nau88c22_mute_state_t saved_mute_state;
+    uint8_t volume;
+} nau88c22_codec_t;
+
+uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data);
+uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data);
+
+uint8_t nau88c22_init(nau88c22_codec_t *codec);
+uint8_t nau88c22_hp_mic_toggle(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_hp_detect(void); 
+uint8_t nau88c22_set_output_volume(nau88c22_codec_t *codec, uint8_t volume, uint8_t left_reg, uint8_t right_reg);
+uint8_t nau88c22_increment_output_volume(nau88c22_codec_t *codec, uint8_t increment);
+uint8_t nau88c22_mute_output(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_set_eq(nau88c22_codec_t *codec, uint8_t band, uint8_t gain);
+uint8_t nau88c22_set_mic_volume(nau88c22_codec_t *codec, uint8_t mic_channel, uint8_t volume);
+uint8_t nau88c22_increment_mic_volume(nau88c22_codec_t *codec, uint8_t mic_channel, uint8_t increment);
+uint8_t nau88c22_read_volume_percent(nau88c22_codec_t *codec, uint8_t reg_addr, uint8_t *volume_percent);
+uint8_t nau88c22_get_output_volume(nau88c22_codec_t *codec);
+uint8_t nau88c22_mute_mic(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_mute_hp_mic(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_sleep(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_mute_all(nau88c22_codec_t *codec, uint8_t enable);
+uint8_t nau88c22_enable_lin_mic(nau88c22_codec_t *codec);
+
+uint8_t nau88c22_set_output_volume_simple(nau88c22_codec_t *codec, uint8_t volume, uint8_t left_reg, uint8_t right_reg);
 #endif

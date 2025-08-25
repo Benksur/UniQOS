@@ -21,7 +21,7 @@ int main(void)
     uint8_t status;
     uint16_t i = 0;
     int16_t audio_buffer[2];
-    nau88c22_codec_t codec;
+    static const IAudioDriver_t* codec = NULL;
     
     MPU_Config();
     HAL_Init();
@@ -31,75 +31,24 @@ int main(void)
     MX_I2C1_Init();
     MX_I2S1_Init();
 
-    
+    codec = nau88c22_get_driver();
+    codec->init();
+    codec->speaker.mute(false);
+    codec->speaker.set_volume(100);
 
     // Reset the codec first - toggle LED during initialization
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
     HAL_Delay(100);
     
-    // Initialize codec
-    status = nau88c22_init(&codec);
-    if (status != 0) {
-        // Error initializing codec - fast blink
-        while(1) {
-            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-            HAL_Delay(100);
-        }
-    }
-
-    // status = nau88c22_enable_lin_mic(&codec);
-    // if (status != 0) {
-    //     // Error enabling JLIN - fast blink
-    //     while(1) {
-    //         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-    //         HAL_Delay(100);
-    //     }
-    // }
-
-    // nau88c22_mute_output(&codec, 0);
-    // nau88c22_set_output_volume(&codec, 100, NAU_LSPKOUT_VOLUME, NAU_RSPKOUT_VOLUME);
-    // nau88c22_set_output_volume(&codec, 100, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
-
-    uint16_t lsp_reg = 0, rsp_reg = 0;
-    nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &lsp_reg);
-    nau88c22_read_reg(NAU_RSPKOUT_VOLUME, &rsp_reg);
-
-    lsp_reg &= ~(1 << 6); // Clear the mute bit
-    lsp_reg = (lsp_reg & ~0x3F) | 0x3F;
-    rsp_reg &= ~(1 << 6); // Clear the mute bit
-    rsp_reg = (rsp_reg & ~0x3F) | 0x3F;
-    rsp_reg |= 0x100;
-
-    nau88c22_write_reg(NAU_LSPKOUT_VOLUME, lsp_reg);
-    nau88c22_write_reg(NAU_RSPKOUT_VOLUME, rsp_reg);
 
     HAL_Delay(100);
 
-    uint16_t check_reg = 0;
-    status = nau88c22_read_reg(NAU_LSPKOUT_VOLUME, &check_reg);
-    if ((check_reg & 0x3F) == 0 || (check_reg & (1 << 6))) {
-        // Error setting volume - fast blink
-        for (int i = 0; i < 10; i++){
-            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-            HAL_Delay(20);
-        }
-    }
 
     
     while(1) {
 
         HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 7840, HAL_MAX_DELAY);
-        // if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5)) {
-        //     for (uint8_t x = 0; i < 10; i++){
-        //         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        //         HAL_Delay(20);
-        //     }
-            
-        // }
-        
         HAL_Delay(2000);
-        
-        // i = (i + 1) % 143151;
     }
 }
 

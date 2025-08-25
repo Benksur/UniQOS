@@ -104,7 +104,7 @@ static void spi_write_data(uint16_t *pData, uint32_t Size)
 {
     for (uint32_t i = 0; i < Size; i++)
     {
-        LCD_IO_WriteData16(pData[i]);
+        spi_write_data16(pData[i]);
     }
 }
 

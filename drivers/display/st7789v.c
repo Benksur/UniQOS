@@ -3,6 +3,7 @@
 // Static function prototypes
 static void st7789v_init(void);
 static void st7789v_set_orientation(uint32_t orientation);
+static void st7789v_set_orientation_u8(uint8_t orientation);
 static void st7789v_display_on(void);
 static void st7789v_display_off(void);
 static uint16_t st7789v_get_pixel_width(void);
@@ -156,6 +157,11 @@ static void st7789v_set_orientation(uint32_t orientation)
     break;
   }
   st7789_write_reg(ST7789V_MADCTL, parameter, 1);
+}
+
+// Wrapper for vtable: expects uint8_t, implementation uses uint32_t
+static void st7789v_set_orientation_u8(uint8_t orientation) {
+    st7789v_set_orientation((uint32_t)orientation);
 }
 
 static void st7789v_display_on(void)
@@ -380,7 +386,7 @@ const IDisplayDriver_t* st7789v_get_driver(void)
         .draw_pixel = st7789v_write_pixel,
         .draw_hline = st7789v_draw_hline,
         .draw_vline = st7789v_draw_vline,
-        .set_orientation = st7789v_set_orientation,
+        .set_orientation = st7789v_set_orientation_u8,
         .get_width = st7789v_get_pixel_width,
         .get_height = st7789v_get_pixel_height
     };
