@@ -14,8 +14,8 @@ void SystemClock_Config(void);
 static uint16_t fill_color = 0;
 void LCD_Fill(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height)
 {
-    ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
-    ST7789V_WriteReg(ST7789V_RAMWR, NULL, 0); 
+    st7789v_set_address_window(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
+    st7789_write_reg(ST7789V_RAMWR, NULL, 0); 
     uint32_t total_pixels = (uint32_t)width * height;
     for (uint32_t i = 0; i < total_pixels; i++) {
         LCD_IO_WriteData16(RGBCode);
@@ -43,7 +43,7 @@ int main(void)
   MX_SPI4_Init();
 //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 //   htim2.Instance->CCR3 = 80;
-  ST7789V_Init();
+  st7789v_init();
   
 
   HAL_Delay(1000);

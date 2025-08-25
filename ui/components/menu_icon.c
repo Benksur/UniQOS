@@ -42,7 +42,7 @@ void draw_menu_icon(int tile_x, int tile_y, const char *filename) {
                 
                 if (pixel_value) {
                     // can be optimised to set display window then dma dump the array.
-                    ST7789V_WritePixel(pixel_x, pixel_y, current_theme.fg_colour);
+                    st7789v_write_pixel(pixel_x, pixel_y, current_theme.fg_colour);
                 }
             }
         }

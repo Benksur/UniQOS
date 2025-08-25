@@ -1,33 +1,54 @@
-
 #include "st7789v.h"
+
+// Static function prototypes
+static void st7789v_init(void);
+static void st7789v_set_orientation(uint32_t orientation);
+static void st7789v_display_on(void);
+static void st7789v_display_off(void);
+static uint16_t st7789v_get_pixel_width(void);
+static uint16_t st7789v_get_pixel_height(void);
+static uint16_t st7789v_read_id(void);
+static void st7789v_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+static void st7789v_set_cursor(uint16_t Xpos, uint16_t Ypos);
+static void st7789v_write_pixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode);
+static uint16_t st7789v_read_pixel(uint16_t Xpos, uint16_t Ypos);
+static void st7789_write_reg(uint8_t Command, uint8_t *Parameters, uint8_t NbParameters);
+static uint8_t st7789v_read_reg(uint8_t Command);
+static void st7789v_set_display_window(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height);
+static void st7789v_draw_hline(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length);
+static void st7789v_draw_vline(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length);
+static void st7789v_fill(uint16_t RGBCode);
+static void st7789v_fill_rect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height, uint16_t RGBCode);
 
 static uint16_t WindowsXstart = 0;
 static uint16_t WindowsYstart = 0;
 static uint16_t WindowsXend = ST7789V_LCD_PIXEL_WIDTH - 1;
 static uint16_t WindowsYend = ST7789V_LCD_PIXEL_HEIGHT - 1;
 
-void ST7789V_Init(void)
+static const ILCD_t *lcd = NULL;
+
+static void st7789v_init(void)
 {
   uint8_t parameter[16];
-
-  LCD_IO_Init();  
+  if (!lcd) lcd = lcd_create_spi();
+  lcd->init();
 
   /* Software Reset */
-  ST7789V_WriteReg(ST7789V_SWRESET, (uint8_t *)NULL, 0);
-  LCD_IO_Delay(150);
+  st7789_write_reg(ST7789V_SWRESET, (uint8_t *)NULL, 0);
+  lcd->delay(150);
 
   /* Sleep Out */
-  ST7789V_WriteReg(ST7789V_SLPOUT, (uint8_t *)NULL, 0);
-  LCD_IO_Delay(120);
+  st7789_write_reg(ST7789V_SLPOUT, (uint8_t *)NULL, 0);
+  lcd->delay(120);
 
   /* Color Mode - 16bit */
   parameter[0] = 0x05;
-  ST7789V_WriteReg(ST7789V_COLMOD, parameter, 1);
-  LCD_IO_Delay(10);
+  st7789_write_reg(ST7789V_COLMOD, parameter, 1);
+  lcd->delay(10);
 
   /* Memory Access Control */
   parameter[0] = 0x00; // Normal orientation
-  ST7789V_WriteReg(ST7789V_MADCTL, parameter, 1);
+  st7789_write_reg(ST7789V_MADCTL, parameter, 1);
 
   /* Porch Control */
   parameter[0] = 0x0C;
@@ -35,41 +56,41 @@ void ST7789V_Init(void)
   parameter[2] = 0x00;
   parameter[3] = 0x33;
   parameter[4] = 0x33;
-  ST7789V_WriteReg(ST7789V_PORCTRL, parameter, 5);
+  st7789_write_reg(ST7789V_PORCTRL, parameter, 5);
 
   /* Gate Control */
   parameter[0] = 0x35;
-  ST7789V_WriteReg(ST7789V_GCTRL, parameter, 1);
+  st7789_write_reg(ST7789V_GCTRL, parameter, 1);
 
   /* VCOM Setting */
   parameter[0] = 0x20;
-  ST7789V_WriteReg(ST7789V_VCOMS, parameter, 1);
+  st7789_write_reg(ST7789V_VCOMS, parameter, 1);
 
   /* LCM Control */
   parameter[0] = 0x2C;
-  ST7789V_WriteReg(ST7789V_LCMCTRL, parameter, 1);
+  st7789_write_reg(ST7789V_LCMCTRL, parameter, 1);
 
   // /* VDV and VRH Command Enable */
   // parameter[0] = 0x01;
   // parameter[1] = 0xFF;
-  // ST7789V_WriteReg(ST7789V_VDVVRHEN, parameter, 2);
+  // st7789_write_reg(ST7789V_VDVVRHEN, parameter, 2);
 
   // /* VRH Set */
   // parameter[0] = 0x12;
-  // ST7789V_WriteReg(ST7789V_VRHS, parameter, 1);
+  // st7789_write_reg(ST7789V_VRHS, parameter, 1);
 
   // /* VDV Set */
   // parameter[0] = 0x20;
-  // ST7789V_WriteReg(ST7789V_VDVS, parameter, 1);
+  // st7789_write_reg(ST7789V_VDVS, parameter, 1);
 
   /* Frame Rate Control */
   parameter[0] = 0x02;
-  ST7789V_WriteReg(ST7789V_FRCTRL2, parameter, 1);
+  st7789_write_reg(ST7789V_FRCTRL2, parameter, 1);
 
   // /* Power Control 1 */
   // parameter[0] = 0xA4;
   // parameter[1] = 0xA1;
-  // ST7789V_WriteReg(ST7789V_PWCTRL1, parameter, 2);
+  // st7789_write_reg(ST7789V_PWCTRL1, parameter, 2);
 
   /* Positive Voltage Gamma Control */
   parameter[0] = 0xD0;
@@ -86,7 +107,7 @@ void ST7789V_Init(void)
   parameter[11] = 0x0B;
   parameter[12] = 0x1F;
   parameter[13] = 0x23;
-  ST7789V_WriteReg(ST7789V_PVGAMCTRL, parameter, 14);
+  st7789_write_reg(ST7789V_PVGAMCTRL, parameter, 14);
 
   /* Negative Voltage Gamma Control */
   parameter[0] = 0xD0;
@@ -103,21 +124,21 @@ void ST7789V_Init(void)
   parameter[11] = 0x1F;
   parameter[12] = 0x20;
   parameter[13] = 0x23;
-  ST7789V_WriteReg(ST7789V_NVGAMCTRL, parameter, 14);
+  st7789_write_reg(ST7789V_NVGAMCTRL, parameter, 14);
 
   /* Inversion On */
-  ST7789V_WriteReg(ST7789V_INVON, (uint8_t *)NULL, 0);
+  st7789_write_reg(ST7789V_INVON, (uint8_t *)NULL, 0);
 
   /* Normal Display Mode On */
-  ST7789V_WriteReg(ST7789V_NORON, (uint8_t *)NULL, 0);
-  LCD_IO_Delay(10);
+  st7789_write_reg(ST7789V_NORON, (uint8_t *)NULL, 0);
+  lcd->delay(10);
 
   /* Display On */
-  ST7789V_WriteReg(ST7789V_DISPON, (uint8_t *)NULL, 0);
-  LCD_IO_Delay(120);
+  st7789_write_reg(ST7789V_DISPON, (uint8_t *)NULL, 0);
+  lcd->delay(120);
 }
 
-void ST7789V_SetOrientation(uint32_t orientation)
+static void st7789v_set_orientation(uint32_t orientation)
 {
   uint8_t parameter[1];
 
@@ -134,37 +155,38 @@ void ST7789V_SetOrientation(uint32_t orientation)
     parameter[0] = 0x00;
     break;
   }
-  ST7789V_WriteReg(ST7789V_MADCTL, parameter, 1);
+  st7789_write_reg(ST7789V_MADCTL, parameter, 1);
 }
 
-void ST7789V_DisplayOn(void)
+static void st7789v_display_on(void)
 {
-  ST7789V_WriteReg(ST7789V_DISPON, (uint8_t *)NULL, 0);
+  st7789_write_reg(ST7789V_DISPON, (uint8_t *)NULL, 0);
 }
 
-void ST7789V_DisplayOff(void)
+static void st7789v_display_off(void)
 {
-  ST7789V_WriteReg(ST7789V_DISPOFF, (uint8_t *)NULL, 0);
+  st7789_write_reg(ST7789V_DISPOFF, (uint8_t *)NULL, 0);
 }
 
-uint16_t ST7789V_GetLcdPixelWidth(void)
+static uint16_t st7789v_get_pixel_width(void)
 {
   return ST7789V_LCD_PIXEL_WIDTH;
 }
 
-uint16_t ST7789V_GetLcdPixelHeight(void)
+static uint16_t st7789v_get_pixel_height(void)
 {
   return ST7789V_LCD_PIXEL_HEIGHT;
 }
 
-uint16_t ST7789V_ReadID(void)
+static uint16_t st7789v_read_id(void)
 {
-  LCD_IO_WriteReg(ST7789V_RDDID);
-  LCD_IO_ReadData(); // Dummy read
-  return LCD_IO_ReadData();
+  lcd->write_reg(ST7789V_RDDID);
+  //dummy read
+  lcd->read_data();
+  return lcd->read_data();
 }
 
-void ST7789V_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void st7789v_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
   uint8_t parameter[4];
 
@@ -181,75 +203,54 @@ void ST7789V_SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
   parameter[1] = x0 & 0xFF;
   parameter[2] = (x1 >> 8) & 0xFF;
   parameter[3] = x1 & 0xFF;
-  ST7789V_WriteReg(ST7789V_CASET, parameter, 4);
+  st7789_write_reg(ST7789V_CASET, parameter, 4);
 
   /* Row Address Set */
   parameter[0] = (y0 >> 8) & 0xFF;
   parameter[1] = y0 & 0xFF;
   parameter[2] = (y1 >> 8) & 0xFF;
   parameter[3] = y1 & 0xFF;
-  ST7789V_WriteReg(ST7789V_RASET, parameter, 4);
+  st7789_write_reg(ST7789V_RASET, parameter, 4);
 }
 
-void ST7789V_SetCursor(uint16_t Xpos, uint16_t Ypos)
+static void st7789v_set_cursor(uint16_t Xpos, uint16_t Ypos)
 {
-  ST7789V_SetAddressWindow(Xpos, Ypos, ST7789V_LCD_PIXEL_WIDTH - 1, ST7789V_LCD_PIXEL_HEIGHT - 1);
+  st7789v_set_address_window(Xpos, Ypos, ST7789V_LCD_PIXEL_WIDTH - 1, ST7789V_LCD_PIXEL_HEIGHT - 1);
 }
 
-void ST7789V_WritePixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode)
+static void st7789v_write_pixel(uint16_t Xpos, uint16_t Ypos, uint16_t RGBCode)
 {
-  /* Set Address Window */
-  ST7789V_SetAddressWindow(Xpos, Ypos, Xpos, Ypos);
-
-  /* Prepare to write to LCD RAM */
-  ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-
-  /* Write RAM data */
-  LCD_IO_WriteData16(RGBCode);
+  st7789v_set_address_window(Xpos, Ypos, Xpos, Ypos);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+  lcd->write_data16(RGBCode);
 }
 
-uint16_t ST7789V_ReadPixel(uint16_t Xpos, uint16_t Ypos)
+static uint16_t st7789v_read_pixel(uint16_t Xpos, uint16_t Ypos)
 {
-  /* Set Address Window */
-  ST7789V_SetAddressWindow(Xpos, Ypos, Xpos, Ypos);
-
-  /* Prepare to read LCD RAM */
-  ST7789V_WriteReg(ST7789V_RAMRD, (uint8_t *)NULL, 0);
-
-  /* Dummy read */
-  LCD_IO_ReadData();
-
-  /* Read pixel data */
-  return LCD_IO_ReadData();
+  st7789v_set_address_window(Xpos, Ypos, Xpos, Ypos);
+  st7789_write_reg(ST7789V_RAMRD, (uint8_t *)NULL, 0);
+  lcd->read_data();
+  return lcd->read_data();
 }
 
-void ST7789V_WriteReg(uint8_t Command, uint8_t *Parameters, uint8_t NbParameters)
+static void st7789_write_reg(uint8_t Command, uint8_t *Parameters, uint8_t NbParameters)
 {
   uint8_t i;
-
-  /* Send command */
-  LCD_IO_WriteReg(Command);
-
-  /* Send command's parameters if any */
+  lcd->write_reg(Command);
   for (i = 0; i < NbParameters; i++)
   {
-    LCD_IO_WriteData8(Parameters[i]);
+    lcd->write_data8(Parameters[i]);
   }
 }
 
-uint8_t ST7789V_ReadReg(uint8_t Command)
+static uint8_t st7789v_read_reg(uint8_t Command)
 {
-  /* Send command */
-  LCD_IO_WriteReg(Command);
-
-  /* Read dummy data */
-  LCD_IO_ReadData();
-
-  /* Read register value */
-  return (LCD_IO_ReadData());
+  lcd->write_reg(Command);
+  lcd->read_data();
+  return (lcd->read_data());
 }
 
-void ST7789V_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
+static void st7789v_set_display_window(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
 {
   if (Xpos < ST7789V_LCD_PIXEL_WIDTH)
   {
@@ -288,41 +289,29 @@ void ST7789V_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint
   }
 }
 
-void ST7789V_DrawHLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length)
+static void st7789v_draw_hline(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length)
 {
   uint16_t counter;
-
-  /* Set Address Window */
-  ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + Length - 1, Ypos);
-
-  /* Prepare to write to LCD RAM */
-  ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-
-  /* Send a complete line */
+  st7789v_set_address_window(Xpos, Ypos, Xpos + Length - 1, Ypos);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
   for (counter = 0; counter < Length; counter++)
   {
-    LCD_IO_WriteData16(RGBCode);
+    lcd->write_data16(RGBCode);
   }
 }
 
-void ST7789V_DrawVLine(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length)
+static void st7789v_draw_vline(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t Length)
 {
   uint16_t counter;
-
-  /* Set Address Window */
-  ST7789V_SetAddressWindow(Xpos, Ypos, Xpos, Ypos + Length - 1);
-
-  /* Prepare to write to LCD RAM */
-  ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-
-  /* Fill a complete vertical line */
+  st7789v_set_address_window(Xpos, Ypos, Xpos, Ypos + Length - 1);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
   for (counter = 0; counter < Length; counter++)
   {
-    LCD_IO_WriteData16(RGBCode);
+    lcd->write_data16(RGBCode);
   }
 }
 
-void ST7789V_DrawBitmap(uint16_t Xpos, uint16_t Ypos, uint8_t *pbmp)
+void st7789v_draw_bitmap(uint16_t Xpos, uint16_t Ypos, uint8_t *pbmp)
 {
   uint32_t index = 0, size = 0;
   uint32_t posY;
@@ -340,27 +329,60 @@ void ST7789V_DrawBitmap(uint16_t Xpos, uint16_t Ypos, uint8_t *pbmp)
   pbmp += index;
 
   /* Set Address Window */
-  ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + Xsize - 1, Ypos + Ysize - 1);
+  st7789v_set_address_window(Xpos, Ypos, Xpos + Xsize - 1, Ypos + Ysize - 1);
 
-  /* Prepare to write to LCD RAM */
-  ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
 
   for (posY = (Ypos + Ysize); posY > Ypos; posY--) /* In BMP files the line order is inverted */
   {
     /* Write one line of the picture */
-    LCD_IO_WriteMultipleData((uint16_t *)(pbmp + (nb_line * Xsize * 2)), Xsize);
+    lcd->write_data((uint16_t *)(pbmp + (nb_line * Xsize * 2)), Xsize);
     nb_line++;
   }
 }
 
-void ST7789V_DrawRGBImage(uint16_t Xpos, uint16_t Ypos, uint16_t Xsize, uint16_t Ysize, uint8_t *pdata)
+void st7789v_draw_rgb_image(uint16_t Xpos, uint16_t Ypos, uint16_t Xsize, uint16_t Ysize, uint8_t *pdata)
 {
-  /* Set Address Window */
-  ST7789V_SetAddressWindow(Xpos, Ypos, Xpos + Xsize - 1, Ypos + Ysize - 1);
+  st7789v_set_address_window(Xpos, Ypos, Xpos + Xsize - 1, Ypos + Ysize - 1);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+  lcd->write_data((uint16_t *)pdata, Xsize * Ysize);
+}
 
-  /* Prepare to write to LCD RAM */
-  ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+static void st7789v_fill(uint16_t RGBCode)
+{
+  uint32_t counter;
+  st7789v_set_address_window(0, 0, ST7789V_LCD_PIXEL_WIDTH - 1, ST7789V_LCD_PIXEL_HEIGHT - 1);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+  for (counter = 0; counter < (uint32_t)ST7789V_LCD_PIXEL_WIDTH * ST7789V_LCD_PIXEL_HEIGHT; counter++)
+  {
+    lcd->write_data16(RGBCode);
+  }
+}
 
-  /* Write image data */
-  LCD_IO_WriteMultipleData((uint16_t *)pdata, Xsize * Ysize);
+static void st7789v_fill_rect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height, uint16_t RGBCode)
+{
+  uint32_t counter;
+  st7789v_set_address_window(Xpos, Ypos, Xpos + Width - 1, Ypos + Height - 1);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+  for (counter = 0; counter < (uint32_t)Width * Height; counter++)
+  {
+    lcd->write_data16(RGBCode);
+  }
+}
+
+// abstract display driver interface to allow easy swapping of display drivers
+const IDisplayDriver_t* st7789v_get_driver(void)
+{
+    static IDisplayDriver_t driver = {
+        .init = st7789v_init,
+        .fill = st7789v_fill,
+        .fill_rect = st7789v_fill_rect,
+        .draw_pixel = st7789v_write_pixel,
+        .draw_hline = st7789v_draw_hline,
+        .draw_vline = st7789v_draw_vline,
+        .set_orientation = st7789v_set_orientation,
+        .get_width = st7789v_get_pixel_width,
+        .get_height = st7789v_get_pixel_height
+    };
+    return &driver;
 }

@@ -1,5 +1,8 @@
 #include "display.h"
 
+// Get the display driver vtable
+static const IDisplayDriver_t *driver = NULL;
+
 static const uint8_t font5x7[96][5] = {
     {0x00, 0x00, 0x00, 0x00, 0x00}, // space
     {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
@@ -113,73 +116,46 @@ static void swap16(uint16_t *a, uint16_t *b)
 
 void display_init(void)
 {
-    ST7789V_Init();
+    driver = st7789v_get_driver();
+    driver->init();
 }
 
 void display_fill(uint16_t colour)
 {
-    uint16_t x, y;
-    ST7789V_SetAddressWindow(0, 0, ST7789V_LCD_PIXEL_WIDTH - 1, ST7789V_LCD_PIXEL_HEIGHT - 1);
-    ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-
-    for (y = 0; y < ST7789V_LCD_PIXEL_HEIGHT; y++)
-    {
-        for (x = 0; x < ST7789V_LCD_PIXEL_WIDTH; x++)
-        {
-            LCD_IO_WriteData16(colour);
-        }
-    }
+    driver->fill(colour);
 }
 
 void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour)
 {
-    uint16_t i, j;
-    uint16_t x_end = x + width - 1;
-    uint16_t y_end = y + height - 1;
-
-    if (x >= ST7789V_LCD_PIXEL_WIDTH || y >= ST7789V_LCD_PIXEL_HEIGHT)
-        return;
-    if (x_end >= ST7789V_LCD_PIXEL_WIDTH)
-        x_end = ST7789V_LCD_PIXEL_WIDTH - 1;
-    if (y_end >= ST7789V_LCD_PIXEL_HEIGHT)
-        y_end = ST7789V_LCD_PIXEL_HEIGHT - 1;
-
-    ST7789V_SetAddressWindow(x, y, x_end, y_end);
-    ST7789V_WriteReg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-
-    for (j = y; j <= y_end; j++)
-    {
-        for (i = x; i <= x_end; i++)
-        {
-            LCD_IO_WriteData16(colour);
-        }
-    }
+    driver->fill_rect(x, y, width, height, colour);
 }
 
 void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour)
 {
-    ST7789V_DrawHLine(colour, x, y, width);
-    ST7789V_DrawHLine(colour, x, y + height - 1, width);
-    ST7789V_DrawVLine(colour, x, y, height);
-    ST7789V_DrawVLine(colour, x + width - 1, y, height);
+    driver->draw_hline(colour, x, y, width);
+    driver->draw_hline(colour, x, y + height - 1, width);
+    driver->draw_vline(colour, x, y, height);
+    driver->draw_vline(colour, x + width - 1, y, height);
 }
 
 void display_draw_vertical_line(uint16_t x, uint16_t y0, uint16_t y1, uint16_t colour)
 {
-    if (y0 > y1) swap16(&y0, &y1);
-    if (x > ST7789V_LCD_PIXEL_WIDTH || y0 > ST7789V_LCD_PIXEL_HEIGHT || y1 > ST7789V_LCD_PIXEL_HEIGHT)
+    if (y0 > y1)
+        swap16(&y0, &y1);
+    if (x > driver->get_width() || y0 > driver->get_height() || y1 > driver->get_height())
         return;
 
-    ST7789V_DrawVLine(colour, x, y0, y1 - y0 + 1);
+    driver->draw_vline(colour, x, y0, y1 - y0 + 1);
 }
 
 void display_draw_horizontal_line(uint16_t x0, uint16_t y, uint16_t x1, uint16_t colour)
 {
-    if (x0 > x1) swap16(&x0, &x1);
-    if (y > ST7789V_LCD_PIXEL_HEIGHT || x0 > ST7789V_LCD_PIXEL_WIDTH || x1 > ST7789V_LCD_PIXEL_WIDTH)
+    if (x0 > x1)
+        swap16(&x0, &x1);
+    if (y > driver->get_height() || x0 > driver->get_width() || x1 > driver->get_width())
         return;
 
-    ST7789V_DrawHLine(colour, x0, y, x1 - x0 + 1);
+    driver->draw_hline(colour, x0, y, x1 - x0 + 1);
 }
 
 void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour)
@@ -193,7 +169,7 @@ void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint1
 
     while (1)
     {
-        ST7789V_WritePixel(x0, y0, colour);
+        driver->draw_pixel(x0, y0, colour);
 
         if (x0 == x1 && y0 == y1)
             break;
@@ -220,14 +196,14 @@ void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t col
 
     while (x >= y)
     {
-        ST7789V_WritePixel(x0 + x, y0 + y, colour);
-        ST7789V_WritePixel(x0 + y, y0 + x, colour);
-        ST7789V_WritePixel(x0 - y, y0 + x, colour);
-        ST7789V_WritePixel(x0 - x, y0 + y, colour);
-        ST7789V_WritePixel(x0 - x, y0 - y, colour);
-        ST7789V_WritePixel(x0 - y, y0 - x, colour);
-        ST7789V_WritePixel(x0 + y, y0 - x, colour);
-        ST7789V_WritePixel(x0 + x, y0 - y, colour);
+        driver->draw_pixel(x0 + x, y0 + y, colour);
+        driver->draw_pixel(x0 + y, y0 + x, colour);
+        driver->draw_pixel(x0 - y, y0 + x, colour);
+        driver->draw_pixel(x0 - x, y0 + y, colour);
+        driver->draw_pixel(x0 - x, y0 - y, colour);
+        driver->draw_pixel(x0 - y, y0 - x, colour);
+        driver->draw_pixel(x0 + y, y0 - x, colour);
+        driver->draw_pixel(x0 + x, y0 - y, colour);
 
         if (err <= 0)
         {
@@ -250,10 +226,10 @@ void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t col
 
     while (x >= y)
     {
-        ST7789V_DrawHLine(colour, x0 - x, y0 + y, 2 * x + 1);
-        ST7789V_DrawHLine(colour, x0 - x, y0 - y, 2 * x + 1);
-        ST7789V_DrawHLine(colour, x0 - y, y0 + x, 2 * y + 1);
-        ST7789V_DrawHLine(colour, x0 - y, y0 - x, 2 * y + 1);
+        driver->draw_hline(colour, x0 - x, y0 + y, 2 * x + 1);
+        driver->draw_hline(colour, x0 - x, y0 - y, 2 * x + 1);
+        driver->draw_hline(colour, x0 - y, y0 + x, 2 * y + 1);
+        driver->draw_hline(colour, x0 - y, y0 - x, 2 * y + 1);
 
         if (err <= 0)
         {
@@ -270,54 +246,56 @@ void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t col
 
 void display_draw_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint16_t colour)
 {
-    if (radius > width / 2) radius = width / 2;
-    if (radius > height / 2) radius = height / 2;
-    
-    ST7789V_DrawHLine(colour, x + radius, y, width - 2 * radius);
-    ST7789V_DrawHLine(colour, x + radius, y + height - 1, width - 2 * radius);
-    ST7789V_DrawVLine(colour, x, y + radius, height - 2 * radius);
-    ST7789V_DrawVLine(colour, x + width - 1, y + radius, height - 2 * radius);
-    
+    if (radius > width / 2)
+        radius = width / 2;
+    if (radius > height / 2)
+        radius = height / 2;
+
+    driver->draw_hline(colour, x + radius, y, width - 2 * radius);
+    driver->draw_hline(colour, x + radius, y + height - 1, width - 2 * radius);
+    driver->draw_vline(colour, x, y + radius, height - 2 * radius);
+    driver->draw_vline(colour, x + width - 1, y + radius, height - 2 * radius);
+
     int16_t cx, cy;
     int16_t r = radius;
     int16_t xc = r;
     int16_t yc = 0;
     int16_t err = 0;
-    
+
     while (xc >= yc)
     {
         // Top-left corner
         cx = x + radius;
         cy = y + radius;
         if (cx - xc >= x && cy - yc >= y)
-            ST7789V_WritePixel(cx - xc, cy - yc, colour);
+            driver->draw_pixel(cx - xc, cy - yc, colour);
         if (cx - yc >= x && cy - xc >= y)
-            ST7789V_WritePixel(cx - yc, cy - xc, colour);
-        
+            driver->draw_pixel(cx - yc, cy - xc, colour);
+
         // Top-right corner
         cx = x + width - radius - 1;
         cy = y + radius;
         if (cx + xc < x + width && cy - yc >= y)
-            ST7789V_WritePixel(cx + xc, cy - yc, colour);
+            driver->draw_pixel(cx + xc, cy - yc, colour);
         if (cx + yc < x + width && cy - xc >= y)
-            ST7789V_WritePixel(cx + yc, cy - xc, colour);
-        
+            driver->draw_pixel(cx + yc, cy - xc, colour);
+
         // Bottom-left corner
         cx = x + radius;
         cy = y + height - radius - 1;
         if (cx - xc >= x && cy + yc < y + height)
-            ST7789V_WritePixel(cx - xc, cy + yc, colour);
+            driver->draw_pixel(cx - xc, cy + yc, colour);
         if (cx - yc >= x && cy + xc < y + height)
-            ST7789V_WritePixel(cx - yc, cy + xc, colour);
-        
+            driver->draw_pixel(cx - yc, cy + xc, colour);
+
         // Bottom-right corner
         cx = x + width - radius - 1;
         cy = y + height - radius - 1;
         if (cx + xc < x + width && cy + yc < y + height)
-            ST7789V_WritePixel(cx + xc, cy + yc, colour);
+            driver->draw_pixel(cx + xc, cy + yc, colour);
         if (cx + yc < x + width && cy + xc < y + height)
-            ST7789V_WritePixel(cx + yc, cy + xc, colour);
-        
+            driver->draw_pixel(cx + yc, cy + xc, colour);
+
         if (err <= 0)
         {
             yc += 1;
@@ -333,9 +311,11 @@ void display_draw_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_
 
 void display_fill_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint16_t colour)
 {
-    if (radius > width / 2) radius = width / 2;
-    if (radius > height / 2) radius = height / 2;
-    
+    if (radius > width / 2)
+        radius = width / 2;
+    if (radius > height / 2)
+        radius = height / 2;
+
     display_fill_rect(x, y + radius, width, height - 2 * radius, colour);
     display_fill_rect(x + radius, y, width - 2 * radius, radius, colour);
     display_fill_rect(x + radius, y + height - radius, width - 2 * radius, radius, colour);
@@ -345,29 +325,29 @@ void display_fill_rounded_square(uint16_t x, uint16_t y, uint16_t width, uint16_
     int16_t xc = r;
     int16_t yc = 0;
     int16_t err = 0;
-    
+
     while (xc >= yc)
     {
         cx = x + radius;
         cy = y + radius;
-        ST7789V_DrawHLine(colour, cx - xc, cy - yc, xc - yc + 1);
-        ST7789V_DrawHLine(colour, cx - yc, cy - xc, yc + 1);
-        
+        driver->draw_hline(colour, cx - xc, cy - yc, xc - yc + 1);
+        driver->draw_hline(colour, cx - yc, cy - xc, yc + 1);
+
         cx = x + width - radius - 1;
         cy = y + radius;
-        ST7789V_DrawHLine(colour, cx + yc, cy - xc, xc - yc + 1);
-        ST7789V_DrawHLine(colour, cx, cy - yc, yc + 1);
+        driver->draw_hline(colour, cx + yc, cy - xc, xc - yc + 1);
+        driver->draw_hline(colour, cx, cy - yc, yc + 1);
 
         cx = x + radius;
         cy = y + height - radius - 1;
-        ST7789V_DrawHLine(colour, cx - xc, cy + yc, xc - yc + 1);
-        ST7789V_DrawHLine(colour, cx - yc, cy + xc, yc + 1);
-        
+        driver->draw_hline(colour, cx - xc, cy + yc, xc - yc + 1);
+        driver->draw_hline(colour, cx - yc, cy + xc, yc + 1);
+
         cx = x + width - radius - 1;
         cy = y + height - radius - 1;
-        ST7789V_DrawHLine(colour, cx + yc, cy + xc, xc - yc + 1);
-        ST7789V_DrawHLine(colour, cx, cy + yc, yc + 1);
-        
+        driver->draw_hline(colour, cx + yc, cy + xc, xc - yc + 1);
+        driver->draw_hline(colour, cx, cy + yc, yc + 1);
+
         if (err <= 0)
         {
             yc += 1;
@@ -425,7 +405,7 @@ void display_fill_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, u
 
         if (xa > xb)
             swap16(&xa, &xb);
-        ST7789V_DrawHLine(colour, xa, y, xb - xa + 1);
+        driver->draw_hline(colour, xa, y, xb - xa + 1);
     }
 }
 
@@ -446,7 +426,7 @@ void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t
             {
                 if (size == 1)
                 {
-                    ST7789V_WritePixel(x + i, y + j, colour);
+                    driver->draw_pixel(x + i, y + j, colour);
                 }
                 else
                 {
@@ -457,7 +437,7 @@ void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t
             {
                 if (size == 1)
                 {
-                    ST7789V_WritePixel(x + i, y + j, bg_colour);
+                    driver->draw_pixel(x + i, y + j, bg_colour);
                 }
                 else
                 {
@@ -482,19 +462,21 @@ void display_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t colou
 
 void display_set_rotation(uint8_t rotation)
 {
+    if (!driver)
+        driver = st7789v_get_driver();
     switch (rotation & 3)
     {
     case 0:
-        ST7789V_SetOrientation(ST7789V_ORIENTATION_PORTRAIT);
+        driver->set_orientation(ST7789V_ORIENTATION_PORTRAIT);
         break;
     case 1:
-        ST7789V_SetOrientation(ST7789V_ORIENTATION_LANDSCAPE);
+        driver->set_orientation(ST7789V_ORIENTATION_LANDSCAPE);
         break;
     case 2:
-        ST7789V_SetOrientation(ST7789V_ORIENTATION_LANDSCAPE_ROT180);
+        driver->set_orientation(ST7789V_ORIENTATION_LANDSCAPE_ROT180);
         break;
     case 3:
-        ST7789V_SetOrientation(ST7789V_ORIENTATION_PORTRAIT);
+        driver->set_orientation(ST7789V_ORIENTATION_PORTRAIT);
         break;
     }
 }
