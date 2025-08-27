@@ -57,7 +57,7 @@ int main(void)
   while (1)
   {
       HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-      menu_page.handle_input(0);
+      menu_page.handle_input(0, &menu_page); // Simulate no input
       screen_tick();
       HAL_Delay(200);  // Reduced delay for faster cycling
       
