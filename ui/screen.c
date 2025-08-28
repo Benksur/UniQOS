@@ -7,6 +7,16 @@
 static Page* page_stack[MAX_PAGE_STACK];
 static int page_top = -1;
 static Page* current_page = NULL;
+static DataRequestFn data_request_fn = NULL;
+static DataResponseFn data_response_fn = NULL;
+
+void screen_set_data_req_fn(DataRequestFn fn) {
+    data_request_fn = fn;
+}
+
+void screen_set_data_resp_fn(DataResponseFn fn) {
+    data_response_fn = fn;
+}
 
 /**
  * Initialize the screen with the initial page.
@@ -14,7 +24,11 @@ static Page* current_page = NULL;
 void screen_init(Page* initial_page) {
     page_top = -1;
     current_page = initial_page;
+
     if (current_page) {
+        if(data_request_fn) {
+            current_page->data_request = data_request_fn;
+        }
         if (current_page->reset) current_page->reset(current_page);
         current_page->draw(current_page);
     }
@@ -25,8 +39,15 @@ void screen_init(Page* initial_page) {
  */
 void screen_push_page(Page* new_page) {
     if (page_top < MAX_PAGE_STACK - 1) {
+
         page_stack[++page_top] = current_page;
+
         current_page = new_page;
+
+        if (current_page && data_request_fn) {
+            current_page->data_request = data_request_fn;
+        }
+
         if (current_page->reset) current_page->reset(current_page);
         mark_all_tiles_dirty();
         if (current_page->draw) current_page->draw(current_page);
@@ -41,6 +62,10 @@ void screen_pop_page(void) {
         // Free current page if dynamic
         if (current_page && current_page->destroy) {
             current_page->destroy(current_page);
+        }
+
+        if (current_page && data_request_fn) {
+            current_page->data_request = data_request_fn;
         }
 
         current_page = page_stack[page_top--];
@@ -60,6 +85,11 @@ void screen_set_page(Page* new_page) {
     }
 
     current_page = new_page;
+
+    if (current_page && data_request_fn) {
+        current_page->data_request = data_request_fn;
+    }
+
     if (current_page && current_page->reset) {
         current_page->reset(current_page);
     }
