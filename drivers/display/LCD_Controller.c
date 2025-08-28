@@ -61,16 +61,18 @@ const ILCD_t *lcd_create_fmc(void)
 
 static void spi_init(void)
 {
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_RESET);
+    //RESET
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_RESET);
     HAL_Delay(10);
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_13, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET);
     HAL_Delay(20);
 }
 
 static void spi_write_reg(uint8_t Reg)
 {
     ST7789_Select();
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
+    //DC PIN
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_RESET);
     HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t *)&Reg, 1, HAL_MAX_DELAY);
     ST7789_UnSelect();
 }
@@ -78,7 +80,8 @@ static void spi_write_reg(uint8_t Reg)
 static void spi_write_data8(uint8_t data)
 {
     ST7789_Select();
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+    //DC PIN
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_SET);
     HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t *)&data, 1, HAL_MAX_DELAY);
     ST7789_UnSelect();
 }
@@ -86,7 +89,7 @@ static void spi_write_data8(uint8_t data)
 static void spi_write_data16(uint16_t data)
 {
     ST7789_Select();
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_SET);
     HAL_SPI_Transmit(&ST7789_SPI_PORT, (uint8_t *)&data, 2, HAL_MAX_DELAY);
     ST7789_UnSelect();
 }

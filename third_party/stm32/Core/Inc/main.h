@@ -109,8 +109,8 @@ extern SPI_HandleTypeDef hspi4;
 #define MOB_WAKE_GPIO_Port GPIOB
 #define MOB_PWR_Pin GPIO_PIN_2
 #define MOB_PWR_GPIO_Port GPIOB
-#define DISP_BL_Pin GPIO_PIN_10
-#define DISP_BL_GPIO_Port GPIOB
+#define DISP_RESET_Pin GPIO_PIN_7
+#define DISP_RESET_GPIO_Port GPIOE
 #define MOB_RST_Pin GPIO_PIN_11
 #define MOB_RST_GPIO_Port GPIOB
 #define FUEL_GPOUT_Pin GPIO_PIN_12
@@ -121,6 +121,8 @@ extern SPI_HandleTypeDef hspi4;
 #define MCP_STAT2_GPIO_Port GPIOB
 #define MCP_STAT1_Pin GPIO_PIN_15
 #define MCP_STAT1_GPIO_Port GPIOB
+#define DISP_CS_Pin GPIO_PIN_10
+#define DISP_CS_GPIO_Port GPIOD
 #define UART_DCD_Pin GPIO_PIN_12
 #define UART_DCD_GPIO_Port GPIOD
 #define UART_DTR_Pin GPIO_PIN_13
@@ -133,12 +135,12 @@ extern SPI_HandleTypeDef hspi4;
 #define UART_DSR_GPIO_Port GPIOA
 #define PB_HANG_Pin GPIO_PIN_15
 #define PB_HANG_GPIO_Port GPIOA
-#define DISP_RES_Pin GPIO_PIN_3
-#define DISP_RES_GPIO_Port GPIOD
+#define DISP_DC_Pin GPIO_PIN_0
+#define DISP_DC_GPIO_Port GPIOD
+#define DISP_BL_Pin GPIO_PIN_5
+#define DISP_BL_GPIO_Port GPIOD
 #define PB_CALL_Pin GPIO_PIN_6
 #define PB_CALL_GPIO_Port GPIOD
-#define DISP_CS_Pin GPIO_PIN_7
-#define DISP_CS_GPIO_Port GPIOD
 #define PB_DPAD_UP_Pin GPIO_PIN_3
 #define PB_DPAD_UP_GPIO_Port GPIOB
 #define PB_DPAD_DOWN_Pin GPIO_PIN_4
