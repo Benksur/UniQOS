@@ -42,7 +42,7 @@ int main(void)
   
 
   HAL_Delay(1000);
-  LCD_Fill(0x00FF, 0, 0, 240, 320);
+  LCD_Fill(0x05F5, 0, 0, 240, 320);
   // LCD_Fill(0x05F5, 0, 0, 240, 25);
   // LCD_Fill(0x05F5, 0, 295, 240, 25);
   // theme_set_dark();
@@ -52,7 +52,7 @@ int main(void)
   while (1)
   {
     HAL_Delay(1000);
-    LCD_Fill(0xF00F, 0, 0, 240, 320);
+    LCD_Fill(0x05F5, 0, 0, 240, 320);
       // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
       // menu_page.handle_input(0);
       // screen_tick();
