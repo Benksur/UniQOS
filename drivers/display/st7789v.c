@@ -373,7 +373,6 @@ static void st7789v_fill_rect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint
   for (uint32_t i = 0; i < total_pixels; i++) {
     lcd->write_data16(RGBCode);
   }
-  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 }
 
 // abstract display driver interface to allow easy swapping of display drivers

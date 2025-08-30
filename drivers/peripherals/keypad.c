@@ -61,7 +61,7 @@ static const button_map_t button_map[] = {
 };
 
 #define BUTTON_COUNT (sizeof(button_map) / sizeof(button_map[0]))
-#define DEBOUNCE_TIME_MS 30  // 50ms debounce time
+#define DEBOUNCE_TIME_MS 10  // 50ms debounce time
 
 // Debounce states for each button
 static button_debounce_t button_debounce[BUTTON_COUNT] = {0};
@@ -89,7 +89,7 @@ void keypad_update_states(void) {
         button_debounce_t* debounce = &button_debounce[i];
         
         // Read current GPIO state
-        bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_RESET);
+        bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_SET);
         
         // Debouncing logic
         if (current_gpio_state != debounce->is_pressed) {

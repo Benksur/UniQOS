@@ -109,6 +109,12 @@ extern SPI_HandleTypeDef hspi4;
 #define MOB_WAKE_GPIO_Port GPIOB
 #define MOB_PWR_Pin GPIO_PIN_2
 #define MOB_PWR_GPIO_Port GPIOB
+#define DISP_CS_Pin GPIO_PIN_11
+#define DISP_CS_GPIO_Port GPIOE
+#define DISP_RST_Pin GPIO_PIN_13
+#define DISP_RST_GPIO_Port GPIOE
+#define DISP_DC_Pin GPIO_PIN_15
+#define DISP_DC_GPIO_Port GPIOE
 #define DISP_BL_Pin GPIO_PIN_10
 #define DISP_BL_GPIO_Port GPIOB
 #define MOB_RST_Pin GPIO_PIN_11
@@ -133,12 +139,10 @@ extern SPI_HandleTypeDef hspi4;
 #define UART_DSR_GPIO_Port GPIOA
 #define PB_HANG_Pin GPIO_PIN_15
 #define PB_HANG_GPIO_Port GPIOA
-#define DISP_RES_Pin GPIO_PIN_3
-#define DISP_RES_GPIO_Port GPIOD
 #define PB_CALL_Pin GPIO_PIN_6
 #define PB_CALL_GPIO_Port GPIOD
-#define DISP_CS_Pin GPIO_PIN_7
-#define DISP_CS_GPIO_Port GPIOD
+#define PB_0_Pin GPIO_PIN_7
+#define PB_0_GPIO_Port GPIOD
 #define PB_DPAD_UP_Pin GPIO_PIN_3
 #define PB_DPAD_UP_GPIO_Port GPIOB
 #define PB_DPAD_DOWN_Pin GPIO_PIN_4
@@ -151,8 +155,6 @@ extern SPI_HandleTypeDef hspi4;
 #define PB_DPAD_SELECT_GPIO_Port GPIOB
 #define PB_STAR_Pin GPIO_PIN_0
 #define PB_STAR_GPIO_Port GPIOE
-#define PB_0_Pin GPIO_PIN_1
-#define PB_0_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 
