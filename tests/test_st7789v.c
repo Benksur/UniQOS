@@ -59,17 +59,15 @@ int main(void)
     // HAL_Delay(1000);
     // LCD_Fill(0x05F5, 0, 0, 240, 320);
     // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-    // for (int i = 0; i < 24; i++) {
-    for (int i = 0; i < 10; i++)
-    {
+    for (int i = 0; i < 24; i++) {
       keypad_update_states();
-      if (keypad_is_button_pressed(13))
+      if (keypad_is_button_pressed(i))
       {
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
         pressed++;
         // break;
       }
-      HAL_Delay(5);
+      // HAL_Delay(5);
     }
     // }
     // if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3)) pressed = true;
