@@ -8,6 +8,12 @@
 #include "spi.h"
 #include "tile.h"
 #include "keypad.h"
+
+#include "nau88c22.h"
+#include "bloop_x.h"
+#include "i2c.h"
+#include "i2s.h"
+
 #include <stdbool.h>
 
 void MPU_Config(void);
@@ -38,10 +44,21 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
-  // MX_TIM2_Init();
   MX_SPI4_Init();
+  MX_I2C1_Init();
+  MX_I2S1_Init();
+
+  // MX_TIM2_Init();
   //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
   //   htim2.Instance->CCR3 = 80;
+
+  uint8_t status;
+  static const IAudioDriver_t *codec = NULL;
+  codec = nau88c22_get_driver();
+  codec->init();
+  codec->speaker.mute(false);
+  codec->speaker.set_volume(100);
+
   display_init();
   keypad_init();
 
@@ -59,7 +76,8 @@ int main(void)
     // HAL_Delay(1000);
     // LCD_Fill(0x05F5, 0, 0, 240, 320);
     // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-    for (int i = 0; i < 24; i++) {
+    for (int i = 0; i < 24; i++)
+    {
       keypad_update_states();
       if (keypad_is_button_pressed(i))
       {
@@ -67,7 +85,7 @@ int main(void)
         pressed++;
         // break;
       }
-      // HAL_Delay(5);
+      // HAL_Delay(1);
     }
     // }
     // if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3)) pressed = true;
@@ -75,6 +93,9 @@ int main(void)
     {
       menu_page.handle_input(0);
       screen_tick();
+      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
       pressed--;
     }
     // HAL_Delay(10);

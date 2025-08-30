@@ -61,7 +61,7 @@ static const button_map_t button_map[] = {
 };
 
 #define BUTTON_COUNT (sizeof(button_map) / sizeof(button_map[0]))
-#define DEBOUNCE_TIME_MS 20  // 50ms debounce time
+#define DEBOUNCE_TIME_MS 30  // 50ms debounce time
 
 // Debounce states for each button
 static button_debounce_t button_debounce[BUTTON_COUNT] = {0};
