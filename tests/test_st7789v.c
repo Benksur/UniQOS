@@ -7,6 +7,14 @@
 #include "gpio.h"
 #include "spi.h"
 #include "tile.h"
+#include "keypad.h"
+
+#include "nau88c22.h"
+#include "bloop_x.h"
+#include "i2c.h"
+#include "i2s.h"
+
+#include <stdbool.h>
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -14,23 +22,20 @@ void SystemClock_Config(void);
 static uint16_t fill_color = 0;
 void LCD_Fill(uint16_t RGBCode, uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height)
 {
-    st7789v_set_address_window(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
-    st7789_write_reg(ST7789V_RAMWR, NULL, 0); 
-    uint32_t total_pixels = (uint32_t)width * height;
-    for (uint32_t i = 0; i < total_pixels; i++) {
-        LCD_IO_WriteData16(RGBCode);
-    }
+  display_fill_rect(Xpos, Ypos, width, height, RGBCode);
 }
 
-void draw_grid(void) {
-    for (int i = 0; i < 9 * 8; i++) {
-        int tx = i % 8;
-        int ty = i / 8;
-        int px, py;
-        tile_to_pixels(tx, ty, &px, &py);
-        display_draw_vertical_line(px + 29, py , py + 30, 0x39c7);
-        display_draw_horizontal_line(px, py + 30, px + 30, 0x39c7);
-    }
+void draw_grid(void)
+{
+  for (int i = 0; i < 9 * 8; i++)
+  {
+    int tx = i % 8;
+    int ty = i / 8;
+    int px, py;
+    tile_to_pixels(tx, ty, &px, &py);
+    display_draw_vertical_line(px + 29, py, py + 30, 0x39c7);
+    display_draw_horizontal_line(px, py + 30, px + 30, 0x39c7);
+  }
 }
 
 int main(void)
@@ -39,62 +44,94 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
-  // MX_TIM2_Init();
   MX_SPI4_Init();
-//   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-//   htim2.Instance->CCR3 = 80;
-  st7789v_init();
-  
+  MX_I2C1_Init();
+  MX_I2S1_Init();
+
+  // MX_TIM2_Init();
+  //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  //   htim2.Instance->CCR3 = 80;
+
+  uint8_t status;
+  static const IAudioDriver_t *codec = NULL;
+  codec = nau88c22_get_driver();
+  codec->init();
+  codec->speaker.mute(false);
+  codec->speaker.set_volume(100);
+
+  display_init();
+  keypad_init();
 
   HAL_Delay(1000);
-  LCD_Fill(0x0000, 0, 0, 240, 320);
+  // LCD_Fill(0x05F5, 0, 0, 240, 320);
   LCD_Fill(0x05F5, 0, 0, 240, 25);
   LCD_Fill(0x05F5, 0, 295, 240, 25);
   theme_set_dark();
   screen_init(&menu_page);
+  uint8_t pressed = 0;
   // draw_grid();
-  
+
   while (1)
   {
-      HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-      menu_page.handle_input(0, &menu_page); // Simulate no input
+    // HAL_Delay(1000);
+    // LCD_Fill(0x05F5, 0, 0, 240, 320);
+    // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    for (int i = 0; i < 24; i++)
+    {
+      keypad_update_states();
+      if (keypad_is_button_pressed(i))
+      {
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        pressed++;
+        // break;
+      }
+      // HAL_Delay(1);
+    }
+    // }
+    // if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3)) pressed = true;
+    while (pressed)
+    {
+      menu_page.handle_input(0);
       screen_tick();
-      HAL_Delay(200);  // Reduced delay for faster cycling
-      
+      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      pressed--;
+    }
+    // HAL_Delay(10);
   }
 }
 
-
-
+/**
+ * @brief  The application entry point.
+ * @retval int
+ */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Supply configuration update enable
-  */
+   */
   HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+  while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
+  {
+  }
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+   * in the RCC_OscInitTypeDef structure.
+   */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = 64;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -114,10 +151,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
@@ -136,7 +171,7 @@ void SystemClock_Config(void)
 
 /* USER CODE END 4 */
 
- /* MPU Configuration */
+/* MPU Configuration */
 
 void MPU_Config(void)
 {
@@ -146,7 +181,7 @@ void MPU_Config(void)
   HAL_MPU_Disable();
 
   /** Initializes and configures the Region and the memory to be protected
-  */
+   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER0;
   MPU_InitStruct.BaseAddress = 0x0;
@@ -162,13 +197,21 @@ void MPU_Config(void)
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+
+  if (htim->Instance == TIM1)
+  {
+    HAL_IncTick();
+  }
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -177,20 +220,20 @@ void Error_Handler(void)
   // Add LED toggle for visual feedback
   while (1)
   {
-      HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
-      HAL_Delay(100); // Blink rate
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
+    HAL_Delay(100);                        // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

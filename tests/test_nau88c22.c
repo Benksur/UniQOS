@@ -50,16 +50,6 @@ int main(void)
     }
 }
 
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -149,15 +139,27 @@ void MPU_Config(void)
 
 }
 
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+  /* USER CODE BEGIN Callback 0 */
 
+  /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1)
   {
     HAL_IncTick();
   }
-}
+  /* USER CODE BEGIN Callback 1 */
 
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -168,11 +170,8 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  // Add LED toggle for visual feedback
   while (1)
   {
-      HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
-      HAL_Delay(100); // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */
 }

@@ -30,10 +30,11 @@
         "audio_task.h": "c",
         "i2c.h": "c",
         "stm32h7xx_hal_rtc.h": "c",
-        "navbar.h": "c"
+        "lcd_controller.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
+    "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb",
     "cortex-debug.variableUseNaturalFormat": true,
     "cmake.sourceDirectory": "/Users/tybehnke/reit4841/UniQOS/third_party/stm32/Drivers/CMSIS/DSP/DSP_Lib_TestSuite"
 }

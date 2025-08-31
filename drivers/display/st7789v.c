@@ -367,11 +367,10 @@ static void st7789v_fill(uint16_t RGBCode)
 
 static void st7789v_fill_rect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height, uint16_t RGBCode)
 {
-  uint32_t counter;
   st7789v_set_address_window(Xpos, Ypos, Xpos + Width - 1, Ypos + Height - 1);
   st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-  for (counter = 0; counter < (uint32_t)Width * Height; counter++)
-  {
+  uint32_t total_pixels = (uint32_t)Width * Height;
+  for (uint32_t i = 0; i < total_pixels; i++) {
     lcd->write_data16(RGBCode);
   }
 }

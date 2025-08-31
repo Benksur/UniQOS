@@ -89,7 +89,7 @@ void keypad_update_states(void) {
         button_debounce_t* debounce = &button_debounce[i];
         
         // Read current GPIO state
-        bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_RESET);
+        bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_SET);
         
         // Debouncing logic
         if (current_gpio_state != debounce->is_pressed) {
