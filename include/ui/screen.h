@@ -7,11 +7,11 @@ typedef void (*DataRequestFn)(int type, void* req);
 typedef void (*DataResponseFn)(int type, void* resp);
 
 typedef struct {
-    void (*draw)(struct Page* self);
-    void (*draw_tile)(int tx, int ty, struct Page* self);
-    void (*handle_input)(int event_type, struct Page* self);
-    void (*reset)(struct Page* self);
-    void (*destroy)(struct Page* self);
+    void (*draw)();
+    void (*draw_tile)(int tx, int ty);
+    void (*handle_input)(int event_type);
+    void (*reset)();
+    void (*destroy)();
     bool loading;
     DataRequestFn data_request;
     DataResponseFn data_response;

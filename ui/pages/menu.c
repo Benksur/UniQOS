@@ -8,59 +8,111 @@
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
+#define MENU_VISIBLE_COUNT 5
 
 typedef struct {
     Cursor cursor;
     const char* items[MENU_ITEMS_COUNT];
+    int page_offset;
 } MenuState;
 
 // forward declarations
-static void menu_draw(Page* self);
-static void menu_draw_tile(int tx, int ty, Page* self);
-static void menu_handle_input(int event_type, Page* self);
-static void menu_reset(Page* self);
+static void menu_draw();
+static void menu_draw_tile(int tx, int ty);
+static void menu_handle_input(int event_type);
+static void menu_reset();
 
 // state is static since only one menu page exists
 static MenuState menu_state = {
     .cursor = {0, 0, 0, MENU_ITEMS_COUNT - 1, false},
-    .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"}
+    .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"},
+    .page_offset = 0
 };
 // --- Draw functions ---
-static void menu_draw(Page* self) {
-    MenuState* s = (MenuState*)self->state;
-    for (int ty = 0; ty < MENU_ITEMS_COUNT; ty++) {
-        draw_menu_row(ty, ty == s->cursor.y, s->items[ty]);
+static void menu_draw() {
+    for (int i = 0; i < MENU_VISIBLE_COUNT; i++) {
+        int item_index = menu_state.page_offset + i;
+        if (item_index >= MENU_ITEMS_COUNT) break;
+
+        int tile_y = i * 2; // screen row (0–4) mapped to tiles
+        if (item_index < MENU_ITEMS_COUNT) {
+            bool highlight = (menu_state.cursor.y == item_index);
+            draw_menu_row(tile_y, highlight, menu_state.items[item_index]);
+        } else {
+            draw_empty_row(tile_y);
+        }
     }
 }
 
-static void menu_draw_tile(int tx, int ty, Page* self) {
-    MenuState* s = (MenuState*)self->state;
-    bool highlight = (s->cursor.y == ty);
-    draw_menu_row(ty, highlight, s->items[ty]);
+static void menu_draw_tile(int tx, int ty) {
+    int visible_row = ty / 2; // 0–4 on screen
+    int item_index = menu_state.page_offset + visible_row;
+
+    if (item_index < MENU_ITEMS_COUNT) {
+        bool highlight = (menu_state.cursor.y == item_index);
+        draw_menu_row(visible_row * 2, highlight, menu_state.items[item_index]);
+    } else {
+        draw_empty_row(visible_row * 2);
+    }
+
+    for (int i = 0; i < TILE_COLS; i++) {
+        mark_tile_clean(i, visible_row * 2);
+        mark_tile_clean(i, visible_row * 2 + 1);
+    }
 }
 
-// --- Input ---
-static void menu_handle_input(int event_type, Page* self) {
-    MenuState* s = (MenuState*)self->state;
 
+
+// --- Input ---
+static void menu_handle_input(int event_type) {
     int old_x, old_y;
     bool moved = false;
 
     switch(event_type) {
-        case INPUT_DPAD_UP:    moved = cursor_move(&s->cursor, 0, -1, &old_x, &old_y); break;
-        case INPUT_DPAD_DOWN:  moved = cursor_move(&s->cursor, 0,  1, &old_x, &old_y); break;
-        case INPUT_SELECT: s->cursor.selected = true; break;
+        case INPUT_DPAD_UP:    moved = cursor_move(&menu_state.cursor, 0, -1, &old_x, &old_y); break;
+        case INPUT_DPAD_DOWN:  moved = cursor_move(&menu_state.cursor, 0,  1, &old_x, &old_y); break;
+        case INPUT_DPAD_RIGHT:
+            if (menu_state.cursor.y < 5)
+            moved = cursor_move(&menu_state.cursor, 0, 5 - menu_state.cursor.y, &old_x, &old_y); 
+            break;
+        case INPUT_SELECT: menu_state.cursor.selected = true; break;
     }
 
     // mark old/new tiles dirty
     if (moved) {
-        mark_tile_dirty(old_x, old_y);
-        mark_tile_dirty(s->cursor.x, s->cursor.y);
+    // scroll down
+    if (menu_state.cursor.y >= menu_state.page_offset + MENU_VISIBLE_COUNT) {
+        menu_state.page_offset = menu_state.cursor.y; // start new page at cursor
+        mark_all_tiles_dirty(); // wipe/redraw whole screen
     }
+    // scroll up
+    else if (menu_state.cursor.y < menu_state.page_offset) {
+        menu_state.page_offset = 0;  // reset to first page
+        mark_all_tiles_dirty();      // redraw
+    }
+
+    // mark old/new tiles dirty (only within visible window)
+    int old_tile_y = (old_y - menu_state.page_offset) * 2;
+    int new_tile_y = (menu_state.cursor.y - menu_state.page_offset) * 2;
+
+    if (old_tile_y >= 0 && old_tile_y < MENU_VISIBLE_COUNT * 2) {
+        for (int i = 0; i < TILE_COLS; i++) {
+            mark_tile_dirty(i, old_tile_y);
+            mark_tile_dirty(i, old_tile_y + 1);
+        }
+    }
+    if (new_tile_y >= 0 && new_tile_y < MENU_VISIBLE_COUNT * 2) {
+        for (int i = 0; i < TILE_COLS; i++) {
+            mark_tile_dirty(i, new_tile_y);
+            mark_tile_dirty(i, new_tile_y + 1);
+        }
+    }
+}
+
 
     // Navigation action on select
     if (event_type == INPUT_SELECT) {
-        switch (s->cursor.y) {
+        switch (menu_state.cursor.y) {
             case 0: /* screen_set_page(&phone_page); */ break;
             case 1: /* screen_set_page(&sms_page); */ break;
             case 2: /* screen_set_page(&contacts_page); */ break;
@@ -69,13 +121,12 @@ static void menu_handle_input(int event_type, Page* self) {
             case 5: /* screen_set_page(&calendar_page); */ break;
             case 6: /* screen_set_page(&settings_page); */ break;
         }
-        s->cursor.selected = false; // reset selection
+        menu_state.cursor.selected = false; // reset selection
     }
 }
 
-static void menu_reset(Page* self) {
-    MenuState* s = (MenuState*)self->state;
-    cursor_reset(&s->cursor);
+static void menu_reset() {
+    cursor_reset(&menu_state.cursor);
 }
 
 Page menu_page = {

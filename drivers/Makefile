@@ -93,6 +93,7 @@ $(CSRCS) \
 ../../ui/screen.c \
 ../../ui/theme.c \
 ../../ui/tile.c \
+../../ui/cursor.c \
 ../../ui/pages/default.c \
 ../../ui/pages/menu.c \
 ../../ui/components/menu_row.c \

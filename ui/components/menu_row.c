@@ -7,7 +7,6 @@
 
 void draw_menu_row(int tile_y, int selected, const char* text)
 {
-    if (tile_y % 2) return;
     int px, py;
     tile_to_pixels(0, tile_y, &px, &py);
     int width = TILE_WIDTH * TILE_COLS;
@@ -25,4 +24,13 @@ void draw_menu_row(int tile_y, int selected, const char* text)
     }
 
     display_draw_horizontal_line(px, py, px + width, current_theme.grid_colour);
+}
+
+void draw_empty_row(int tile_y) {
+    int px, py;
+    tile_to_pixels(0, tile_y, &px, &py);
+    int width = TILE_WIDTH * TILE_COLS;
+    int height = TILE_HEIGHT * 2;
+
+    display_fill_rect(px, py, width, height, current_theme.bg_colour);
 }

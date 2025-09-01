@@ -65,10 +65,13 @@ int main(void)
   HAL_Delay(1000);
   // LCD_Fill(0x05F5, 0, 0, 240, 320);
   LCD_Fill(0x05F5, 0, 0, 240, 25);
-  LCD_Fill(0x05F5, 0, 295, 240, 25);
+  LCD_Fill(0x0000, 0, 25, 240, 320);
+  // LCD_Fill(0x05F5, 0, 295, 240, 25);
   theme_set_dark();
   screen_init(&menu_page);
-  uint8_t pressed = 0;
+  uint8_t up_pressed = 0;
+  uint8_t down_pressed = 0;
+  uint8_t right_pressed = 0;
   // draw_grid();
 
   while (1)
@@ -79,24 +82,42 @@ int main(void)
     for (int i = 0; i < 24; i++)
     {
       keypad_update_states();
-      if (keypad_is_button_pressed(i))
+      if (keypad_is_button_pressed(12))
       {
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        pressed++;
-        // break;
+        up_pressed++;
       }
-      // HAL_Delay(1);
+      if (keypad_is_button_pressed(13))
+      {
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        down_pressed++;
+      }
+      if (keypad_is_button_pressed(15)) {
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        right_pressed++;
+      }
     }
     // }
     // if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3)) pressed = true;
-    while (pressed)
+    while (up_pressed)
     {
-      menu_page.handle_input(0);
+      menu_page.handle_input(1);
       screen_tick();
       HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      pressed--;
+      up_pressed--;
+    }
+    while (down_pressed)
+    {
+      menu_page.handle_input(2);
+      screen_tick();
+      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      down_pressed--;
+    }
+    while (right_pressed) {
+      menu_page.handle_input(4);
+      screen_tick();
+      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      right_pressed--;
     }
     // HAL_Delay(10);
   }
