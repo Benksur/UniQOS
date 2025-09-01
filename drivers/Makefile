@@ -93,8 +93,10 @@ $(CSRCS) \
 ../../ui/screen.c \
 ../../ui/theme.c \
 ../../ui/tile.c \
-../../ui/pages/default.c \
+../../ui/cursor.c \
 ../../ui/pages/menu.c \
+../../ui/pages/phone/phone.c \
+../../ui/pages/phone/call.c \
 ../../ui/components/menu_row.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
