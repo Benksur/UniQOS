@@ -285,16 +285,15 @@ void draw_menu_row(int tile_y, int selected, const char* text)
     
     if (selected)
     {
-        display_fill_rect(px, py, width, height, current_theme.fg_colour);
-        display_draw_string(px + 60, py + 10, text, current_theme.bg_colour, current_theme.fg_colour, 2);
-        draw_icon_for_text(text, px, py, current_theme.bg_colour);
+        display_fill_rect(px, py, width, height, current_theme.highlight_colour);
+        display_draw_string(px + 60, py + 10, text, current_theme.text_colour, current_theme.highlight_colour, 2);
     } else {
         display_fill_rect(px, py, width, height, current_theme.bg_colour);
         display_draw_string(px + 60, py + 10, text, current_theme.text_colour, current_theme.bg_colour, 2);
-        draw_icon_for_text(text, px, py, current_theme.fg_colour);
     }
+    draw_icon_for_text(text, px, py, current_theme.fg_colour);
 
-    display_draw_horizontal_line(px, py, px + width, current_theme.grid_colour);
+    display_draw_horizontal_line(px, py, px + width, current_theme.highlight_colour);
 }
 
 void draw_empty_row(int tile_y) {

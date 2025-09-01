@@ -39,7 +39,7 @@ static void draw_phone_header(int tile_y) {
     display_draw_string(center_x, py + 15, header_text, current_theme.fg_colour, current_theme.bg_colour, 3);
     
     // Draw bottom border
-    display_draw_horizontal_line(px, py + height - 1, px + width, current_theme.grid_colour);
+    display_draw_horizontal_line(px, py + height - 1, px + width, current_theme.highlight_colour);
 }
 
 static void mark_row_dirty(int row) {
