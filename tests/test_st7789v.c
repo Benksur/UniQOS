@@ -93,7 +93,12 @@ int main(void)
           }
           
           screen_tick();
-          HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+          if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
+          HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
+          } else {
+            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)bloop, 950, HAL_MAX_DELAY);
+          }
+            // Play sound for numeric keypad presses
         }
       }
     }
