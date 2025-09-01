@@ -6,6 +6,7 @@
 #include "menu_row.h"
 #include "input.h"
 #include "theme.h"
+#include "call.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -105,8 +106,9 @@ static void phone_handle_input(int event_type) {
     if (event_type == INPUT_SELECT) {
         state->cursor.selected = false;
         switch (state->cursor.y) {
-            case 0: // Call
-                // TODO: Open dialer
+            case 0: 
+                Page* call_page = call_page_create();
+                screen_push_page(call_page);
                 break;
             case 1: // Call History
                 // TODO: Open call history
