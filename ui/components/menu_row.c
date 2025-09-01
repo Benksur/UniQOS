@@ -189,6 +189,64 @@ static void draw_settings_icon(int x, int y, uint16_t colour) {
     display_fill_circle(cx + 8, cy + spacing + 1, knob_radius, colour);
 }
 
+static void draw_history_icon(int x, int y, uint16_t colour) {
+    // Center the document in 60x60
+    int doc_width = 30;
+    int doc_height = 40;
+    int cx = x + (60 - doc_width) / 2;
+    int cy = y + (60 - doc_height) / 2;
+    
+    // Draw document outline
+    display_draw_rect(cx, cy, doc_width, doc_height, colour);
+    
+    // Draw horizontal lines (text lines)
+    int line_width = 20;
+    int line_start_x = cx + 5;
+    int line_spacing = 6;
+    
+    // Draw 5 horizontal lines
+    for (int i = 0; i < 5; i++) {
+        int line_y = cy + 8 + (i * line_spacing);
+        display_fill_rect(line_start_x, line_y, line_width, 2, colour);
+    }
+}
+
+static void draw_star_icon(int x, int y, uint16_t colour) {
+    // Center the star in 60x60
+    int cx = x + 30;
+    int cy = y + 30;
+    
+    // Define the 10 points: 5 outer points + 5 inner points for a proper star outline
+    int outer_points[10] = {
+        cx, cy - 15,        // 0: Top outer
+        cx + 14, cy - 5,    // 1: Top right outer
+        cx + 9, cy + 12,    // 2: Bottom right outer
+        cx - 9, cy + 12,    // 3: Bottom left outer
+        cx - 14, cy - 5     // 4: Top left outer
+    };
+    
+    int inner_points[10] = {
+        cx + 4, cy - 5,     // 0: Top right inner
+        cx + 5, cy + 2,     // 1: Right inner
+        cx, cy + 6,         // 2: Bottom inner
+        cx - 5, cy + 2,     // 3: Left inner
+        cx - 4, cy - 5      // 4: Top left inner
+    };
+    
+    // Draw the star outline by connecting outer->inner->outer in sequence
+    for (int i = 0; i < 5; i++) {
+        int next_outer = (i + 1) % 5;
+        
+        // Draw from outer point to inner point
+        display_draw_line(outer_points[i*2], outer_points[i*2+1], 
+                         inner_points[i*2], inner_points[i*2+1], colour);
+        
+        // Draw from inner point to next outer point
+        display_draw_line(inner_points[i*2], inner_points[i*2+1],
+                         outer_points[next_outer*2], outer_points[next_outer*2+1], colour);
+    }
+}
+
 // Icon mapping array
 static const icon_mapping_t icon_mappings[] = {
     {"Phone", draw_phone_icon},
@@ -198,6 +256,9 @@ static const icon_mapping_t icon_mappings[] = {
     {"Calculator", draw_calculator_icon},
     {"Calendar", draw_calendar_icon},
     {"Settings", draw_settings_icon},
+    {"Call", draw_phone_icon},  // Reuse phone icon for Call
+    {"Call History", draw_history_icon},
+    {"Favourites", draw_star_icon},
     {NULL, NULL}  // Sentinel value
 };
 
@@ -209,8 +270,8 @@ static void draw_icon_for_text(const char* text, int x, int y, uint16_t colour) 
             return;
         }
     }
-    // Default icon if no match found
-    display_draw_rounded_square(x + 5, y + 5, 50, 50, 5, colour);
+    // placeholder icon, for checking alignment
+    // display_draw_rounded_square(x + 5, y + 5, 50, 50, 5, colour);
 }
 
 
@@ -224,16 +285,15 @@ void draw_menu_row(int tile_y, int selected, const char* text)
     
     if (selected)
     {
-        display_fill_rect(px, py, width, height, current_theme.fg_colour);
-        display_draw_string(px + 60, py + 10, text, current_theme.bg_colour, current_theme.fg_colour, 2);
-        draw_icon_for_text(text, px, py, current_theme.bg_colour);
+        display_fill_rect(px, py, width, height, current_theme.highlight_colour);
+        display_draw_string(px + 60, py + 10, text, current_theme.fg_colour, current_theme.highlight_colour, 2);
     } else {
         display_fill_rect(px, py, width, height, current_theme.bg_colour);
-        display_draw_string(px + 60, py + 10, text, current_theme.text_colour, current_theme.bg_colour, 2);
-        draw_icon_for_text(text, px, py, current_theme.fg_colour);
+        display_draw_string(px + 60, py + 10, text, current_theme.fg_colour, current_theme.bg_colour, 2);
     }
+    draw_icon_for_text(text, px, py, current_theme.fg_colour);
 
-    display_draw_horizontal_line(px, py, px + width, current_theme.grid_colour);
+    display_draw_horizontal_line(px, py, px + width, current_theme.highlight_colour);
 }
 
 void draw_empty_row(int tile_y) {
@@ -243,4 +303,13 @@ void draw_empty_row(int tile_y) {
     int height = TILE_HEIGHT * 2;
 
     display_fill_rect(px, py, width, height, current_theme.bg_colour);
+}
+
+void draw_empty_row_fill(int tile_y, uint16_t colour) {
+    int px, py;
+    tile_to_pixels(0, tile_y, &px, &py);
+    int width = TILE_WIDTH * TILE_COLS;
+    int height = TILE_HEIGHT * 2;
+
+    display_fill_rect(px, py, width, height, colour);
 }

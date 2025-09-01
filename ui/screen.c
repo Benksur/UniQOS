@@ -64,11 +64,13 @@ void screen_pop_page(void) {
             current_page->destroy();
         }
 
+        // Restore the previous page from the stack
+        current_page = page_stack[page_top--];
+        
         if (current_page && data_request_fn) {
             current_page->data_request = data_request_fn;
         }
 
-        current_page = page_stack[page_top--];
         if (current_page->reset) current_page->reset();
         mark_all_tiles_dirty();
         if (current_page->draw) current_page->draw();

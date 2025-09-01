@@ -2,7 +2,6 @@
 #include "display.h"
 #include "theme.h"
 #include "screen.h"
-#include "default.h"
 #include "pages/menu.h"
 #include "gpio.h"
 #include "spi.h"
@@ -69,68 +68,35 @@ int main(void)
   // LCD_Fill(0x05F5, 0, 295, 240, 25);
   theme_set_dark();
   screen_init(&menu_page);
-  uint8_t up_pressed = 0;
-  uint8_t down_pressed = 0;
-  uint8_t right_pressed = 0;
-  uint8_t left_pressed = 0;
+  mark_all_tiles_dirty();
+  screen_tick();
   // draw_grid();
 
   while (1)
   {
-    // HAL_Delay(1000);
-    // LCD_Fill(0x05F5, 0, 0, 240, 320);
-    // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    // Update keypad states and handle all inputs
     for (int i = 0; i < 24; i++)
     {
       keypad_update_states();
-      if (keypad_is_button_pressed(12))
-      {
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        up_pressed++;
+      
+      // Check all buttons and handle input events
+      for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++) {
+        if (keypad_is_button_pressed(button_idx)) {
+          HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+          input_event_t event = keypad_get_button_event(button_idx);
+          
+          // Handle special cases
+          if (event == INPUT_LEFT) {
+            screen_pop_page();
+          } else {
+            screen_handle_input(event);
+          }
+          
+          screen_tick();
+          HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+        }
       }
-      if (keypad_is_button_pressed(13))
-      {
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        down_pressed++;
-      }
-      if (keypad_is_button_pressed(15)) {
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        right_pressed++;
-      }
-      if (keypad_is_button_pressed(14)) {
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        left_pressed++;
-      }
     }
-    // }
-    // if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3)) pressed = true;
-    while (up_pressed)
-    {
-      menu_page.handle_input(1);
-      screen_tick();
-      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      up_pressed--;
-    }
-    while (down_pressed)
-    {
-      menu_page.handle_input(2);
-      screen_tick();
-      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      down_pressed--;
-    }
-    while (left_pressed) {
-      menu_page.handle_input(3);
-      screen_tick();
-      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      left_pressed--;
-    }
-    while (right_pressed) {
-      menu_page.handle_input(4);
-      screen_tick();
-      HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
-      right_pressed--;
-    }
-    // HAL_Delay(10);
   }
 }
 

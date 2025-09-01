@@ -5,6 +5,7 @@
 #include "menu_row.h"
 #include "cursor.h"
 #include "input.h"
+#include "phone.h"
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
@@ -29,26 +30,7 @@ static MenuState menu_state = {
     .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"},
     .page_offset = 0};
 // --- Draw functions ---
-static void menu_draw()
-{
-    for (int i = 0; i < MENU_VISIBLE_COUNT; i++)
-    {
-        int item_index = menu_state.page_offset + i;
-        if (item_index >= MENU_ITEMS_COUNT)
-            break;
-
-        int tile_y = i * 2; // screen row (0–4) mapped to tiles
-        if (item_index < MENU_ITEMS_COUNT)
-        {
-            bool highlight = (menu_state.cursor.y == item_index);
-            draw_menu_row(tile_y, highlight, menu_state.items[item_index]);
-        }
-        else
-        {
-            draw_empty_row(tile_y);
-        }
-    }
-}
+static void menu_draw(){}
 
 static void menu_draw_tile(int tx, int ty)
 {
@@ -133,7 +115,11 @@ static void menu_handle_input(int event_type) {
     if (event_type == INPUT_SELECT) {
         menu_state.cursor.selected = false;
         switch (menu_state.cursor.y) {
-            case 0: /* screen_set_page(&phone_page);     */ break;
+            case 0: {
+                Page* phone_page = phone_page_create();
+                screen_push_page(phone_page);  // Use push instead of set
+                break;
+            }
             case 1: /* screen_set_page(&sms_page);       */ break;
             case 2: /* screen_set_page(&contacts_page);  */ break;
             case 3: /* screen_set_page(&clock_page);     */ break;
