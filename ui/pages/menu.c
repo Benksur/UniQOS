@@ -131,6 +131,7 @@ static void menu_handle_input(int event_type) {
 
     // --- Selection action ---
     if (event_type == INPUT_SELECT) {
+        menu_state.cursor.selected = false;
         switch (menu_state.cursor.y) {
             case 0: /* screen_set_page(&phone_page);     */ break;
             case 1: /* screen_set_page(&sms_page);       */ break;
@@ -140,7 +141,6 @@ static void menu_handle_input(int event_type) {
             case 5: /* screen_set_page(&calendar_page);  */ break;
             case 6: /* screen_set_page(&settings_page);  */ break;
         }
-        menu_state.cursor.selected = false;
     }
 }
 
