@@ -68,6 +68,8 @@ int main(void)
   // LCD_Fill(0x05F5, 0, 295, 240, 25);
   theme_set_dark();
   screen_init(&menu_page);
+  mark_all_tiles_dirty();
+  screen_tick();
   uint8_t up_pressed = 0;
   uint8_t down_pressed = 0;
   uint8_t right_pressed = 0;

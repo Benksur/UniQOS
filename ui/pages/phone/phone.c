@@ -50,24 +50,7 @@ static void mark_row_dirty(int row) {
     }
 }
 
-static void phone_draw() {
-    PhoneState* state = (PhoneState*)current_page->state;
-    
-    // Draw header
-    draw_phone_header(0);
-    
-    // Draw options starting from row 1 (tile_y = 2)
-    for (int i = 0; i < PHONE_OPTIONS_COUNT; i++) {
-        int tile_y = (i + 1) * 2; // Skip header row
-        bool highlight = (state->cursor.y == i);
-        draw_menu_row(tile_y, highlight, state->options[i]);
-    }
-    
-    // Draw empty rows for the rest
-    for (int i = PHONE_OPTIONS_COUNT + 1; i < 5; i++) {
-        draw_empty_row(i * 2);
-    }
-}
+static void phone_draw() {}
 
 static void phone_draw_tile(int tx, int ty) {
     PhoneState* state = (PhoneState*)current_page->state;
