@@ -5,6 +5,7 @@
 #include "menu_row.h"
 #include "cursor.h"
 #include "input.h"
+#include "phone.h"
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
@@ -133,7 +134,11 @@ static void menu_handle_input(int event_type) {
     if (event_type == INPUT_SELECT) {
         menu_state.cursor.selected = false;
         switch (menu_state.cursor.y) {
-            case 0: /* screen_set_page(&phone_page);     */ break;
+            case 0: {
+                Page* phone_page = phone_page_create();
+                screen_push_page(phone_page);  // Use push instead of set
+                break;
+            }
             case 1: /* screen_set_page(&sms_page);       */ break;
             case 2: /* screen_set_page(&contacts_page);  */ break;
             case 3: /* screen_set_page(&clock_page);     */ break;

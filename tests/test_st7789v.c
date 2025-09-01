@@ -2,7 +2,6 @@
 #include "display.h"
 #include "theme.h"
 #include "screen.h"
-#include "default.h"
 #include "pages/menu.h"
 #include "gpio.h"
 #include "spi.h"
@@ -101,31 +100,43 @@ int main(void)
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
         left_pressed++;
       }
+      if (keypad_is_button_pressed(16)) {
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        screen_handle_input(5);  // INPUT_SELECT = 5
+        screen_tick();
+        HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      }
+      if (keypad_is_button_pressed(17)) { // INPUT_LEFT
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        screen_pop_page(); 
+        screen_tick();
+        HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
+      }
     }
     // }
     // if (HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3)) pressed = true;
     while (up_pressed)
     {
-      menu_page.handle_input(1);
+      screen_handle_input(1);  // INPUT_DPAD_UP = 1
       screen_tick();
       HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
       up_pressed--;
     }
     while (down_pressed)
     {
-      menu_page.handle_input(2);
+      screen_handle_input(2);  // INPUT_DPAD_DOWN = 2
       screen_tick();
       HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
       down_pressed--;
     }
     while (left_pressed) {
-      menu_page.handle_input(3);
+      screen_handle_input(3);  // INPUT_DPAD_LEFT = 3
       screen_tick();
       HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
       left_pressed--;
     }
     while (right_pressed) {
-      menu_page.handle_input(4);
+      screen_handle_input(4);  // INPUT_DPAD_RIGHT = 4
       screen_tick();
       HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 950, HAL_MAX_DELAY);
       right_pressed--;
