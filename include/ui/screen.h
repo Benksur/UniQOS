@@ -21,6 +21,7 @@ typedef struct {
 void screen_set_data_req_fn(DataRequestFn fn);
 void screen_set_data_resp_fn(DataResponseFn fn);
 void screen_init(Page* initial_page);
+Page* screen_get_current_page(void);
 void screen_push_page(Page* new_page);
 void screen_pop_page(void);
 void screen_set_page(Page* new_page);

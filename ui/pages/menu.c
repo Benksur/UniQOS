@@ -6,6 +6,7 @@
 #include "cursor.h"
 #include "input.h"
 #include "phone.h"
+#include "sms.h"
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
@@ -120,7 +121,11 @@ static void menu_handle_input(int event_type) {
                 screen_push_page(phone_page);  // Use push instead of set
                 break;
             }
-            case 1: /* screen_set_page(&sms_page);       */ break;
+            case 1: {
+                Page* sms_page = sms_page_create();
+                screen_push_page(sms_page);  // Use push instead of set
+                break;
+            }
             case 2: /* screen_set_page(&contacts_page);  */ break;
             case 3: /* screen_set_page(&clock_page);     */ break;
             case 4: /* screen_set_page(&calc_page);      */ break;
@@ -129,7 +134,6 @@ static void menu_handle_input(int event_type) {
         }
     }
 }
-
 
 static void menu_reset()
 {
