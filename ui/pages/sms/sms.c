@@ -17,14 +17,13 @@ typedef struct {
     const char* options[SMS_OPTIONS_COUNT];
 } SmsState;
 
-static Page* current_page = NULL;
 
 // Forward declarations
-static void sms_draw();
-static void sms_draw_tile(int tx, int ty);
-static void sms_handle_input(int event_type);
-static void sms_reset();
-static void sms_destroy();
+static void sms_draw(Page* self);
+static void sms_draw_tile(Page* self, int tx, int ty);
+static void sms_handle_input(Page* self, int event_type);
+static void sms_reset(Page* self);
+static void sms_destroy(Page* self);
 
 static void draw_sms_header(int tile_y) {
     int px, py;
@@ -51,10 +50,10 @@ static void mark_row_dirty(int row) {
     }
 }
 
-static void sms_draw() {}
+static void sms_draw(Page* self) {}
 
-static void sms_draw_tile(int tx, int ty) {
-    SmsState* state = (SmsState*)current_page->state;
+static void sms_draw_tile(Page* self, int tx, int ty) {
+    SmsState* state = (SmsState*)self->state;
     int visible_row = ty / 2; // 0-4 on screen
     
     if (visible_row == 0) {
@@ -77,8 +76,8 @@ static void sms_draw_tile(int tx, int ty) {
     }
 }
 
-static void sms_handle_input(int event_type) {
-    SmsState* state = (SmsState*)current_page->state;
+static void sms_handle_input(Page* self, int event_type) {
+    SmsState* state = (SmsState*)self->state;
     int old_x, old_y;
     bool moved = false;
     
@@ -120,17 +119,16 @@ static void sms_handle_input(int event_type) {
     }
 }
 
-static void sms_reset() {
-    SmsState* state = (SmsState*)current_page->state;
+static void sms_reset(Page* self) {
+    SmsState* state = (SmsState*)self->state;
     cursor_reset(&state->cursor);
 }
 
-static void sms_destroy() {
-    if (current_page) {
-        SmsState* state = (SmsState*)current_page->state;
+static void sms_destroy(Page* self) {
+    if (self) {
+        SmsState* state = (SmsState*)self->state;
         free(state);
-        free(current_page);
-        current_page = NULL;
+        free(self);
     }
 }
 
@@ -152,6 +150,5 @@ Page* sms_page_create() {
     page->destroy = sms_destroy;
     page->state = state;
     
-    current_page = page; // Set for static helpers
     return page;
 }

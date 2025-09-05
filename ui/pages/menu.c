@@ -20,10 +20,10 @@ typedef struct
 } MenuState;
 
 // forward declarations
-static void menu_draw();
-static void menu_draw_tile(int tx, int ty);
-static void menu_handle_input(int event_type);
-static void menu_reset();
+static void menu_draw(Page* self);
+static void menu_draw_tile(Page* self, int tx, int ty);
+static void menu_handle_input(Page* self, int event_type);
+static void menu_reset(Page* self);
 
 // state is static since only one menu page exists
 static MenuState menu_state = {
@@ -31,9 +31,9 @@ static MenuState menu_state = {
     .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"},
     .page_offset = 0};
 // --- Draw functions ---
-static void menu_draw(){}
+static void menu_draw(Page* self){}
 
-static void menu_draw_tile(int tx, int ty)
+static void menu_draw_tile(Page* self, int tx, int ty)
 {
     int visible_row = ty / 2; // 0–4 on screen
     int item_index = menu_state.page_offset + visible_row;
@@ -55,7 +55,7 @@ static void menu_draw_tile(int tx, int ty)
     }
 }
 
-static void mark_row_dirty(int row) {
+static void mark_row_dirty(Page* self, int row) {
     int tile_y = row * 2;
     for (int i = 0; i < TILE_COLS; i++) {
         mark_tile_dirty(i, tile_y);
@@ -76,7 +76,7 @@ static void update_page_offset() {
     }
 }
 
-static void menu_handle_input(int event_type) {
+static void menu_handle_input(Page* self, int event_type) {
     int old_x, old_y;
     bool moved = false;
 
@@ -108,8 +108,8 @@ static void menu_handle_input(int event_type) {
         int old_row = old_y - menu_state.page_offset;
         int new_row = menu_state.cursor.y - menu_state.page_offset;
 
-        if (old_row >= 0 && old_row < MENU_VISIBLE_COUNT) mark_row_dirty(old_row);
-        if (new_row >= 0 && new_row < MENU_VISIBLE_COUNT) mark_row_dirty(new_row);
+        if (old_row >= 0 && old_row < MENU_VISIBLE_COUNT) mark_row_dirty(self, old_row);
+        if (new_row >= 0 && new_row < MENU_VISIBLE_COUNT) mark_row_dirty(self, new_row);
     }
 
     // --- Selection action ---
@@ -135,7 +135,7 @@ static void menu_handle_input(int event_type) {
     }
 }
 
-static void menu_reset()
+static void menu_reset(Page* self)
 {
     cursor_reset(&menu_state.cursor);
 }

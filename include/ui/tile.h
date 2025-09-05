@@ -1,6 +1,8 @@
 #ifndef TILE_H
 #define TILE_H
 
+#include "screen.h"
+
 #define TILE_WIDTH 30
 #define TILE_HEIGHT 30
 #define NAVBAR_HEIGHT 25
@@ -15,6 +17,6 @@ static inline void tile_to_pixels(int tx, int ty, int* out_x, int* out_y) {
 void mark_tile_dirty(int tile_x, int tile_y);
 void mark_tile_clean(int tile_x, int tile_y);
 void mark_all_tiles_dirty(void);
-void flush_dirty_tiles(void (*draw_tile)(int tx, int ty));
+void flush_dirty_tiles(Page* page);
 
 #endif
