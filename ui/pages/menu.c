@@ -137,7 +137,7 @@ static void menu_handle_input(Page* self, int event_type) {
 
 static void menu_reset(Page* self)
 {
-    cursor_reset(&menu_state.cursor);
+    // cursor_reset(&menu_state.cursor);
 }
 
 Page menu_page = {

@@ -46,8 +46,6 @@ static void add_digit(Page* self, char digit) {
         
         // Mark display area dirty for redraw
         mark_tile_dirty(1, 5);
-        mark_tile_dirty(2, 5);
-        mark_tile_dirty(3, 5);
     }
 }
 
@@ -74,8 +72,6 @@ static void remove_digit(Page* self) {
         
         // Mark display area dirty for redraw
         mark_tile_dirty(1, 5);
-        mark_tile_dirty(2, 5);
-        mark_tile_dirty(3, 5);
     }
 }
 
@@ -153,14 +149,14 @@ static void call_draw_tile(Page* self, int tile_x, int tile_y) {
         // Phone number display area (2 rows)
         // check for tx == 0 to avoid redrawing bg multiple times
         if (tile_x == 0) {
-            draw_empty_row_fill(visible_row * 2, current_theme.highlight_colour);
+            draw_empty_row_fill(tile_y, current_theme.highlight_colour);
         }
         draw_number(self);
         
         
     } else if (visible_row == 3 && tile_x == 0) {
         int px, py;
-        tile_to_pixels(0, visible_row * 2, &px, &py);
+        tile_to_pixels(0, tile_y, &px, &py);
         int width = TILE_WIDTH * TILE_COLS;
         int height = TILE_HEIGHT * 3;
         display_fill_rect(px, py, width, height, current_theme.highlight_colour);

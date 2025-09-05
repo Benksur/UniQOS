@@ -259,7 +259,7 @@ static const icon_mapping_t icon_mappings[] = {
     {"Call", draw_phone_icon},  // Reuse phone icon for Call
     {"Call History", draw_history_icon},
     {"Favourites", draw_star_icon},
-    {"Messages", draw_sms_icon},
+    {"New Message", draw_sms_icon},
     {"All Messages", draw_history_icon},
     {NULL, NULL}  // Sentinel value
 };

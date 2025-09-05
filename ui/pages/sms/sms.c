@@ -6,7 +6,7 @@
 #include "menu_row.h"
 #include "input.h"
 #include "theme.h"
-#include "call.h"
+#include "new_sms.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -106,8 +106,8 @@ static void sms_handle_input(Page* self, int event_type) {
         state->cursor.selected = false;
         switch (state->cursor.y) {
             case 0: 
-                Page* call_page = call_page_create();
-                screen_push_page(call_page);
+                Page* new_sms_page = new_sms_page_create();
+                screen_push_page(new_sms_page);
                 break;
             case 1: // Call History
                 // TODO: Open call history
@@ -139,7 +139,7 @@ Page* sms_page_create() {
     state->cursor = (Cursor){0, 0, 0, SMS_OPTIONS_COUNT - 1, false};
     
     // Initialize options
-    state->options[0] = "Messages";
+    state->options[0] = "New Message";
     state->options[1] = "All Messages";
     state->options[2] = "Favourites";
     
