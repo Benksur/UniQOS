@@ -53,9 +53,24 @@ static void add_digit(char digit) {
     }
 }
 
+static void clear_old_char(CallState* state) {
+    // Calculate position of the digit and cursor to be removed
+        int px, py;
+        tile_to_pixels(1, 5, &px, &py);
+        int digit_x = px + (state->cursor.x - 1) * 6 * 3; // Position of the digit to remove
+        int old_cursor_x = px + state->cursor.x * 6 * 3; // Current cursor position
+        
+        // Clear the specific digit area
+        display_fill_rect(digit_x, py, 6 * 3, TILE_HEIGHT, current_theme.highlight_colour);
+        
+        // Clear the old cursor area
+        display_fill_rect(old_cursor_x, py, 5, TILE_HEIGHT - 8, current_theme.highlight_colour);
+}
+
 static void remove_digit(void) {
     CallState* state = (CallState*)current_page->state;
     if (state->cursor.x > 0) {
+        clear_old_char(state);
         state->cursor.x--;
         state->phone_number[state->cursor.x] = '\0';
         
@@ -123,7 +138,7 @@ static void draw_number(void) {
     
     // Draw cursor after the phone number
     int cursor_x = px + (strlen(state->phone_number) * 6 * 3); // 6 pixels per char * font size 3
-    display_fill_rect(cursor_x, py, 12, TILE_HEIGHT - 8, current_theme.fg_colour);
+    display_fill_rect(cursor_x, py, 5, TILE_HEIGHT - 8, current_theme.fg_colour);
     for (int i = 0; i < TILE_COLS; i++) {
         mark_tile_clean(i, 10);
     }

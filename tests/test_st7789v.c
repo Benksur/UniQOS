@@ -10,6 +10,7 @@
 
 #include "nau88c22.h"
 #include "bloop_x.h"
+#include "tick_sound.h"
 #include "i2c.h"
 #include "i2s.h"
 
