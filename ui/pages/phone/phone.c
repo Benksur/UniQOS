@@ -17,14 +17,12 @@ typedef struct {
     const char* options[PHONE_OPTIONS_COUNT];
 } PhoneState;
 
-static Page* current_page = NULL;
-
 // Forward declarations
-static void phone_draw();
-static void phone_draw_tile(int tx, int ty);
-static void phone_handle_input(int event_type);
-static void phone_reset();
-static void phone_destroy();
+static void phone_draw(Page* self);
+static void phone_draw_tile(Page* self, int tx, int ty);
+static void phone_handle_input(Page* self, int event_type);
+static void phone_reset(Page* self);
+static void phone_destroy(Page* self);
 
 static void draw_phone_header(int tile_y) {
     int px, py;
@@ -51,10 +49,10 @@ static void mark_row_dirty(int row) {
     }
 }
 
-static void phone_draw() {}
+static void phone_draw(Page* self) {}
 
-static void phone_draw_tile(int tx, int ty) {
-    PhoneState* state = (PhoneState*)current_page->state;
+static void phone_draw_tile(Page* self, int tx, int ty) {
+    PhoneState* state = (PhoneState*)self->state;
     int visible_row = ty / 2; // 0-4 on screen
     
     if (visible_row == 0) {
@@ -77,8 +75,8 @@ static void phone_draw_tile(int tx, int ty) {
     }
 }
 
-static void phone_handle_input(int event_type) {
-    PhoneState* state = (PhoneState*)current_page->state;
+static void phone_handle_input(Page* self, int event_type) {
+    PhoneState* state = (PhoneState*)self->state;
     int old_x, old_y;
     bool moved = false;
     
@@ -120,17 +118,16 @@ static void phone_handle_input(int event_type) {
     }
 }
 
-static void phone_reset() {
-    PhoneState* state = (PhoneState*)current_page->state;
+static void phone_reset(Page* self) {
+    PhoneState* state = (PhoneState*)self->state;
     cursor_reset(&state->cursor);
 }
 
-static void phone_destroy() {
-    if (current_page) {
-        PhoneState* state = (PhoneState*)current_page->state;
+static void phone_destroy(Page* self) {
+    if (self) {
+        PhoneState* state = (PhoneState*)self->state;
         free(state);
-        free(current_page);
-        current_page = NULL;
+        free(self);
     }
 }
 
@@ -152,7 +149,6 @@ Page* phone_page_create() {
     page->reset = phone_reset;
     page->destroy = phone_destroy;
     page->state = state;
-    
-    current_page = page; // Set for static helpers
+
     return page;
 }
