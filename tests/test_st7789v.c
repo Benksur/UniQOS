@@ -68,10 +68,13 @@ int main(void)
 
   theme_set_dark();
   LCD_Fill(current_theme.fg_colour, 0, 0, 240, 25);
-  
+
+  char time_buffer[15] = {0};
   RTC_DateTypeDef sDate;
   HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-  char time_buffer[15] = {0};
+  // RTC_TimeTypeDef sTime;
+  // HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+  // sprintf(time_buffer, "%02d:%02d:%02d", sTime.Hours, sTime.Minutes, sTime.Seconds);
   sprintf(time_buffer, "20%02d-%02d-%02d", sDate.Year, sDate.Month, sDate.Date);
   display_draw_string(10, 5, time_buffer, current_theme.bg_colour, current_theme.fg_colour, 2);
 
