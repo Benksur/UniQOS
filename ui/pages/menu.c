@@ -7,6 +7,7 @@
 #include "input.h"
 #include "phone.h"
 #include "sms.h"
+#include "clock.h"
 #include "theme.h"
 #include <stddef.h>
 
@@ -129,7 +130,10 @@ static void menu_handle_input(Page* self, int event_type) {
                 break;
             }
             case 2: /* screen_set_page(&contacts_page);  */ break;
-            case 3: /* screen_set_page(&clock_page);     */ break;
+            case 3:
+                Page* clock_page = clock_page_create();
+                screen_push_page(clock_page);
+                break;
             case 4: /* screen_set_page(&calc_page);      */ break;
             case 5: /* screen_set_page(&calendar_page);  */ break;
             case 6: 
