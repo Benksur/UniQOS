@@ -13,6 +13,7 @@
 #include "tick_sound.h"
 #include "i2c.h"
 #include "i2s.h"
+#include "rtc.h"
 
 #include <stdbool.h>
 
@@ -47,6 +48,7 @@ int main(void)
   MX_SPI4_Init();
   MX_I2C1_Init();
   MX_I2S1_Init();
+  MX_RTC_Init();
 
   // MX_TIM2_Init();
   //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
@@ -66,6 +68,13 @@ int main(void)
 
   theme_set_dark();
   LCD_Fill(current_theme.fg_colour, 0, 0, 240, 25);
+  
+  RTC_DateTypeDef sDate;
+  HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+  char time_buffer[15] = {0};
+  sprintf(time_buffer, "20%02d-%02d-%02d", sDate.Year, sDate.Month, sDate.Date);
+  display_draw_string(10, 5, time_buffer, current_theme.bg_colour, current_theme.fg_colour, 2);
+
   screen_init(&menu_page);
   mark_all_tiles_dirty();
   screen_tick();
