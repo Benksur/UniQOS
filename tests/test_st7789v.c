@@ -63,11 +63,9 @@ int main(void)
   keypad_init();
 
   HAL_Delay(1000);
-  // LCD_Fill(0x05F5, 0, 0, 240, 320);
-  LCD_Fill(0x05F5, 0, 0, 240, 25);
-  LCD_Fill(0x0000, 0, 25, 240, 320);
-  // LCD_Fill(0x05F5, 0, 295, 240, 25);
+
   theme_set_dark();
+  LCD_Fill(current_theme.fg_colour, 0, 0, 240, 25);
   screen_init(&menu_page);
   mark_all_tiles_dirty();
   screen_tick();

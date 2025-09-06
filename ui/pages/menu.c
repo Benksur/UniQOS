@@ -7,6 +7,7 @@
 #include "input.h"
 #include "phone.h"
 #include "sms.h"
+#include "theme.h"
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
@@ -25,6 +26,7 @@ static void menu_draw_tile(Page* self, int tx, int ty);
 static void menu_handle_input(Page* self, int event_type);
 static void menu_reset(Page* self);
 
+static bool theme_toggle = false;
 // state is static since only one menu page exists
 static MenuState menu_state = {
     .cursor = {0, 0, 0, MENU_ITEMS_COUNT - 1, false},
@@ -130,7 +132,11 @@ static void menu_handle_input(Page* self, int event_type) {
             case 3: /* screen_set_page(&clock_page);     */ break;
             case 4: /* screen_set_page(&calc_page);      */ break;
             case 5: /* screen_set_page(&calendar_page);  */ break;
-            case 6: /* screen_set_page(&settings_page);  */ break;
+            case 6: 
+                theme_toggle ? theme_set_dark() : theme_set_light(); 
+                theme_toggle = !theme_toggle; 
+                mark_all_tiles_dirty(); 
+                break;
         }
     }
 }
