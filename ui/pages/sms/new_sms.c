@@ -280,8 +280,7 @@ static void new_sms_handle_input(Page* self, int event_type) {
                 mark_tile_dirty(1, state->cursor.y + 3);
             }
             break;
-        case INPUT_SELECT: break; // TODO: Send SMS
-        case INPUT_LEFT: screen_pop_page(); break;
+        case INPUT_SELECT: break;
         default: break;
     }
 }

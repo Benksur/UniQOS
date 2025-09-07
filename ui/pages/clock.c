@@ -46,7 +46,7 @@ static void draw_clock_face()
     int text_width = strlen(title) * 6 * 3; // size 3 font
     int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
     display_draw_string(center_x, 40, title, current_theme.fg_colour, current_theme.bg_colour, 3);
-    display_draw_string(TILE_WIDTH * 7, 40, ">", current_theme.fg_colour, current_theme.bg_colour, 3);
+    display_draw_string(TILE_WIDTH * 7, 40, ">", current_theme.text_colour, current_theme.bg_colour, 3);
     display_draw_circle(CIRCLE_X, CIRCLE_Y, CIRCLE_R, current_theme.fg_colour);
     for (int i = 0; i < 60; i++)
     {
@@ -157,7 +157,7 @@ static void clock_draw_tile(Page *self, int tx, int ty)
                 int text_width = strlen(title) * 6 * 3;
                 int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
                 display_draw_string(center_x, 40, title, current_theme.fg_colour, current_theme.bg_colour, 3);
-                display_draw_string(10, 40, "<", current_theme.fg_colour, current_theme.bg_colour, 3);
+                display_draw_string(10, 40, "<", current_theme.text_colour, current_theme.bg_colour, 3);
                 draw_digital_hours(sTime);
                 draw_digital_minutes(sTime);
                 state->mounted = true;
