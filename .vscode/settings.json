@@ -32,7 +32,8 @@
         "stm32h7xx_hal_rtc.h": "c",
         "lcd_controller.h": "c",
         "cursor.h": "c",
-        "menu_row.h": "c"
+        "menu_row.h": "c",
+        "bitset": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",
