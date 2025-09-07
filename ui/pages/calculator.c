@@ -235,11 +235,11 @@ static void draw_button_tile(int tx, int ty, const char* label, bool selected) {
         bg_color = COLOUR_RED;
         text_color = COLOUR_WHITE;
     } else if (strcmp(label, "=") == 0) {
-        bg_color = current_theme.accent_colour;
-        text_color = current_theme.bg_colour;
+        bg_color = current_theme.bg_colour;
+        text_color = current_theme.text_colour;
     } else {
-        bg_color = current_theme.accent_colour;
-        text_color = current_theme.bg_colour;
+        bg_color = current_theme.bg_colour;
+        text_color = current_theme.text_colour;
     }
     
     // Draw button background
@@ -267,14 +267,14 @@ static void draw_large_button_tile(int tx, int ty, int width_tiles, int height_t
     // Choose colors based on button type
     uint16_t bg_color, text_color;
     if (strcmp(label, "C") == 0) {
-        bg_color = COLOUR_RED;
-        text_color = COLOUR_WHITE;
+        bg_color = current_theme.fg_colour;
+        text_color = current_theme.text_colour;
     } else if (strcmp(label, "=") == 0) {
         bg_color = current_theme.accent_colour;
         text_color = current_theme.bg_colour;
     } else {
-        bg_color = current_theme.accent_colour;
-        text_color = current_theme.bg_colour;
+        bg_color = current_theme.bg_colour;
+        text_color = current_theme.text_colour;
     }
     
     // Draw button background
