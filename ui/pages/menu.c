@@ -9,6 +9,7 @@
 #include "sms.h"
 #include "clock.h"
 #include "calendar.h"
+#include "calculator.h"
 #include "theme.h"
 #include <stddef.h>
 
@@ -135,11 +136,16 @@ static void menu_handle_input(Page* self, int event_type) {
                 Page* clock_page = clock_page_create();
                 screen_push_page(clock_page);
                 break;
-            case 4: /* screen_set_page(&calc_page);      */ break;
-            case 5:
+            case 4: {
+                Page* calculator_page = calculator_page_create();
+                screen_push_page(calculator_page);
+                break;
+            }
+            case 5: {
                 Page* calendar_page = calendar_page_create();
                 screen_push_page(calendar_page);
                 break;
+            }
             case 6: 
                 theme_toggle ? theme_set_dark() : theme_set_light(); 
                 theme_toggle = !theme_toggle; 
