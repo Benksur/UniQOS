@@ -6,6 +6,11 @@
 #include "cursor.h"
 #include "input.h"
 #include "phone.h"
+#include "sms.h"
+#include "clock.h"
+#include "calendar.h"
+#include "calculator.h"
+#include "theme.h"
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
@@ -19,20 +24,21 @@ typedef struct
 } MenuState;
 
 // forward declarations
-static void menu_draw();
-static void menu_draw_tile(int tx, int ty);
-static void menu_handle_input(int event_type);
-static void menu_reset();
+static void menu_draw(Page* self);
+static void menu_draw_tile(Page* self, int tx, int ty);
+static void menu_handle_input(Page* self, int event_type);
+static void menu_reset(Page* self);
 
+static bool theme_toggle = false;
 // state is static since only one menu page exists
 static MenuState menu_state = {
     .cursor = {0, 0, 0, MENU_ITEMS_COUNT - 1, false},
     .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"},
     .page_offset = 0};
 // --- Draw functions ---
-static void menu_draw(){}
+static void menu_draw(Page* self){}
 
-static void menu_draw_tile(int tx, int ty)
+static void menu_draw_tile(Page* self, int tx, int ty)
 {
     int visible_row = ty / 2; // 0–4 on screen
     int item_index = menu_state.page_offset + visible_row;
@@ -54,7 +60,7 @@ static void menu_draw_tile(int tx, int ty)
     }
 }
 
-static void mark_row_dirty(int row) {
+static void mark_row_dirty(Page* self, int row) {
     int tile_y = row * 2;
     for (int i = 0; i < TILE_COLS; i++) {
         mark_tile_dirty(i, tile_y);
@@ -75,7 +81,7 @@ static void update_page_offset() {
     }
 }
 
-static void menu_handle_input(int event_type) {
+static void menu_handle_input(Page* self, int event_type) {
     int old_x, old_y;
     bool moved = false;
 
@@ -107,8 +113,8 @@ static void menu_handle_input(int event_type) {
         int old_row = old_y - menu_state.page_offset;
         int new_row = menu_state.cursor.y - menu_state.page_offset;
 
-        if (old_row >= 0 && old_row < MENU_VISIBLE_COUNT) mark_row_dirty(old_row);
-        if (new_row >= 0 && new_row < MENU_VISIBLE_COUNT) mark_row_dirty(new_row);
+        if (old_row >= 0 && old_row < MENU_VISIBLE_COUNT) mark_row_dirty(self, old_row);
+        if (new_row >= 0 && new_row < MENU_VISIBLE_COUNT) mark_row_dirty(self, new_row);
     }
 
     // --- Selection action ---
@@ -120,20 +126,38 @@ static void menu_handle_input(int event_type) {
                 screen_push_page(phone_page);  // Use push instead of set
                 break;
             }
-            case 1: /* screen_set_page(&sms_page);       */ break;
+            case 1: {
+                Page* sms_page = sms_page_create();
+                screen_push_page(sms_page);  // Use push instead of set
+                break;
+            }
             case 2: /* screen_set_page(&contacts_page);  */ break;
-            case 3: /* screen_set_page(&clock_page);     */ break;
-            case 4: /* screen_set_page(&calc_page);      */ break;
-            case 5: /* screen_set_page(&calendar_page);  */ break;
-            case 6: /* screen_set_page(&settings_page);  */ break;
+            case 3:
+                Page* clock_page = clock_page_create();
+                screen_push_page(clock_page);
+                break;
+            case 4: {
+                Page* calculator_page = calculator_page_create();
+                screen_push_page(calculator_page);
+                break;
+            }
+            case 5: {
+                Page* calendar_page = calendar_page_create();
+                screen_push_page(calendar_page);
+                break;
+            }
+            case 6: 
+                theme_toggle ? theme_set_dark() : theme_set_light(); 
+                theme_toggle = !theme_toggle; 
+                mark_all_tiles_dirty(); 
+                break;
         }
     }
 }
 
-
-static void menu_reset()
+static void menu_reset(Page* self)
 {
-    cursor_reset(&menu_state.cursor);
+    // cursor_reset(&menu_state.cursor);
 }
 
 Page menu_page = {

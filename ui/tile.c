@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include "tile.h"
 
+
 static bool dirty[TILE_ROWS][TILE_COLS];
 
 void mark_tile_dirty(int tile_x, int tile_y) {
@@ -23,11 +24,13 @@ void mark_all_tiles_dirty(void) {
     }
 }
 
-void flush_dirty_tiles(void (*draw_tile)(int tx, int ty)) {
+void flush_dirty_tiles(Page* page) {
     for (int y = 0; y < TILE_ROWS; y++) {
         for (int x = 0; x < TILE_COLS; x++) {
             if (dirty[y][x]) {
-                draw_tile(x, y);
+                if (page && page->draw_tile) {
+                    page->draw_tile(page, x, y);
+                }
                 dirty[y][x] = false;
             }
         }

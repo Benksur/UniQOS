@@ -24,23 +24,21 @@ typedef struct {
     CallStatus call_status;
 } CallState;
 
-static Page* current_page = NULL;
-
 
 // Forward declarations
-static void call_draw(void);
-static void call_draw_tile(int tile_x, int tile_y);
-static void call_handle_input(int event_type);
-static void call_reset(void);
-static void call_destroy(void);
-static void add_digit(char digit);
-static void remove_digit(void);
-static void make_call(void);
-static void hang_up_call(void);
-static void draw_display_area(void);
+static void call_draw(Page* self);
+static void call_draw_tile(Page* self, int tile_x, int tile_y);
+static void call_handle_input(Page* self, int event_type);
+static void call_reset(Page* self);
+static void call_destroy(Page* self);
+static void add_digit(Page* self, char digit);
+static void remove_digit(Page* self);
+static void make_call(Page* self);
+static void hang_up_call(Page* self);
+static void draw_display_area(Page* self);
 
-static void add_digit(char digit) {
-    CallState* state = (CallState*)current_page->state;
+static void add_digit(Page* self, char digit) {
+    CallState* state = (CallState*)self->state;
     if (state->cursor.x < MAX_PHONE_NUMBER_LENGTH) {
         state->phone_number[state->cursor.x] = digit;
         state->cursor.x++;
@@ -48,8 +46,6 @@ static void add_digit(char digit) {
         
         // Mark display area dirty for redraw
         mark_tile_dirty(1, 5);
-        mark_tile_dirty(2, 5);
-        mark_tile_dirty(3, 5);
     }
 }
 
@@ -67,8 +63,8 @@ static void clear_old_char(CallState* state) {
         display_fill_rect(old_cursor_x, py, 5, TILE_HEIGHT - 8, current_theme.highlight_colour);
 }
 
-static void remove_digit(void) {
-    CallState* state = (CallState*)current_page->state;
+static void remove_digit(Page* self) {
+    CallState* state = (CallState*)self->state;
     if (state->cursor.x > 0) {
         clear_old_char(state);
         state->cursor.x--;
@@ -76,13 +72,11 @@ static void remove_digit(void) {
         
         // Mark display area dirty for redraw
         mark_tile_dirty(1, 5);
-        mark_tile_dirty(2, 5);
-        mark_tile_dirty(3, 5);
     }
 }
 
-static void make_call(void) {
-    CallState* state = (CallState*)current_page->state;
+static void make_call(Page* self) {
+    CallState* state = (CallState*)self->state;
     if (state->cursor.x > 0 && state->call_status == CALL_STATE_IDLE) {
         state->call_status = CALL_STATE_CALLING;
         
@@ -91,8 +85,8 @@ static void make_call(void) {
     }
 }
 
-static void hang_up_call(void) {
-    CallState* state = (CallState*)current_page->state;
+static void hang_up_call(Page* self) {
+    CallState* state = (CallState*)self->state;
     if (state->call_status != CALL_STATE_IDLE) {
         state->call_status = CALL_STATE_IDLE;
         
@@ -101,8 +95,8 @@ static void hang_up_call(void) {
     }
 }
 
-static void draw_call_status() {
-    CallState* state = (CallState*)current_page->state;
+static void draw_call_status(Page* self) {
+    CallState* state = (CallState*)self->state;
     const char* status_text = "Enter number:";
     // switch (state->call_status) {
     //     case CALL_STATE_DIALING:
@@ -128,8 +122,8 @@ static void draw_call_status() {
     
 }
 
-static void draw_number(void) {
-    CallState* state = (CallState*)current_page->state;
+static void draw_number(Page* self) {
+    CallState* state = (CallState*)self->state;
     int px, py;
     tile_to_pixels(1, 5, &px, &py);
     
@@ -144,25 +138,25 @@ static void draw_number(void) {
     }
 }
 
-static void call_draw(void) {}
+static void call_draw(Page* self) {}
 
-static void call_draw_tile(int tile_x, int tile_y) {
-    CallState* state = (CallState*)current_page->state;
+static void call_draw_tile(Page* self, int tile_x, int tile_y) {
+    CallState* state = (CallState*)self->state;
     int visible_row = tile_y / 2; // 0-4 on screen
     if (visible_row == 1) {
-        draw_call_status();
+        draw_call_status(self);
     } else if (visible_row == 2) { 
         // Phone number display area (2 rows)
         // check for tx == 0 to avoid redrawing bg multiple times
         if (tile_x == 0) {
-            draw_empty_row_fill(visible_row * 2, current_theme.highlight_colour);
+            draw_empty_row_fill(tile_y, current_theme.highlight_colour);
         }
-        draw_number();
+        draw_number(self);
         
         
     } else if (visible_row == 3 && tile_x == 0) {
         int px, py;
-        tile_to_pixels(0, visible_row * 2, &px, &py);
+        tile_to_pixels(0, tile_y, &px, &py);
         int width = TILE_WIDTH * TILE_COLS;
         int height = TILE_HEIGHT * 3;
         display_fill_rect(px, py, width, height, current_theme.highlight_colour);
@@ -178,52 +172,52 @@ static void call_draw_tile(int tile_x, int tile_y) {
 
 }
 
-static void call_handle_input(int event_type) {
+static void call_handle_input(Page* self, int event_type) {
     switch (event_type) {
         case INPUT_KEYPAD_0:
-            add_digit('0');
+            add_digit(self, '0');
             break;
         case INPUT_KEYPAD_1:
-            add_digit('1');
+            add_digit(self, '1');
             break;
         case INPUT_KEYPAD_2:
-            add_digit('2');
+            add_digit(self, '2');
             break;
         case INPUT_KEYPAD_3:
-            add_digit('3');
+            add_digit(self, '3');
             break;
         case INPUT_KEYPAD_4:
-            add_digit('4');
+            add_digit(self, '4');
             break;
         case INPUT_KEYPAD_5:
-            add_digit('5');
+            add_digit(self, '5');
             break;
         case INPUT_KEYPAD_6:
-            add_digit('6');
+            add_digit(self, '6');
             break;
         case INPUT_KEYPAD_7:
-            add_digit('7');
+            add_digit(self, '7');
             break;
         case INPUT_KEYPAD_8:
-            add_digit('8');
+            add_digit(self, '8');
             break;
         case INPUT_KEYPAD_9:
-            add_digit('9');
+            add_digit(self, '9');
             break;
         case INPUT_KEYPAD_STAR:
-            add_digit('*');
+            add_digit(self, '*');
             break;
         case INPUT_KEYPAD_HASH:
-            add_digit('#');
+            add_digit(self, '#');
             break;
         case INPUT_PICKUP:
-            make_call();
+            make_call(self);
             break;
         case INPUT_HANGUP:
-            hang_up_call();
+            hang_up_call(self);
             break;
         case INPUT_DPAD_LEFT:
-            remove_digit(); // Use left as backspace
+            remove_digit(self); // Use left as backspace
             break;
         default:
             // Ignore other inputs
@@ -231,19 +225,18 @@ static void call_handle_input(int event_type) {
     }
 }
 
-static void call_reset(void) {
-    CallState* state = (CallState*)current_page->state;
+static void call_reset(Page* self) {
+    CallState* state = (CallState*)self->state;
     cursor_reset(&state->cursor);
     memset(state->phone_number, 0, sizeof(state->phone_number));
     state->call_status = CALL_STATE_IDLE;
 }
 
-static void call_destroy(void) {
-    if (current_page) {
-        CallState* state = (CallState*)current_page->state;
+static void call_destroy(Page* self) {
+    if (self) {
+        CallState* state = (CallState*)self->state;
         free(state);
-        free(current_page);
-        current_page = NULL;
+        free(self);
     }
 }
 
@@ -264,7 +257,6 @@ Page* call_page_create() {
     page->reset = call_reset;
     page->destroy = call_destroy;
     page->state = state;
-    
-    current_page = page; // Set for static helpers
+
     return page;
 }

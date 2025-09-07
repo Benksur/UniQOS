@@ -95,8 +95,14 @@ $(CSRCS) \
 ../../ui/tile.c \
 ../../ui/cursor.c \
 ../../ui/pages/menu.c \
+../../ui/pages/clock.c \
+../../ui/pages/calendar.c \
+../../ui/pages/calculator.c \
 ../../ui/pages/phone/phone.c \
 ../../ui/pages/phone/call.c \
+../../ui/pages/sms/sms.c \
+../../ui/pages/sms/new_sms.c \
+../../ui/pages/sms/messages.c \
 ../../ui/components/menu_row.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \

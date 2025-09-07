@@ -29,8 +29,8 @@ void screen_init(Page* initial_page) {
         if(data_request_fn) {
             current_page->data_request = data_request_fn;
         }
-        if (current_page->reset) current_page->reset();
-        current_page->draw();
+        if (current_page->reset) current_page->reset(current_page);
+        current_page->draw(current_page);
     }
 }
 
@@ -48,9 +48,9 @@ void screen_push_page(Page* new_page) {
             current_page->data_request = data_request_fn;
         }
 
-        if (current_page->reset) current_page->reset();
+        if (current_page->reset) current_page->reset(current_page);
         mark_all_tiles_dirty();
-        if (current_page->draw) current_page->draw();
+        if (current_page->draw) current_page->draw(current_page);
     }
 }
 
@@ -61,7 +61,7 @@ void screen_pop_page(void) {
     if (page_top >= 0) {
         // Free current page if dynamic
         if (current_page && current_page->destroy) {
-            current_page->destroy();
+            current_page->destroy(current_page);
         }
 
         // Restore the previous page from the stack
@@ -71,9 +71,9 @@ void screen_pop_page(void) {
             current_page->data_request = data_request_fn;
         }
 
-        if (current_page->reset) current_page->reset();
+        if (current_page->reset && current_page) current_page->reset(current_page);
         mark_all_tiles_dirty();
-        if (current_page->draw) current_page->draw();
+        if (current_page->draw) current_page->draw(current_page);
     }
 }
 
@@ -83,7 +83,7 @@ void screen_pop_page(void) {
 void screen_set_page(Page* new_page) {
     // Free current page if dynamic
     if (current_page && current_page->destroy) {
-        current_page->destroy();
+        current_page->destroy(current_page);
     }
 
     current_page = new_page;
@@ -93,11 +93,11 @@ void screen_set_page(Page* new_page) {
     }
 
     if (current_page && current_page->reset) {
-        current_page->reset();
+        current_page->reset(current_page);
     }
     mark_all_tiles_dirty();
     if (current_page && current_page->draw) {
-        current_page->draw();
+        current_page->draw(current_page);
     }
 }
 
@@ -109,7 +109,7 @@ void screen_handle_input(int event_type) {
 
     // Let the page handle input (page may access its state)
     if (current_page->handle_input) {
-        current_page->handle_input(event_type);
+        current_page->handle_input(current_page, event_type);
     }
 }
 
@@ -119,6 +119,6 @@ void screen_handle_input(int event_type) {
 void screen_tick(void) {
     if (!current_page) return;
     if (current_page->draw_tile) {
-        flush_dirty_tiles(current_page->draw_tile);
+        flush_dirty_tiles(current_page);
     }
 }

@@ -6,12 +6,14 @@
 typedef void (*DataRequestFn)(int type, void* req);
 typedef void (*DataResponseFn)(int type, void* resp);
 
-typedef struct {
-    void (*draw)();
-    void (*draw_tile)(int tx, int ty);
-    void (*handle_input)(int event_type);
-    void (*reset)();
-    void (*destroy)();
+typedef struct Page Page; // Forward declaration
+
+typedef struct Page {
+    void (*draw)(Page* self);
+    void (*draw_tile)(Page* self, int tx, int ty);
+    void (*handle_input)(Page* self, int event_type);
+    void (*reset)(Page* self);
+    void (*destroy)(Page* self);
     bool loading;
     DataRequestFn data_request;
     DataResponseFn data_response;
@@ -21,6 +23,7 @@ typedef struct {
 void screen_set_data_req_fn(DataRequestFn fn);
 void screen_set_data_resp_fn(DataResponseFn fn);
 void screen_init(Page* initial_page);
+Page* screen_get_current_page(void);
 void screen_push_page(Page* new_page);
 void screen_pop_page(void);
 void screen_set_page(Page* new_page);

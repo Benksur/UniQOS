@@ -13,6 +13,7 @@
 #include "tick_sound.h"
 #include "i2c.h"
 #include "i2s.h"
+#include "rtc.h"
 
 #include <stdbool.h>
 
@@ -47,6 +48,7 @@ int main(void)
   MX_SPI4_Init();
   MX_I2C1_Init();
   MX_I2S1_Init();
+  MX_RTC_Init();
 
   // MX_TIM2_Init();
   //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
@@ -63,11 +65,19 @@ int main(void)
   keypad_init();
 
   HAL_Delay(1000);
-  // LCD_Fill(0x05F5, 0, 0, 240, 320);
-  LCD_Fill(0x05F5, 0, 0, 240, 25);
-  LCD_Fill(0x0000, 0, 25, 240, 320);
-  // LCD_Fill(0x05F5, 0, 295, 240, 25);
+
   theme_set_dark();
+  LCD_Fill(current_theme.fg_colour, 0, 0, 240, 25);
+
+  char time_buffer[15] = {0};
+  RTC_DateTypeDef sDate;
+  HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+  // RTC_TimeTypeDef sTime;
+  // HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+  // sprintf(time_buffer, "%02d:%02d:%02d", sTime.Hours, sTime.Minutes, sTime.Seconds);
+  sprintf(time_buffer, "20%02d-%02d-%02d", sDate.Year, sDate.Month, sDate.Date);
+  display_draw_string(10, 5, time_buffer, current_theme.bg_colour, current_theme.fg_colour, 2);
+
   screen_init(&menu_page);
   mark_all_tiles_dirty();
   screen_tick();
@@ -93,14 +103,14 @@ int main(void)
             screen_handle_input(event);
           }
           
-          screen_tick();
           if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
-          HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
+            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
           } else {
             HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)bloop, 950, HAL_MAX_DELAY);
           }
-            // Play sound for numeric keypad presses
+          // Play sound for numeric keypad presses
         }
+        screen_tick();
       }
     }
   }
