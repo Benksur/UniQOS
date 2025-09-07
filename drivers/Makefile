@@ -96,6 +96,7 @@ $(CSRCS) \
 ../../ui/cursor.c \
 ../../ui/pages/menu.c \
 ../../ui/pages/clock.c \
+../../ui/pages/calendar.c \
 ../../ui/pages/phone/phone.c \
 ../../ui/pages/phone/call.c \
 ../../ui/pages/sms/sms.c \
