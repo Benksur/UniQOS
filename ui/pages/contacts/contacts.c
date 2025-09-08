@@ -1,13 +1,17 @@
 #include "contacts.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "tile.h"
 #include "cursor.h"
 
+#define CONTACTS_VISIBLE_COUNT 8
+
 typedef struct {
     Cursor cursor;
-    const char** names;
+    char* contact_names[CONTACTS_VISIBLE_COUNT];
     int count;
+    bool mounted;
 } ContactsState;
 
 static void contacts_draw();
