@@ -30,6 +30,12 @@ typedef struct {
     uint32_t root_offset;
 } BPTree;
 
+typedef struct {
+    uint32_t leaf_offset;
+    int key_index;
+    char prefix[MAX_KEY_LEN];
+} PrefixSearchState;
+
 
 typedef struct {
     char visible[CONTACTS_VISIBLE_COUNT][MAX_NAME_LEN];
@@ -49,6 +55,7 @@ BPTree bptree_create(const char *tree_filename, const char *data_filename);
 void bptree_close(BPTree *tree);
 bool bptree_insert(BPTree *tree, const char *name);
 uint32_t bptree_search(BPTree *tree, const char *name);
+int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_names[][MAX_NAME_LEN]);
 uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsState *state);
 
 // Contact data functions
