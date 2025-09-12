@@ -232,7 +232,7 @@ static void snake_draw_tile(Page *self, int tx, int ty)
         int text_width = strlen(title) * 6 * 3;
         uint16_t center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
         uint16_t center_y = (TILE_HEIGHT * TILE_ROWS) / 2;
-        display_draw_string(center_x, center_y, title, current_theme.fg_colour, current_theme.bg_colour, 3);
+        display_draw_string(center_x, center_y, title, current_theme.text_colour, current_theme.bg_colour, 3);
     }
     else if (state->game_state == GAME_OVER)
     {
@@ -240,7 +240,7 @@ static void snake_draw_tile(Page *self, int tx, int ty)
         int text_width = strlen(title) * 6 * 3;
         uint16_t center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
         uint16_t center_y = (TILE_HEIGHT * TILE_ROWS) / 2;
-        display_draw_string(center_x, center_y, title, current_theme.fg_colour, current_theme.bg_colour, 3);
+        display_draw_string(center_x, center_y, title, current_theme.text_colour, current_theme.bg_colour, 3);
     }
 
     mark_all_tiles_dirty();
