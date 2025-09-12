@@ -30,8 +30,10 @@ int main(int argc, char *argv[])
             bptree_close(&tree);
             return 1;
         }
-        
-        if (bptree_insert(&tree, argv[2])) {
+        ContactRecord contact = {0};
+        strncpy(contact.name, argv[2], MAX_NAME_LEN - 1);
+        contact.name_len = strlen(contact.name);
+        if (bptree_insert(&tree, contact)) {
             printf("Added contact: %s\n", argv[2]);
         } else {
             printf("Failed to add contact: %s\n", argv[2]);
@@ -43,12 +45,23 @@ int main(int argc, char *argv[])
             bptree_close(&tree);
             return 1;
         }
-        
-        uint32_t offset = bptree_search(&tree, argv[2]);
-        if (offset != BPTREE_NOT_FOUND) {
-            char name[MAX_NAME_LEN];
-            contacts_read(tree.data_file, offset, name);
-            printf("Found contact: %s (offset: %u)\n", name, offset);
+        char key[MAX_KEY_LEN] = {0};
+        strncpy(key, argv[2], MAX_KEY_LEN - 1);
+        uint32_t leaf_offset = bptree_find_leaf(&tree, key);
+        fseek(tree.tree_file, leaf_offset, SEEK_SET);
+        BPTreeNode leaf;
+        fread(&leaf, sizeof(BPTreeNode), 1, tree.tree_file);
+        int found_index = -1;
+        for (int j = 0; j < leaf.key_count; j++) {
+            if (strncmp(leaf.keys[j], key, MAX_KEY_LEN) == 0) {
+                found_index = j;
+                break;
+            }
+        }
+        uint32_t offset = (found_index != -1) ? leaf.children[found_index] : BPTREE_NOT_FOUND;
+        ContactRecord found = bptree_search(&tree, offset);
+        if (found.name_len > 0) {
+            printf("Found contact: %s (offset: %u)\n", found.name, offset);
         } else {
             printf("Contact not found: %s\n", argv[2]);
         }
@@ -63,7 +76,7 @@ int main(int argc, char *argv[])
             uint32_t next_leaf = bptree_load_page(&tree, leaf_offset, &state);
             
             for (int i = 0; i < state.visible_count; i++) {
-                printf("  %s\n", state.visible[i]);
+                printf("  Name: %s, Offset: %u\n", state.visible[i], state.offsets[i]);
                 total_contacts++;
             }
             
@@ -85,10 +98,11 @@ int main(int argc, char *argv[])
         state.key_index = 0;
 
         char results[CONTACTS_VISIBLE_COUNT][MAX_NAME_LEN];
+        uint32_t results_offsets[CONTACTS_VISIBLE_COUNT];
         int total_found = 0;
         int count;
         do {
-            count = bptree_search_prefix_page(&tree, &state, results);
+            count = bptree_search_prefix_page(&tree, &state, results, results_offsets);
             for (int i = 0; i < count; i++) {
                 printf("  %s\n", results[i]);
                 total_found++;
@@ -103,8 +117,26 @@ int main(int argc, char *argv[])
             bptree_close(&tree);
             return 1;
         }
-        if (bptree_delete(&tree, argv[2])) {
-            printf("Deleted contact: %s\n", argv[2]);
+        // Use prefix search to find first matching contact
+        PrefixSearchState state = {0};
+        strncpy(state.prefix, argv[2], MAX_KEY_LEN - 1);
+        state.leaf_offset = bptree_find_leaf(&tree, state.prefix);
+        state.key_index = 0;
+        char results[CONTACTS_VISIBLE_COUNT][MAX_NAME_LEN];
+        uint32_t results_offsets[CONTACTS_VISIBLE_COUNT];
+        int count = bptree_search_prefix_page(&tree, &state, results, results_offsets);
+        if (count > 0) {
+            // Get the first matching contact record
+            ContactRecord contact = bptree_search(&tree, results_offsets[0]);
+            if (contact.name_len > 0) {
+                if (bptree_delete(&tree, contact)) {
+                    printf("Deleted contact: %s\n", contact.name);
+                } else {
+                    printf("Contact not found or failed to delete: %s\n", argv[2]);
+                }
+            } else {
+                printf("Contact not found or failed to delete: %s\n", argv[2]);
+            }
         } else {
             printf("Contact not found or failed to delete: %s\n", argv[2]);
         }

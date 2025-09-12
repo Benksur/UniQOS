@@ -39,6 +39,7 @@ typedef struct {
 
 typedef struct {
     char visible[CONTACTS_VISIBLE_COUNT][MAX_NAME_LEN];
+    uint32_t offsets[CONTACTS_VISIBLE_COUNT];
     int visible_count;
 } ContactsState;
 
@@ -48,19 +49,20 @@ typedef struct {
     char name[MAX_NAME_LEN];
     uint8_t phone_len;
     char phone[MAX_PHONE_LEN];
+    uint32_t offset_id;
 } ContactRecord;
 
 // Function declarations
 BPTree bptree_create(const char *tree_filename, const char *data_filename);
 void bptree_close(BPTree *tree);
-bool bptree_insert(BPTree *tree, const char *name);
-uint32_t bptree_search(BPTree *tree, const char *name);
-int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_names[][MAX_NAME_LEN]);
+bool bptree_insert(BPTree *tree, ContactRecord contact);
+ContactRecord bptree_search(BPTree *tree, uint32_t offset);
+int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_names[][MAX_NAME_LEN], uint32_t out_offsets[]);
 uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsState *state);
 
 // Contact data functions
-uint32_t contacts_append(FILE *data_file, const char *name);
-void contacts_read(FILE *data_file, uint32_t offset, char *out_name);
+uint32_t contacts_append(FILE *data_file, ContactRecord contact);
+bool contacts_read(FILE *data_file, uint32_t offset, ContactRecord *out_contact);
 
 // Internal functions
 uint32_t bptree_find_leaf(BPTree *tree, const char *name);
@@ -76,10 +78,10 @@ int bptree_test();
 void bptree_debug_print(BPTree *tree, uint32_t offset, int depth);
 
 // Additional utility functions
-bool bptree_delete(BPTree *tree, const char *name);
+bool bptree_delete(BPTree *tree, ContactRecord contact);
 uint32_t bptree_get_first_leaf(BPTree *tree);
 uint32_t bptree_get_next_leaf(BPTree *tree, uint32_t current_leaf_offset);
 
 
 
-#endif
+#endif // CONTACTS_BPTREE_C

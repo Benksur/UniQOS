@@ -62,29 +62,54 @@ void bptree_close(BPTree *tree)
 /*
     Write contact to data file, return offset it was written at.
 */
-uint32_t contacts_append(FILE *data_file, const char *name)
+uint32_t contacts_append(FILE *data_file, ContactRecord contact)
 {
-    fseek(data_file, 0, SEEK_END);
-    uint32_t offset = ftell(data_file);
-    uint8_t len = (uint8_t)strlen(name);
-    if (len > MAX_NAME_LEN - 1)
-        len = MAX_NAME_LEN - 1;
-    fwrite(&len, 1, 1, data_file);
-    fwrite(name, 1, len, data_file);
+    // Try to reuse a tombstoned slot
+    fseek(data_file, 0, SEEK_SET);
+    uint32_t offset = 0;
+    uint8_t flag;
+    while (fread(&flag, 1, 1, data_file) == 1) {
+        if (flag == 0) {
+            // Found a tombstoned slot, reuse it
+            offset = ftell(data_file) - 1;
+            break;
+        }
+        fseek(data_file, sizeof(ContactRecord), SEEK_CUR);
+        offset += 1 + sizeof(ContactRecord);
+    }
+    if (flag != 0) {
+        // No tombstoned slot found, append at end
+        fseek(data_file, 0, SEEK_END);
+        offset = ftell(data_file);
+    }
+    contact.offset_id = offset;
+    flag = 1;
+    fseek(data_file, offset, SEEK_SET);
+    fwrite(&flag, 1, 1, data_file);
+    fwrite(&contact, sizeof(ContactRecord), 1, data_file);
     fflush(data_file);
     return offset;
 }
 
 /*
-    Read contact from data file at given offset into out_name buffer.
+    Read contact from data file at given offset.
+    Returns true if contact is active, false if tombstoned.
 */
-void contacts_read(FILE *data_file, uint32_t offset, char *out_name)
+bool contacts_read(FILE *data_file, uint32_t offset, ContactRecord *out_contact)
 {
     fseek(data_file, offset, SEEK_SET);
-    uint8_t len;
-    fread(&len, 1, 1, data_file);
-    fread(out_name, 1, len, data_file);
-    out_name[len] = '\0';
+    uint8_t flag;
+    if (fread(&flag, 1, 1, data_file) != 1) return false;
+    if (fread(out_contact, sizeof(ContactRecord), 1, data_file) != 1) return false;
+    return flag == 1;
+}
+
+void contacts_delete(FILE *data_file, uint32_t offset)
+{
+    fseek(data_file, offset, SEEK_SET);
+    uint8_t flag = 0;
+    fwrite(&flag, 1, 1, data_file);
+    fflush(data_file);
 }
 
 /*
@@ -136,8 +161,11 @@ uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsState *state)
     int count = 0;
     for (int i = 0; i < node.key_count && count < CONTACTS_VISIBLE_COUNT; i++)
     {
-        // writes out to state buffer
-        contacts_read(tree->data_file, node.children[i], state->visible[count]);
+        // writes out names and offset ids to state buffer
+        ContactRecord contact;
+        contacts_read(tree->data_file, node.children[i], &contact);
+        strncpy(state->visible[count], contact.name, MAX_NAME_LEN - 1);
+        state->offsets[count] = contact.offset_id;
         count++;
     }
     state->visible_count = count;
@@ -149,23 +177,15 @@ uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsState *state)
     Returns offset in data file if found, otherwise BPTREE_NOT_FOUND.
     Only first search result offset is returned.
 */
-uint32_t bptree_search(BPTree *tree, const char *name)
+ContactRecord bptree_search(BPTree *tree, uint32_t offset)
 {
-    // we truncate names for key comparison
-    char key[MAX_KEY_LEN] = {0};
-    strncpy(key, name, MAX_KEY_LEN - 1);
-    uint32_t leaf_offset = bptree_find_leaf(tree, key);
-    fseek(tree->tree_file, leaf_offset, SEEK_SET);
-    BPTreeNode leaf;
-    fread(&leaf, sizeof(BPTreeNode), 1, tree->tree_file);
-    for (int i = 0; i < leaf.key_count; i++)
-    {
-        if (strncmp(leaf.keys[i], key, MAX_KEY_LEN) == 0)
-        {
-            return leaf.children[i];
-        }
+    ContactRecord contact;
+    if (contacts_read(tree->data_file, offset, &contact)) {
+        return contact;
     }
-    return BPTREE_NOT_FOUND;
+    // Return a ContactRecord with name_len 0 to indicate not found or tombstoned
+    ContactRecord not_found = {0};
+    return not_found;
 }
 
 /*
@@ -173,7 +193,7 @@ uint32_t bptree_search(BPTree *tree, const char *name)
     Updates state to reflect new position in search.
     Returns number of results loaded into out_names.
 */
-int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_names[][MAX_NAME_LEN])
+int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_names[][MAX_NAME_LEN], uint32_t out_offsets[])
 {
     int found = 0;
     // continue until we run out of leaves or fill the buffer
@@ -188,7 +208,10 @@ int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_n
             // match result
             if (strncmp(leaf.keys[state->key_index], state->prefix, strlen(state->prefix)) == 0)
             {
-                contacts_read(tree->data_file, leaf.children[state->key_index], out_names[found]);
+                ContactRecord contact;
+                contacts_read(tree->data_file, leaf.children[state->key_index], &contact);
+                strncpy(out_names[found], contact.name, MAX_NAME_LEN - 1);
+                out_offsets[found] = contact.offset_id;
                 found++;
             }
         }
@@ -243,11 +266,11 @@ static uint32_t bptree_find_parent(BPTree *tree, uint32_t child_offset)
 /*
     Adds a new contact to the data file, handle tree balancing.
 */
-bool bptree_insert(BPTree *tree, const char *name)
+bool bptree_insert(BPTree *tree, ContactRecord contact)
 {
     char key[MAX_KEY_LEN] = {0};
-    strncpy(key, name, MAX_KEY_LEN - 1);
-    uint32_t data_offset = contacts_append(tree->data_file, name);
+    strncpy(key, contact.name, MAX_KEY_LEN - 1);
+    uint32_t data_offset = contacts_append(tree->data_file, contact);
     uint32_t leaf_offset = bptree_find_leaf(tree, key);
     fseek(tree->tree_file, leaf_offset, SEEK_SET);
     BPTreeNode leaf;
@@ -353,11 +376,11 @@ uint32_t bptree_get_next_leaf(BPTree *tree, uint32_t current_leaf_offset)
     Returns true if deletion was successful, false if not found or error.
     Note: This implementation does not handle merging or redistributing nodes after deletion.
 */
-bool bptree_delete(BPTree *tree, const char *name)
+bool bptree_delete(BPTree *tree, ContactRecord contact)
 {
     // truncate key for internal comparisons
     char key[MAX_KEY_LEN] = {0};
-    strncpy(key, name, MAX_KEY_LEN - 1);
+    strncpy(key, contact.name, MAX_KEY_LEN - 1);
     uint32_t leaf_offset = bptree_find_leaf(tree, key);
     if (leaf_offset == 0) return false;
 
@@ -367,15 +390,13 @@ bool bptree_delete(BPTree *tree, const char *name)
     // find key in leaf
     int found_index = -1;
     for (int i = 0; i < leaf.key_count; i++) {
-        if (strncmp(leaf.keys[i], key, MAX_KEY_LEN) == 0) {
+        if (strncmp(leaf.keys[i], key, MAX_KEY_LEN) == 0 && leaf.children[i] == contact.offset_id) {
             found_index = i;
             break;
         }
     }
 
-    if (found_index == -1) {
-        return false;
-    }
+    if (found_index == -1) { return false; }
 
     // save the old first key so we can update parent separator if needed
     char old_first_key[MAX_KEY_LEN] = {0};
@@ -397,6 +418,8 @@ bool bptree_delete(BPTree *tree, const char *name)
     fseek(tree->tree_file, leaf_offset, SEEK_SET);
     fwrite(&leaf, sizeof(BPTreeNode), 1, tree->tree_file);
     fflush(tree->tree_file);
+
+    contacts_delete(tree->data_file, contact.offset_id);
 
     // if we removed the first key of the leaf, update parent's separator if present
     if (found_index == 0) {
@@ -662,7 +685,8 @@ uint32_t bptree_split_internal(BPTree *tree, uint32_t node_offset, const char *k
     return new_node_offset;
 }
 
-// Test function to demonstrate usage
+// ...existing code...
+
 int bptree_test()
 {
     printf("Starting B+ Tree test...\n");
@@ -687,11 +711,14 @@ int bptree_test()
         "Henry Davis"};
 
     int num_names = sizeof(names) / sizeof(names[0]);
+    ContactRecord contacts[num_names];
 
     for (int i = 0; i < num_names; i++)
     {
-        printf("  Inserting: %s\n", names[i]);
-        if (!bptree_insert(&tree, names[i]))
+        memset(&contacts[i], 0, sizeof(ContactRecord));
+        strncpy(contacts[i].name, names[i], MAX_NAME_LEN - 1);
+        contacts[i].name_len = strlen(contacts[i].name);
+        if (!bptree_insert(&tree, contacts[i]))
         {
             printf("  Failed to insert %s\n", names[i]);
             return 1;
@@ -705,23 +732,48 @@ int bptree_test()
     printf("\nTesting search...\n");
     for (int i = 0; i < 3; i++)
     { // Test first few names
-        uint32_t offset = bptree_search(&tree, names[i]);
-        if (offset != BPTREE_NOT_FOUND)
-        {
-            char name[MAX_NAME_LEN];
-            contacts_read(tree.data_file, offset, name);
-            printf("  Found: %s (offset: %u)\n", name, offset);
+        // Find leaf and index for the contact
+        uint32_t leaf_offset = bptree_find_leaf(&tree, contacts[i].name);
+        fseek(tree.tree_file, leaf_offset, SEEK_SET);
+        BPTreeNode leaf;
+        fread(&leaf, sizeof(BPTreeNode), 1, tree.tree_file);
+        int found_index = -1;
+        for (int j = 0; j < leaf.key_count; j++) {
+            if (strncmp(leaf.keys[j], contacts[i].name, MAX_KEY_LEN) == 0) {
+                found_index = j;
+                break;
+            }
         }
-        else
-        {
-            printf("  %s not found\n", names[i]);
+        if (found_index != -1) {
+            uint32_t offset = leaf.children[found_index];
+            ContactRecord found = bptree_search(&tree, offset);
+            if (found.name_len > 0) {
+                printf("  Found: %s (offset: %u)\n", found.name, offset);
+            } else {
+                printf("  %s not found\n", contacts[i].name);
+                return 1;
+            }
+        } else {
+            printf("  %s not found\n", contacts[i].name);
             return 1;
         }
     }
 
     // Test search for non-existent contact
-    uint32_t offset = bptree_search(&tree, "Nonexistent Person");
-    if (offset == BPTREE_NOT_FOUND)
+    uint32_t leaf_offset = bptree_find_leaf(&tree, "Nonexistent Person");
+    fseek(tree.tree_file, leaf_offset, SEEK_SET);
+    BPTreeNode leaf;
+    fread(&leaf, sizeof(BPTreeNode), 1, tree.tree_file);
+    int found_index = -1;
+    for (int j = 0; j < leaf.key_count; j++) {
+        if (strncmp(leaf.keys[j], "Nonexistent Person", MAX_KEY_LEN) == 0) {
+            found_index = j;
+            break;
+        }
+    }
+    uint32_t offset = (found_index != -1) ? leaf.children[found_index] : BPTREE_NOT_FOUND;
+    ContactRecord not_found = bptree_search(&tree, offset);
+    if (not_found.name_len == 0)
     {
         printf("  Correctly didn't find non-existent contact\n");
     }
@@ -734,7 +786,8 @@ int bptree_test()
     // Load first page of contacts for UI
     printf("\nLoading first page...\n");
     ContactsState state;
-    uint32_t next_leaf = bptree_load_page(&tree, tree.root_offset, &state);
+    uint32_t first_leaf = bptree_get_first_leaf(&tree);
+    uint32_t next_leaf = bptree_load_page(&tree, first_leaf, &state);
     printf("Loaded %d contacts from first leaf:\n", state.visible_count);
     for (int i = 0; i < state.visible_count; i++)
         printf("  %s\n", state.visible[i]);
@@ -772,9 +825,9 @@ void bptree_debug_print(BPTree *tree, uint32_t offset, int depth)
             printf("  ");
         if (node.type == LEAF)
         {
-            char name[MAX_NAME_LEN];
-            contacts_read(tree->data_file, node.children[i], name);
-            printf("Key[%d]: '%s' -> '%s' (offset: %u)\n", i, node.keys[i], name, node.children[i]);
+            ContactRecord contact;
+            contacts_read(tree->data_file, node.children[i], &contact);
+            printf("Key[%d]: '%s' -> '%s' (offset: %u)\n", i, node.keys[i], contact.name, node.children[i]);
         }
         else
         {
@@ -797,6 +850,7 @@ void bptree_debug_print(BPTree *tree, uint32_t offset, int depth)
         printf("Next leaf: %u\n", node.next);
     }
 }
+// ...existing code...
 
 /*
 int main()
