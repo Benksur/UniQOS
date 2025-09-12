@@ -10,7 +10,7 @@
 #define MAX_KEY_LEN 16
 #define MAX_NAME_LEN 64
 #define MAX_PHONE_LEN 10
-#define CONTACTS_VISIBLE_COUNT 8
+#define CONTACTS_VISIBLE_COUNT 9
 #define BPTREE_NOT_FOUND UINT32_MAX
 
 typedef enum { INTERNAL, LEAF } NodeType;
@@ -41,7 +41,7 @@ typedef struct {
     char visible[CONTACTS_VISIBLE_COUNT][MAX_NAME_LEN];
     uint32_t offsets[CONTACTS_VISIBLE_COUNT];
     int visible_count;
-} ContactsState;
+} ContactsView;
 
 
 typedef struct {
@@ -58,7 +58,7 @@ void bptree_close(BPTree *tree);
 bool bptree_insert(BPTree *tree, ContactRecord contact);
 ContactRecord bptree_search(BPTree *tree, uint32_t offset);
 int bptree_search_prefix_page(BPTree *tree, PrefixSearchState *state, char out_names[][MAX_NAME_LEN], uint32_t out_offsets[]);
-uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsState *state);
+uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsView *state);
 
 // Contact data functions
 uint32_t contacts_append(FILE *data_file, ContactRecord contact);
@@ -84,4 +84,4 @@ uint32_t bptree_get_next_leaf(BPTree *tree, uint32_t current_leaf_offset);
 
 
 
-#endif // CONTACTS_BPTREE_C
+#endif 

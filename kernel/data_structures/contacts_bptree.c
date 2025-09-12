@@ -147,7 +147,7 @@ uint32_t bptree_find_leaf(BPTree *tree, const char *name)
     Outputs up to CONTACTS_VISIBLE_COUNT names starting from the given offset.
     Since keys are sorted alphabetically, these will also be returned in order.
 */
-uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsState *state)
+uint32_t bptree_load_page(BPTree *tree, uint32_t offset, ContactsView *state)
 {
     fseek(tree->tree_file, offset, SEEK_SET);
     BPTreeNode node;
@@ -785,7 +785,7 @@ int bptree_test()
 
     // Load first page of contacts for UI
     printf("\nLoading first page...\n");
-    ContactsState state;
+    ContactsView state;
     uint32_t first_leaf = bptree_get_first_leaf(&tree);
     uint32_t next_leaf = bptree_load_page(&tree, first_leaf, &state);
     printf("Loaded %d contacts from first leaf:\n", state.visible_count);
@@ -796,7 +796,7 @@ int bptree_test()
     if (next_leaf != 0)
     {
         printf("\nLoading next page (leaf offset: %u)...\n", next_leaf);
-        ContactsState state2;
+        ContactsView state2;
         bptree_load_page(&tree, next_leaf, &state2);
         printf("Loaded %d contacts from second leaf:\n", state2.visible_count);
         for (int i = 0; i < state2.visible_count; i++)
@@ -865,7 +865,7 @@ int main()
     bptree_insert_leaf(&tree, tree.root_offset, "Eve Adams");
 
     // Load first page of contacts for UI
-    ContactsState state;
+    ContactsView state;
     uint32_t next_leaf = bptree_load_page(&tree, tree.root_offset, &state);
     for (int i = 0; i < state.visible_count; i++)
         printf("%s\n", state.visible[i]);

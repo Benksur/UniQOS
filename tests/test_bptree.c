@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         int total_contacts = 0;
         
         while (leaf_offset != 0) {
-            ContactsState state;
+            ContactsView state;
             uint32_t next_leaf = bptree_load_page(&tree, leaf_offset, &state);
             
             for (int i = 0; i < state.visible_count; i++) {

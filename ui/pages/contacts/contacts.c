@@ -1,65 +1,57 @@
 #include "contacts.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include "tile.h"
-#include "cursor.h"
-
-#define CONTACTS_VISIBLE_COUNT 8
 
 typedef struct {
     Cursor cursor;
-    char* contact_names[CONTACTS_VISIBLE_COUNT];
-    int count;
+    ContactsView view;
+    int page_offset;
     bool mounted;
 } ContactsState;
 
-static void contacts_draw();
-static void contacts_draw_tile(int tx, int ty);
-static void contacts_handle_input(int event_type);
-static void contacts_reset();
-static void contacts_destroy();
+static void contacts_draw(Page* self);
+static void contacts_draw_tile(Page* self, int tx, int ty);
+static void contacts_handle_input(Page* self, int event_type);
+static void contacts_reset(Page* self);
+static void contacts_destroy(Page* self);
 
-static Page* current_page = NULL; // Used only for static draw helpers
-
-static void contacts_draw() {
-    ContactsState* state = (ContactsState*)current_page->state;
-    for (int ty = 0; ty < state->count; ty++) {
+static void contacts_draw(Page* self) {
+    ContactsState* state = (ContactsState*)self->state;
+    for (int ty = 0; ty < state->view.visible_count; ty++) {
         // draw_contact_row(ty, ty == state->cursor.y, state->names[ty]);
     }
 }
 
-static void contacts_draw_tile(int tx, int ty) {
-    ContactsState* state = (ContactsState*)current_page->state;
+static void contacts_draw_tile(Page* self, int tx, int ty) {
+    ContactsState* state = (ContactsState*)self->state;
     // draw_contact_row(ty, ty == state->cursor.y, state->names[ty]);
 }
 
-static void contacts_handle_input(int event_type) {
-    ContactsState* state = (ContactsState*)current_page->state;
+static void contacts_handle_input(Page* self, int event_type) {
+    ContactsState* state = (ContactsState*)self->state;
     // handle input, update cursor, mark tiles dirty, etc.
 }
 
-static void contacts_reset() {
-    ContactsState* state = (ContactsState*)current_page->state;
+static void contacts_reset(Page* self) {
+    ContactsState* state = (ContactsState*)self->state;
     cursor_reset(&state->cursor);
 }
 
-static void contacts_destroy() {
-    ContactsState* state = (ContactsState*)current_page->state;
-    free(state->names);
+static void contacts_destroy(Page* self) {
+    if (self == NULL) return;
+    ContactsState* state = (ContactsState*)self->state;
     free(state);
-    free(current_page);
+    free(self);
 }
 
-Page* contacts_page_create(const char* const* names, int count) {
+static void contacts_get_page(int type, void* req) {
+    screen_data_request(type, req);
+}
+
+Page* contacts_page_create() {
     Page* page = malloc(sizeof(Page));
     ContactsState* state = malloc(sizeof(ContactsState));
-    state->cursor = (Cursor){0, 0, 0, count - 1, false};
-    state->count = count;
-    state->names = malloc(sizeof(char*) * count);
-    for (int i = 0; i < count; ++i) {
-        state->names[i] = strdup(names[i]);
-    }
+    state->cursor = (Cursor){0, 0, 0, CONTACTS_VISIBLE_COUNT - 1, false};
+    state->mounted = false;
+
 
     page->draw = contacts_draw;
     page->draw_tile = contacts_draw_tile;
@@ -68,6 +60,5 @@ Page* contacts_page_create(const char* const* names, int count) {
     page->destroy = contacts_destroy;
     page->state = state;
 
-    current_page = page; // Set for static helpers
     return page;
 }

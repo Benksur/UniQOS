@@ -7,16 +7,7 @@
 static Page* page_stack[MAX_PAGE_STACK];
 static int page_top = -1;
 static Page* current_page = NULL;
-static DataRequestFn data_request_fn = NULL;
-static DataResponseFn data_response_fn = NULL;
 
-void screen_set_data_req_fn(DataRequestFn fn) {
-    data_request_fn = fn;
-}
-
-void screen_set_data_resp_fn(DataResponseFn fn) {
-    data_response_fn = fn;
-}
 
 /**
  * Initialize the screen with the initial page.
@@ -26,9 +17,6 @@ void screen_init(Page* initial_page) {
     current_page = initial_page;
 
     if (current_page) {
-        if(data_request_fn) {
-            current_page->data_request = data_request_fn;
-        }
         if (current_page->reset) current_page->reset(current_page);
         current_page->draw(current_page);
     }
@@ -43,10 +31,6 @@ void screen_push_page(Page* new_page) {
         page_stack[++page_top] = current_page;
 
         current_page = new_page;
-
-        if (current_page && data_request_fn) {
-            current_page->data_request = data_request_fn;
-        }
 
         if (current_page->reset) current_page->reset(current_page);
         mark_all_tiles_dirty();
@@ -66,10 +50,6 @@ void screen_pop_page(void) {
 
         // Restore the previous page from the stack
         current_page = page_stack[page_top--];
-        
-        if (current_page && data_request_fn) {
-            current_page->data_request = data_request_fn;
-        }
 
         if (current_page->reset && current_page) current_page->reset(current_page);
         mark_all_tiles_dirty();
@@ -87,10 +67,6 @@ void screen_set_page(Page* new_page) {
     }
 
     current_page = new_page;
-
-    if (current_page && data_request_fn) {
-        current_page->data_request = data_request_fn;
-    }
 
     if (current_page && current_page->reset) {
         current_page->reset(current_page);
@@ -113,11 +89,23 @@ void screen_handle_input(int event_type) {
     }
 }
 
+void screen_data_request(int type, void* req) {
+    // do stuff here
+}
+
+void screen_handle_data_response(int type, void* resp) {
+    if (!current_page) return;
+    if (current_page->data_response) {
+        current_page->data_response(current_page, type, resp);
+    }
+}
+
 /**
  * Flush all dirty tiles.
  */
 void screen_tick(void) {
     if (!current_page) return;
+    // check response buffer and call screen handle data response
     if (current_page->draw_tile) {
         flush_dirty_tiles(current_page);
     }

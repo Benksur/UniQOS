@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-typedef void (*DataRequestFn)(int type, void* req);
-typedef void (*DataResponseFn)(int type, void* resp);
 
 typedef struct Page Page; // Forward declaration
 
@@ -14,14 +12,10 @@ typedef struct Page {
     void (*handle_input)(Page* self, int event_type);
     void (*reset)(Page* self);
     void (*destroy)(Page* self);
-    bool loading;
-    DataRequestFn data_request;
-    DataResponseFn data_response;
+    void (*data_response)(Page* self, int type, void* resp);
     void* state;
 } Page;
 
-void screen_set_data_req_fn(DataRequestFn fn);
-void screen_set_data_resp_fn(DataResponseFn fn);
 void screen_init(Page* initial_page);
 Page* screen_get_current_page(void);
 void screen_push_page(Page* new_page);
