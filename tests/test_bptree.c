@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     if (argc < 2) {
         printf("Usage: %s <command> [args]\n", argv[0]);
         printf("Commands:\n");
-        printf("  add <name>         - Add a contact\n");
+        printf("  add <name> <phone> - Add a contact\n");
         printf("  search <name>      - Search for a contact\n");
         printf("  list               - List all contacts\n");
         printf("  prefix <prefix>    - List contacts matching prefix\n");
@@ -25,18 +25,20 @@ int main(int argc, char *argv[])
     BPTree tree = bptree_create("contacts.dat", "contact_data.dat");
 
     if (strcmp(argv[1], "add") == 0) {
-        if (argc < 3) {
-            printf("Usage: %s add <name>\n", argv[0]);
+        if (argc < 4) {
+            printf("Usage: %s add <name> <phone>\n", argv[0]);
             bptree_close(&tree);
             return 1;
         }
         ContactRecord contact = {0};
         strncpy(contact.name, argv[2], MAX_NAME_LEN - 1);
         contact.name_len = strlen(contact.name);
+        strncpy(contact.phone, argv[3], MAX_PHONE_LEN - 1);
+        contact.phone_len = strlen(contact.phone);
         if (bptree_insert(&tree, contact)) {
-            printf("Added contact: %s\n", argv[2]);
+            printf("Added contact: %s, Phone: %s\n", contact.name, contact.phone);
         } else {
-            printf("Failed to add contact: %s\n", argv[2]);
+            printf("Failed to add contact: %s\n", contact.name);
         }
     }
     else if (strcmp(argv[1], "search") == 0) {
@@ -62,6 +64,7 @@ int main(int argc, char *argv[])
         ContactRecord found = bptree_search(&tree, offset);
         if (found.name_len > 0) {
             printf("Found contact: %s (offset: %u)\n", found.name, offset);
+            printf("  Phone: %s\n", found.phone);
         } else {
             printf("Contact not found: %s\n", argv[2]);
         }
@@ -76,7 +79,9 @@ int main(int argc, char *argv[])
             uint32_t next_leaf = bptree_load_page(&tree, leaf_offset, &state);
             
             for (int i = 0; i < state.visible_count; i++) {
-                printf("  Name: %s, Offset: %u\n", state.visible[i], state.offsets[i]);
+                ContactRecord contact;
+                contact = bptree_search(&tree, state.offsets[i]);
+                printf("  Name: %s, Number: %s, Offset: %u\n", contact.name, contact.phone, contact.offset_id);
                 total_contacts++;
             }
             
