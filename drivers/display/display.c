@@ -466,19 +466,19 @@ void display_draw_bits(uint16_t x, uint16_t y, uint8_t *buff, uint16_t colour, u
 
     for (i = 0; i < h; i++)
     {
-        uint8_t line = buff[i];
-        for (j = 0; j < 8; j++)
+        for (j = 0; j < w; j++)
         {
-            if (line & 0x01)
-            {
-                driver->draw_pixel(x + i, y + j, colour);
+            uint8_t byte = buff[i * ((w + 7) / 8) + (j / 8)];
+            uint8_t bit = (byte >> (7 - (j % 8))) & 0x01;
 
+            if (bit)
+            {
+                driver->draw_pixel(x + j, y + i, colour);
             }
             else
             {
-                driver->draw_pixel(x + i, y + j, bg_colour);
+                driver->draw_pixel(x + j, y + i, bg_colour);
             }
-            line >>= 1;
         }
     }
 }
