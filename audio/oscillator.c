@@ -1,19 +1,17 @@
 #include "oscillator.h"
 #include <math.h>
 
+#define WAVE_LENGTH 1024
+#define M_PI 3.14159265358979323846
 
-int16_t sine[WAVE_LENGTH] = {
-    // 128-sample sine wave scaled to ±32767
-    0, 1608, 3211, 4807, 6393, 7967, 9527, 11071, 12597, 14103, 15587, 17047, 18481, 19887, 21263, 22607,
-    23917, 25191, 26427, 27623, 28778, 29890, 30957, 31978, 32952, 33877, 34752, 35576, 36348, 37067, 37731, 38340,
-    38893, 39389, 39827, 40207, 40528, 40790, 40992, 41134, 41216, 41237, 41197, 41097, 40936, 40714, 40431, 40088,
-    39684, 39220, 38696, 38112, 37469, 36767, 36007, 35189, 34314, 33382, 32395, 31352, 30255, 29104, 27901, 26646,
-    25340, 23985, 22581, 21129, 19631, 18087, 16500, 14870, 13200, 11490, 9742, 7960, 6143, 4294, 2415, 518,
-    -1390, -3297, -5201, -7100, -8992, -10875, -12746, -14604, -16446, -18270, -20074, -21856, -23613, -25344,
-    -27046, -28717, -30356, -31960, -33527, -35056, -36544, -37990, -39392, -40748, -42056, -43315, -44523, -45678,
-    -46779, -47824, -48812, -49741, -50610, -51418, -52163, -52844, -53460, -54010, -54492, -54906, -55250, -55523,
-    -55725, -55854, -55910, -55892, -55800, -55633, -55391, -55073, -54678, -54207, -53659, -53034, -52332, -51553
-};
+int16_t sine[WAVE_LENGTH];
+
+// Generate the sine table at startup
+void osc_generate_sine_table() {
+    for (int i = 0; i < WAVE_LENGTH; ++i) {
+        sine[i] = (int16_t)(32767 * sinf(2.0f * M_PI * i / WAVE_LENGTH));
+    }
+}
 
 void osc_init(Oscillator *osc, float freq) {
     osc->phase = 0.0f;
@@ -24,8 +22,12 @@ int16_t osc_next(Oscillator *osc) {
     int idx = (int)osc->phase;
     int next_idx = (idx + 1) % WAVE_LENGTH;
     float frac = osc->phase - idx;
-    int16_t sample = (int16_t)((1.0f - frac) * sine[idx] + frac * sine[next_idx]);
+    float sample = (1.0f - frac) * sine[idx] + frac * sine[next_idx];
+    // Apply higher gain to boost amplitude (3.0x, clamp to int16_t range)
+    sample *= 3.0f;
+    if (sample > 32767) sample = 32767;
+    if (sample < -32768) sample = -32768;
     osc->phase += osc->phase_inc;
     if (osc->phase >= WAVE_LENGTH) osc->phase -= WAVE_LENGTH;
-    return sample;
+    return (int16_t)sample;
 }

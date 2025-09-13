@@ -41,7 +41,7 @@ int main(void)
   codec = nau88c22_get_driver();
   codec->init();
   codec->speaker.mute(false);
-  codec->speaker.set_volume(90);
+  codec->speaker.set_volume(100);
 
   display_init();
   keypad_init();
@@ -64,7 +64,7 @@ int main(void)
   mark_all_tiles_dirty();
   screen_tick();
   // draw_grid();
-
+  osc_generate_sine_table();
   Mixer chord;
   
 //   mixer_add(&chord, 329.63f);

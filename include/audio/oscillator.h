@@ -13,6 +13,8 @@ typedef struct {
     float phase_inc;
 } Oscillator;
 
+
+void osc_generate_sine_table();
 void osc_init(Oscillator *osc, float freq);
 int16_t osc_next(Oscillator *osc);
 
