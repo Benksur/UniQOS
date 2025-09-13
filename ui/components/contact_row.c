@@ -8,7 +8,7 @@ void draw_contact_row(int tile_y, int selected, const char* name) {
 
     if (selected) {
         display_fill_rect(px, py, width, height, current_theme.highlight_colour);
-        display_draw_string(px + 10, py + 10, name, current_theme.text_colour, current_theme.highlight_colour, 2);
+        display_draw_string(px + 10, py + 10, name, current_theme.fg_colour, current_theme.highlight_colour, 2);
     } else {
         display_fill_rect(px, py, width, height, current_theme.bg_colour);
         display_draw_string(px + 10, py + 10, name, current_theme.text_colour, current_theme.bg_colour, 2);
