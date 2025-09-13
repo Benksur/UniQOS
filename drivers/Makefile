@@ -37,6 +37,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/ui/components \
                   -I../../include/drivers/peripherals \
                   -I../../include/kernel \
+                  -I../../include/kernel/data_structures \
                   -I../../third_party/minIni/dev \
 
 TEST ?=
@@ -100,10 +101,12 @@ $(CSRCS) \
 ../../ui/pages/calculator.c \
 ../../ui/pages/phone/phone.c \
 ../../ui/pages/phone/call.c \
+../../ui/pages/contacts/contacts.c \
 ../../ui/pages/sms/sms.c \
 ../../ui/pages/sms/new_sms.c \
 ../../ui/pages/sms/messages.c \
 ../../ui/components/menu_row.c \
+../../ui/components/contact_row.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \
@@ -115,6 +118,7 @@ $(CSRCS) \
 ../../drivers/peripherals/drv2603.c \
 ../../drivers/peripherals/ws2812.c \
 ../../drivers/peripherals/sdcard.c \
+../../kernel/data_structures/contacts_bptree.c \
 ../../third_party/minIni/dev/minIni.c \
 
 

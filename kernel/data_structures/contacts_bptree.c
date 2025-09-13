@@ -1,4 +1,4 @@
-#include "kernel/data_structures/contacts_bptree.h"
+#include "contacts_bptree.h"
 
 /*
     Load btree file if exists, otherwise create new. Returns BPTree struct.

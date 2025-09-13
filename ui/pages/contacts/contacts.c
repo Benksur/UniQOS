@@ -13,8 +13,21 @@ static void contacts_handle_input(Page* self, int event_type);
 static void contacts_reset(Page* self);
 static void contacts_destroy(Page* self);
 
+static char* names[CONTACTS_VISIBLE_COUNT] = {
+    "Ty Behnke",
+    "James Wood",
+    "Caiyan Jin",
+    "Pauline Pounds",
+    "Alice Smith",
+    "Bob Johnson",
+    "Charlie Brown",
+    "Diana Prince",
+    "Ethan Hunt",
+};
+
 static void contacts_draw(Page* self) {
     ContactsState* state = (ContactsState*)self->state;
+    display_fill_rect(0, 25 + TILE_HEIGHT * TILE_ROWS, TILE_WIDTH * TILE_COLS, TILE_HEIGHT, current_theme.fg_colour);
     for (int ty = 0; ty < state->view.visible_count; ty++) {
         // draw_contact_row(ty, ty == state->cursor.y, state->names[ty]);
     }
@@ -22,7 +35,11 @@ static void contacts_draw(Page* self) {
 
 static void contacts_draw_tile(Page* self, int tx, int ty) {
     ContactsState* state = (ContactsState*)self->state;
-    // draw_contact_row(ty, ty == state->cursor.y, state->names[ty]);
+    draw_contact_row(ty, 0, names[ty]);
+    for (int i = 0; i < TILE_COLS; i++) {
+        mark_tile_clean(i, ty);
+    }
+
 }
 
 static void contacts_handle_input(Page* self, int event_type) {
@@ -41,6 +58,8 @@ static void contacts_destroy(Page* self) {
     free(state);
     free(self);
 }
+
+static void screen_data_request(int type, void* req);
 
 static void contacts_get_page(int type, void* req) {
     screen_data_request(type, req);
