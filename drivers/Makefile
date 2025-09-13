@@ -35,7 +35,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/ui \
                   -I../../include/ui/pages \
                   -I../../include/ui/components \
-                  -I../../include/drivers/peripherals \
+                  -I../../include/audio \
                   -I../../include/kernel \
                   -I../../include/kernel/data_structures \
                   -I../../third_party/minIni/dev \
@@ -50,6 +50,9 @@ TEST_FILE_PATH := ../../tests/test_blinky.c
 TARGET := test_blinky
 else ifeq ($(TEST), codec)
 TEST_FILE_PATH := ../../tests/test_nau88c22.c
+TARGET := test_nau88c22
+else ifeq ($(TEST), audio)
+TEST_FILE_PATH := ../../tests/test_audio.c
 TARGET := test_nau88c22
 else ifeq ($(TEST), mobile)
 TEST_FILE_PATH := ../../tests/test_mobile.c
@@ -107,6 +110,8 @@ $(CSRCS) \
 ../../ui/pages/sms/messages.c \
 ../../ui/components/menu_row.c \
 ../../ui/components/contact_row.c \
+../../audio/mixer.c \
+../../audio/oscillator.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \
