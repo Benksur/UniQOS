@@ -2,6 +2,7 @@
 
 
 
+
 void mixer_init(Mixer *mix) {
     mix->count = 0;
 }

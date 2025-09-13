@@ -24,7 +24,7 @@ int16_t osc_next(Oscillator *osc) {
     float frac = osc->phase - idx;
     float sample = (1.0f - frac) * sine[idx] + frac * sine[next_idx];
     // Apply higher gain to boost amplitude (3.0x, clamp to int16_t range)
-    sample *= 3.0f;
+    sample *= 6.0f;
     if (sample > 32767) sample = 32767;
     if (sample < -32768) sample = -32768;
     osc->phase += osc->phase_inc;
