@@ -104,6 +104,19 @@ static void contacts_handle_input(Page* self, int event_type) {
         if (old_row >= 0 && old_row < CONTACTS_VISIBLE_COUNT) mark_row_dirty(self, old_row);
         if (new_row >= 0 && new_row < CONTACTS_VISIBLE_COUNT) mark_row_dirty(self, new_row);
     }
+
+    if (event_type == INPUT_SELECT) {
+        ContactRecord contact = {
+            .name_len = strlen(names[state->cursor.y]),
+            .phone_len = 10,
+            .phone = "1234567890",
+            .offset_id = 0
+        };
+        strncpy(contact.name, names[state->cursor.y], sizeof(contact.name) - 1);
+        contact.name[sizeof(contact.name) - 1] = '\0';
+        Page* details_page = contact_details_page_create(contact);
+        screen_push_page(details_page);
+    }
     // handle input, update cursor, mark tiles dirty, etc.
 }
 

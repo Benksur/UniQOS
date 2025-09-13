@@ -10,6 +10,7 @@
 #include "input.h"
 #include "contacts_bptree.h"
 #include "contact_row.h"
+#include "contact_details.h"
 
 Page* contacts_page_create();
 

@@ -105,6 +105,7 @@ $(CSRCS) \
 ../../ui/pages/phone/phone.c \
 ../../ui/pages/phone/call.c \
 ../../ui/pages/contacts/contacts.c \
+../../ui/pages/contacts/contact_details.c \
 ../../ui/pages/sms/sms.c \
 ../../ui/pages/sms/new_sms.c \
 ../../ui/pages/sms/messages.c \
