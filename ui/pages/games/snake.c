@@ -55,6 +55,9 @@ typedef struct
  */
 void game_tick(SnakeState *state)
 {
+    if (state->game_state != GAME_RUN){
+        return;
+    }
 
     // copy out old tail
     state->snake_x[MAX_SNAKE - 1] = state->snake_x[state->snake_len - 1];
@@ -136,7 +139,7 @@ void game_tick(SnakeState *state)
         // Check win
         if (state->snake_len == MAX_SNAKE)
         {
-            state->game_state == GAME_WIN;
+            state->game_state = GAME_WIN;
         }
         else
         {
@@ -194,7 +197,7 @@ static void snake_draw_tile(Page *self, int tx, int ty)
         init_game(state);
 
         // Clear display
-        display_fill_rect(0, y_draw, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * TILE_ROWS, current_theme.bg_colour);
+        display_fill_rect(0, 0, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * TILE_ROWS, current_theme.bg_colour);
     }
 
     // TODO: should probably confirm that this logic holds at tick reset
