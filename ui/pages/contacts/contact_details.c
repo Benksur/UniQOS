@@ -51,7 +51,7 @@ static void contact_details_draw_tile(Page* self, int tx, int ty) {
             int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
             display_draw_string(center_x, 80, title, current_theme.text_colour, current_theme.bg_colour, 2);
         }
-        draw_bottom_bar("Options", "Select", "Back");
+        draw_bottom_bar("Options", "Select", "Back", 1);
         
         state->mounted = true;
     }

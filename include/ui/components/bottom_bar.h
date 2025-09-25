@@ -6,6 +6,6 @@
 #include "display.h"
 #include <string.h>
 
-void draw_bottom_bar(const char* left, const char* center, const char* right);
+void draw_bottom_bar(const char* left, const char* center, const char* right, int accent_index);
 
 #endif
