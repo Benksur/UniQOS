@@ -37,7 +37,10 @@
         "tick_sound.h": "c",
         "mixer.h": "c",
         "i2s.h": "c",
-        "oscillator.h": "c"
+        "oscillator.h": "c",
+        "contact_row.h": "c",
+        "option_row.h": "c",
+        "contact_details.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",

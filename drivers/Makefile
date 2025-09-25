@@ -111,6 +111,8 @@ $(CSRCS) \
 ../../ui/pages/sms/messages.c \
 ../../ui/components/menu_row.c \
 ../../ui/components/contact_row.c \
+../../ui/components/option_row.c \
+../../ui/components/bottom_bar.c \
 ../../audio/mixer.c \
 ../../audio/oscillator.c \
 ../../drivers/power/bq27441.c \

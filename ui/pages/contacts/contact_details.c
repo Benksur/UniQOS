@@ -6,6 +6,15 @@ typedef struct {
     bool mounted;
 } ContactDetailsState;
 
+// Option row labels for contact actions
+static const char* option_labels[] = {
+    "Call",
+    "Send Message",
+    "Edit Contact",
+    "Delete Contact"
+};
+#define NUM_OPTIONS (sizeof(option_labels)/sizeof(option_labels[0]))
+
 static void contact_details_draw_tile(Page* self, int tx, int ty);
 static void contact_details_handle_input(Page* self, int event_type);
 static void contact_details_reset(Page* self);
@@ -42,14 +51,21 @@ static void contact_details_draw_tile(Page* self, int tx, int ty) {
             int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
             display_draw_string(center_x, 80, title, current_theme.text_colour, current_theme.bg_colour, 2);
         }
-
+        draw_bottom_bar("Options", "Select", "Back");
+        
         state->mounted = true;
     }
-
-    // Draw cursor
-    int cursor_x = state->cursor.x * TILE_WIDTH;
-    int cursor_y = state->cursor.y * TILE_HEIGHT + 30; // Offset for header
-    display_draw_rect(cursor_x, cursor_y, TILE_WIDTH, TILE_HEIGHT, current_theme.accent_colour);
+    // Draw option rows for ty = 3, 4, 5, 6
+    if (ty > 2 && ty < 7) {
+        int option_idx = ty - 3;
+        if (option_idx >= 0 && option_idx < NUM_OPTIONS) {
+            bool highlight = (state->cursor.y == option_idx);
+            draw_option_row(ty, highlight, option_labels[option_idx]);
+        }
+    }
+    for (int i = 0; i < TILE_COLS; i++) {
+        mark_tile_clean(i, ty);
+    }
 }
 
 static void contact_details_handle_input(Page* self, int event_type) {
@@ -82,7 +98,7 @@ static void contact_details_reset(Page* self) {
     state->cursor.x = 0;
     state->cursor.y = 0;
     state->cursor.max_x = 1; // Only one column for now
-    state->cursor.max_y = 2; // Name and Phone
+    state->cursor.max_y = NUM_OPTIONS; // Name and Phone
     state->mounted = false;
     mark_all_tiles_dirty();
 }
@@ -107,7 +123,7 @@ Page* contact_details_page_create(ContactRecord contact) {
     state->cursor.x = 0;
     state->cursor.y = 0;
     state->cursor.max_x = 1;
-    state->cursor.max_y = 2;
+    state->cursor.max_y = NUM_OPTIONS;
     state->mounted = false;
 
     page->draw = NULL; // Full redraw not needed, using tile redraw
