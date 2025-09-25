@@ -32,7 +32,7 @@ void display_fill(uint16_t colour);
 void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour);
 void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour);
 void display_draw_vertical_line(uint16_t x, uint16_t y0, uint16_t y1, uint16_t colour);
-void display_draw_horizontal_line(uint16_t x0, uint16_t x1, uint16_t y, uint16_t colour);
+void display_draw_horizontal_line(uint16_t x0, uint16_t y, uint16_t x1, uint16_t colour);
 void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour);
 void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour);
 void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour);

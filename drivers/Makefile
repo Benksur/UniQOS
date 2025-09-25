@@ -35,6 +35,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/ui \
                   -I../../include/ui/pages \
                   -I../../include/ui/components \
+                  -I../../include/ui/overlays \
                   -I../../include/audio \
                   -I../../include/kernel \
                   -I../../include/kernel/data_structures \
@@ -113,6 +114,7 @@ $(CSRCS) \
 ../../ui/components/contact_row.c \
 ../../ui/components/option_row.c \
 ../../ui/components/bottom_bar.c \
+../../ui/overlays/option_overlay.c \
 ../../audio/mixer.c \
 ../../audio/oscillator.c \
 ../../drivers/power/bq27441.c \

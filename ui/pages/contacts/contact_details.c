@@ -70,18 +70,20 @@ static void contact_details_draw_tile(Page* self, int tx, int ty) {
 
 static void contact_details_handle_input(Page* self, int event_type) {
     ContactDetailsState* state = (ContactDetailsState*)self->state;
+    int old_x, old_y;
+    bool moved = false;
     switch (event_type) {
         case INPUT_DPAD_UP:
-            if (state->cursor.y > 0) state->cursor.y--;
+            moved = cursor_move(&state->cursor, 0, -1, &old_x, &old_y);
             break;
         case INPUT_DPAD_DOWN:
-            if (state->cursor.y < state->cursor.max_y - 1) state->cursor.y++;
+            moved = cursor_move(&state->cursor, 0, +1, &old_x, &old_y);
             break;
         case INPUT_DPAD_LEFT:
-            if (state->cursor.x > 0) state->cursor.x--;
+            moved = cursor_move(&state->cursor, -1, 0, &old_x, &old_y);
             break;
         case INPUT_DPAD_RIGHT:
-            if (state->cursor.x < state->cursor.max_x - 1) state->cursor.x++;
+            moved = cursor_move(&state->cursor, +1, 0, &old_x, &old_y);
             break;
         case INPUT_KEYPAD_0: // Back
             // Go back to previous page
@@ -90,7 +92,12 @@ static void contact_details_handle_input(Page* self, int event_type) {
         default:
             break;
     }
-    mark_all_tiles_dirty();
+    if (moved) {
+        int old_row = old_y + 3; // option rows are at ty = 3, 4, 5, 6
+        int new_row = state->cursor.y + 3;
+        if (old_row >= 3 && old_row < 7) mark_tile_dirty(0, old_row);
+        if (new_row >= 3 && new_row < 7 && new_row != old_row) mark_tile_dirty(0, new_row);
+    }
 }
 
 static void contact_details_reset(Page* self) {
