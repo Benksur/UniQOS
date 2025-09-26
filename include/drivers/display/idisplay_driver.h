@@ -11,4 +11,5 @@ typedef struct {
     void (*set_orientation)(uint8_t rotation);
     uint16_t (*get_width)(void);
     uint16_t (*get_height)(void);
+    void (*draw_bitmap)(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour);
 } IDisplayDriver_t;

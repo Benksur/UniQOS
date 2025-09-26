@@ -223,7 +223,7 @@ static void clock_destroy(Page *self)
     {
         ClockState *state = (ClockState *)self->state;
         free(state);
-        free(self->state);
+        free(self);
     }
 }
 

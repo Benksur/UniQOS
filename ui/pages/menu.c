@@ -11,6 +11,8 @@
 #include "calendar.h"
 #include "calculator.h"
 #include "theme.h"
+#include "contacts.h"
+#include "contacts_bptree.h"
 #include <stddef.h>
 
 #define MENU_ITEMS_COUNT 7
@@ -131,7 +133,10 @@ static void menu_handle_input(Page* self, int event_type) {
                 screen_push_page(sms_page);  // Use push instead of set
                 break;
             }
-            case 2: /* screen_set_page(&contacts_page);  */ break;
+            case 2:
+                Page* contacts_page = contacts_page_create();
+                screen_push_page(contacts_page);
+                break;
             case 3:
                 Page* clock_page = clock_page_create();
                 screen_push_page(clock_page);

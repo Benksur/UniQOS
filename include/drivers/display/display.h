@@ -32,7 +32,7 @@ void display_fill(uint16_t colour);
 void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour);
 void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour);
 void display_draw_vertical_line(uint16_t x, uint16_t y0, uint16_t y1, uint16_t colour);
-void display_draw_horizontal_line(uint16_t x0, uint16_t x1, uint16_t y, uint16_t colour);
+void display_draw_horizontal_line(uint16_t x0, uint16_t y, uint16_t x1, uint16_t colour);
 void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour);
 void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour);
 void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour);
@@ -48,5 +48,6 @@ void display_scroll_text(uint16_t x, uint16_t y, uint16_t width, const char *tex
 void display_draw_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t percent, uint16_t fill_colour, uint16_t bg_colour);
 void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t colour);
 void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t colour);
+void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour);
 
 #endif
