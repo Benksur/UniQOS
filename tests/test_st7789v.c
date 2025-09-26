@@ -7,6 +7,7 @@
 #include "spi.h"
 #include "tile.h"
 #include "keypad.h"
+#include "option_overlay.h"
 
 #include "nau88c22.h"
 #include "bloop_x.h"
@@ -16,6 +17,20 @@
 #include "rtc.h"
 
 #include <stdbool.h>
+
+// Option overlay callback
+static void test_overlay_callback(int selected_idx, void* user_data) {
+    // For demonstration, just pop the overlay
+    screen_pop_page();
+    // You can add more logic here based on selected_idx
+}
+
+static const char* overlay_options[] = {
+    "Send Message",
+    "Save to Drafts",
+    "Clear"
+};
+#define NUM_OVERLAY_OPTIONS (sizeof(overlay_options)/sizeof(overlay_options[0]))
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -97,8 +112,17 @@ int main(void)
           input_event_t event = keypad_get_button_event(button_idx);
           
           // Handle special cases
-          if (event == INPUT_LEFT) {
+          if (event == INPUT_RIGHT) {
             screen_pop_page();
+          } else if (event == INPUT_LEFT) {
+            // Show option overlay
+            Page* overlay = option_overlay_page_create(
+                "Message Options",
+                overlay_options,
+                NUM_OVERLAY_OPTIONS,
+                test_overlay_callback,
+                NULL);
+            if (overlay) screen_push_page(overlay);
           } else {
             screen_handle_input(event);
           }

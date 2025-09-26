@@ -547,3 +547,7 @@ void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t
         display_fill_rect(x + i * 4, y + 15 - bar_height, 2, bar_height, bar_colour);
     }
 }
+
+void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour) {
+    driver->draw_bitmap(x, y, bitmap, width, height, fg_colour, bg_colour);
+}

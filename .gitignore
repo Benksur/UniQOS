@@ -2,3 +2,5 @@
 *.map
 *.a
 build/
+*dat
+test_bptree
