@@ -16,7 +16,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
 
-  drv2603_init(&htim3);
+  drv2603_init();
   drv2603_set_strength_lra(100);
   while (1)
   {

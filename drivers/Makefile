@@ -7,7 +7,7 @@ ifeq ($(BOARD), pcb-old)
 LDSCRIPT = STM32H733XG_FLASH.ld
 STARTUP_FILE = startup_stm32h733xx.s
 BOARD_C_DEF = -DSTM32H733xx
-ifeq ($(BOARD), pcb)
+else ifeq ($(BOARD), pcb)
 LDSCRIPT = STM32H723XG_FLASH.ld
 STARTUP_FILE = startup_stm32h723xx.s
 BOARD_C_DEF = -DSTM32H723xx
@@ -67,7 +67,7 @@ TEST_FILE_PATH := ../../tests/test_terminal.c
 TARGET := test_terminal
 else ifeq ($(TEST), display)
 TEST_FILE_PATH := ../../tests/test_st7789v.c
-TARGET := test_display
+TARGET := test_st7789v
 else ifeq ($(TEST), microsd)
 TEST_FILE_PATH := ../../tests/test_microsd.c
 TARGET := test_microsd

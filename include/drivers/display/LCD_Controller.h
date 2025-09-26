@@ -35,8 +35,8 @@ const ILCD_t* lcd_create_spi(void);
 #define ST7789_SPI_PORT hspi4
 extern SPI_HandleTypeDef ST7789_SPI_PORT;
 
-#define ST7789_CS_PORT GPIOE
-#define ST7789_CS_PIN GPIO_PIN_11
+#define ST7789_CS_PORT DISP_CS_GPIO_Port
+#define ST7789_CS_PIN DISP_CS_Pin
 
 #define ST7789_Select() HAL_GPIO_WritePin(ST7789_CS_PORT, ST7789_CS_PIN, GPIO_PIN_RESET)
 #define ST7789_UnSelect() HAL_GPIO_WritePin(ST7789_CS_PORT, ST7789_CS_PIN, GPIO_PIN_SET)

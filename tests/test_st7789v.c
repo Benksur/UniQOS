@@ -65,16 +65,19 @@ int main(void)
   MX_I2S1_Init();
   MX_RTC_Init();
 
-  // MX_TIM2_Init();
-  //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  //   htim2.Instance->CCR3 = 80;
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,GPIO_PIN_1, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET);
+
+  // MX_TIM13_Init();
+  // HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);
+  // htim13.Instance->CCR3 = 65535;
 
   uint8_t status;
-  static const IAudioDriver_t *codec = NULL;
-  codec = nau88c22_get_driver();
-  codec->init();
-  codec->speaker.mute(false);
-  codec->speaker.set_volume(100);
+  // static const IAudioDriver_t *codec = NULL;
+  // codec = nau88c22_get_driver();
+  // codec->init();
+  // codec->speaker.mute(false);
+  // codec->speaker.set_volume(100);
 
   display_init();
   keypad_init();
@@ -108,7 +111,7 @@ int main(void)
       // Check all buttons and handle input events
       for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++) {
         if (keypad_is_button_pressed(button_idx)) {
-          HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+          // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
           input_event_t event = keypad_get_button_event(button_idx);
           
           // Handle special cases
@@ -128,9 +131,9 @@ int main(void)
           }
           
           if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
-            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
+            // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
           } else {
-            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)bloop, 950, HAL_MAX_DELAY);
+            // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)bloop, 950, HAL_MAX_DELAY);
           }
           // Play sound for numeric keypad presses
         }
@@ -258,7 +261,7 @@ void Error_Handler(void)
   // Add LED toggle for visual feedback
   while (1)
   {
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
+    // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
     HAL_Delay(100);                        // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */

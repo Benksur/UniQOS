@@ -31,12 +31,18 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usart.h"
+#include "i2c.h"
+#include "i2s.h"
+#include "spi.h"
+#include "tim.h"
+#include "rtc.h"
+#include "gpio.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+extern SPI_HandleTypeDef hspi4;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -101,6 +107,8 @@ void Error_Handler(void);
 #define UART_DSR_GPIO_Port GPIOA
 #define PB_STAR_Pin GPIO_PIN_6
 #define PB_STAR_GPIO_Port GPIOE
+#define LOAD_SW_Pin GPIO_PIN_1
+#define LOAD_SW_GPIO_Port GPIOD
 #define SDMMC_DET_Pin GPIO_PIN_7
 #define SDMMC_DET_GPIO_Port GPIOC
 #define PB_DPAD_SELECT_Pin GPIO_PIN_0
@@ -129,8 +137,6 @@ void Error_Handler(void);
 #define MCP_STAT1_GPIO_Port GPIOB
 #define PB_VOL_UP_Pin GPIO_PIN_2
 #define PB_VOL_UP_GPIO_Port GPIOA
-#define DISP_BL_Pin GPIO_PIN_6
-#define DISP_BL_GPIO_Port GPIOA
 #define DISP_CS_Pin GPIO_PIN_13
 #define DISP_CS_GPIO_Port GPIOB
 #define MOB_PWR_REM_Pin GPIO_PIN_9

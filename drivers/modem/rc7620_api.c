@@ -68,7 +68,7 @@ void modem_power_on(void)
     HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, GPIO_PIN_RESET);
     HAL_Delay(250);
     HAL_GPIO_WritePin(MODEM_POWER_PORT, MODEM_POWER_PIN, GPIO_PIN_SET);
-    HAL_Delay(100);
+    HAL_Delay(100);    
 }
 
 void modem_power_off(void)

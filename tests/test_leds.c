@@ -130,7 +130,10 @@ int main(void)
     MX_GPIO_Init();
     MX_TIM5_Init();
 
+    HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,GPIO_PIN_1, GPIO_PIN_SET);
+
     ws2812_init();
+    
 
     while (1)
     {

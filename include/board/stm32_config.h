@@ -15,7 +15,7 @@
 #define IMU_I2C_HANDLE hi2c1
 #define BATT_I2C_HANDLE hi2c1
 #define MODEM_UART_HANDLE huart1
-#define DEBUG_UART_HANDLE huart3
+// #define DEBUG_UART_HANDLE huart3
 #define DISPLAY_PWM_TIMER htim2
 
 
