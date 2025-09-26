@@ -3,10 +3,14 @@ TARGET = Firmware
 BOARD ?= dev
 
 # Define linker and startup file based on BOARD
-ifeq ($(BOARD), pcb)
+ifeq ($(BOARD), pcb-old)
 LDSCRIPT = STM32H733XG_FLASH.ld
 STARTUP_FILE = startup_stm32h733xx.s
 BOARD_C_DEF = -DSTM32H733xx
+ifeq ($(BOARD), pcb)
+LDSCRIPT = STM32H723XG_FLASH.ld
+STARTUP_FILE = startup_stm32h723xx.s
+BOARD_C_DEF = -DSTM32H723xx
 else ifeq ($(BOARD), dev)
 LDSCRIPT = STM32H753XX_FLASH.ld
 STARTUP_FILE = startup_stm32h753xx.s
