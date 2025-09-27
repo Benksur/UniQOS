@@ -9,6 +9,7 @@
 #include "call.h"
 #include <stdlib.h>
 #include <string.h>
+#include "incoming_call.h"
 
 #define PHONE_OPTIONS_COUNT 3
 
@@ -16,6 +17,14 @@ typedef struct {
     Cursor cursor;
     const char* options[PHONE_OPTIONS_COUNT];
 } PhoneState;
+
+void my_callback(int action, void* user_data) {
+    if (action == INCOMING_CALL_ACTION_PICKUP) {
+        screen_pop_page();
+    } else if (action == INCOMING_CALL_ACTION_HANGUP) {
+        screen_pop_page();
+    }
+}
 
 // Forward declarations
 static void phone_draw(Page* self);
@@ -108,8 +117,9 @@ static void phone_handle_input(Page* self, int event_type) {
                 Page* call_page = call_page_create();
                 screen_push_page(call_page);
                 break;
-            case 1: // Call History
-                // TODO: Open call history
+            case 1:
+                Page* incoming_call_page = incoming_call_overlay_create("1234567890", my_callback, NULL);
+                screen_push_page(incoming_call_page);
                 break;
             case 2: // Favourites
                 // TODO: Open favourites

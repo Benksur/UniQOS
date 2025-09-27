@@ -42,7 +42,8 @@
         "option_row.h": "c",
         "contact_details.h": "c",
         "contacts_bptree.h": "c",
-        "sms.h": "c"
+        "sms.h": "c",
+        "incoming_text.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",

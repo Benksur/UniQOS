@@ -115,6 +115,8 @@ $(CSRCS) \
 ../../ui/components/option_row.c \
 ../../ui/components/bottom_bar.c \
 ../../ui/overlays/option_overlay.c \
+../../ui/overlays/incoming_call.c \
+../../ui/overlays/incoming_text.c \
 ../../audio/mixer.c \
 ../../audio/oscillator.c \
 ../../drivers/power/bq27441.c \

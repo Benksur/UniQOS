@@ -1,4 +1,5 @@
 #include "sms.h"
+#include "incoming_text.h"
 
 #define SMS_OPTIONS_COUNT 3
 
@@ -7,6 +8,18 @@ typedef struct
     Cursor cursor;
     const char *options[SMS_OPTIONS_COUNT];
 } SmsState;
+
+void sms_incoming_text_callback(int action, void *user_data)
+{
+    if (action == INCOMING_TEXT_ACTION_CLOSE)
+    {
+        screen_pop_page();
+    }
+    else if (action == INCOMING_TEXT_ACTION_OPEN)
+    {
+        screen_pop_page();
+    }
+}
 
 // Forward declarations
 static void sms_draw(Page *self);
@@ -121,8 +134,9 @@ static void sms_handle_input(Page *self, int event_type)
             Page *messages_page = messages_page_create(state);
             screen_push_page(messages_page);
             break;
-        case 2: // Favourites
-            // TODO: Open favourites
+        case 2: 
+            Page *incoming_text_page = incoming_text_overlay_create("1234567890", sms_incoming_text_callback, NULL);
+            screen_push_page(incoming_text_page);
             break;
         }
     }
@@ -143,6 +157,8 @@ static void sms_destroy(Page *self)
         free(self);
     }
 }
+
+
 
 Page *sms_page_create()
 {
