@@ -99,6 +99,7 @@ $(CSRCS) \
 ../../ui/theme.c \
 ../../ui/tile.c \
 ../../ui/cursor.c \
+../../ui/multitap.c \
 ../../ui/pages/menu.c \
 ../../ui/pages/clock.c \
 ../../ui/pages/calendar.c \
