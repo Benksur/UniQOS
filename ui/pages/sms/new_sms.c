@@ -1,6 +1,7 @@
 #include "new_sms.h"
 #include "multitap.h"
 #include "bottom_bar.h"
+#include "option_overlay.h"
 
 #define MAX_PHONE_NUMBER_LENGTH 10
 #define MAX_SMS_LENGTH 84
@@ -10,6 +11,20 @@
 #define CHAR_DISPLAY_WIDTH (CHAR_WIDTH * CHAR_SCALE)
 #define TEXT_XPAD 5
 #define TEXT_YPAD 7
+
+// Option overlay callback
+static void test_overlay_callback(int selected_idx, void *user_data)
+{
+    // For demonstration, just pop the overlay
+    screen_pop_page();
+    // You can add more logic here based on selected_idx
+}
+
+static const char *overlay_options[] = {
+    "Send Message",
+    "Save to Drafts",
+    "Clear"};
+#define NUM_OVERLAY_OPTIONS (sizeof(overlay_options) / sizeof(overlay_options[0]))
 
 typedef enum
 {
@@ -25,6 +40,7 @@ typedef struct
     InputMode mode;
     bool multitap_enabled; // Whether multi-tap is enabled for SMS input
     bool mounted;
+    bool overlay_open; // Track if overlay is currently open
 } NewSmsState;
 
 static void new_sms_draw(Page *self);
@@ -41,6 +57,7 @@ static void remove_char(Page *self);
 static void handle_keypad_input(Page *self, int event_type, char digit, char sms_char);
 static void calculate_cursor_position(int content_len, int *cursor_x, int *cursor_y);
 static void handle_multitap_confirmation(Page *self);
+static void update_bottom_bar(NewSmsState *state);
 
 // ==================== Helper Functions ====================
 
@@ -94,6 +111,12 @@ static void handle_multitap_confirmation(Page *self)
             add_char(self, output_char);
         }
     }
+}
+
+static void update_bottom_bar(NewSmsState *state)
+{
+    int accent_index = state->overlay_open ? 1 : 0;
+    draw_bottom_bar("Options", "", "Back", accent_index);
 }
 
 static void add_digit(Page *self, char d)
@@ -326,7 +349,7 @@ static void new_sms_draw_tile(Page *self, int tx, int ty)
     }
     if (!state->mounted)
     {
-        draw_bottom_bar("Options", "", "Back", 0);
+        update_bottom_bar(state);
         state->mounted = true;
     }
 }
@@ -336,6 +359,13 @@ static void new_sms_draw(Page *self) {}
 static void new_sms_handle_input(Page *self, int event_type)
 {
     NewSmsState *state = (NewSmsState *)self->state;
+
+    // Check if overlay was closed (any input other than overlay opening means overlay is closed)
+    if (state->overlay_open && event_type != INPUT_LEFT)
+    {
+        state->overlay_open = false;
+        update_bottom_bar(state);
+    }
     switch (event_type)
     {
     case INPUT_KEYPAD_0:
@@ -412,6 +442,18 @@ static void new_sms_handle_input(Page *self, int event_type)
             mark_tile_dirty(1, state->cursor.y + 3);
         }
         break;
+    case INPUT_LEFT:
+        // Show option overlay
+        state->overlay_open = true;
+        update_bottom_bar(state);
+        Page *overlay = option_overlay_page_create(
+            "Message Options",
+            overlay_options,
+            NUM_OVERLAY_OPTIONS,
+            test_overlay_callback,
+            NULL);
+        if (overlay)
+            screen_push_page(overlay);
     case INPUT_SELECT:
         break;
     default:
@@ -429,6 +471,7 @@ static void new_sms_reset(Page *self)
     state->multitap_enabled = true; // Enable multi-tap by default
     multitap_reset();
     state->mounted = false;
+    state->overlay_open = false;
 }
 static void new_sms_destroy(Page *self)
 {
@@ -451,6 +494,7 @@ Page *new_sms_page_create()
     state->mode = NUMBER_INPUT;
     state->multitap_enabled = true; // Enable multi-tap by default
     state->mounted = false;
+    state->overlay_open = false;
 
     page->draw = new_sms_draw;
     page->draw_tile = new_sms_draw_tile;
@@ -458,7 +502,6 @@ Page *new_sms_page_create()
     page->reset = new_sms_reset;
     page->destroy = new_sms_destroy;
     page->state = state;
-
 
     // Initialize multi-tap system
     multitap_init();
