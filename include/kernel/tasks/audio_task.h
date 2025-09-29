@@ -32,6 +32,8 @@ typedef enum
     AUDIO_SELECT_MIC,
     AUDIO_PLAY_TICK,
     AUDIO_PLAY_BLOOP,
+    AUDIO_GET_CURRENT_VOLUME,
+    AUDIO_SEND_VOLUME_TO_INPUT,
 } AudioCommand;
 
 typedef enum

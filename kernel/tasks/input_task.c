@@ -6,7 +6,7 @@ typedef struct
     AudioTaskContext *audio_ctx;
 } InputTaskContext;
 
-static uint8_t current_volume = 50;
+static uint8_t current_volume = 100; // Initialize to match audio task default (speaker volume)
 
 void input_task_main(void *pvParameters)
 {
@@ -40,7 +40,7 @@ void input_task_main(void *pvParameters)
                         AudioTask_PostCommand(audio_ctx, AUDIO_VOLUME_UP, NULL);
                     }
 
-                    // Update local volume for display
+                    // Update local volume for display (keep in sync)
                     if (current_volume < 100)
                     {
                         current_volume += 5;
@@ -60,7 +60,7 @@ void input_task_main(void *pvParameters)
                         AudioTask_PostCommand(audio_ctx, AUDIO_VOLUME_DOWN, NULL);
                     }
 
-                    // Update local volume for display
+                    // Update local volume for display (keep in sync)
                     if (current_volume > 0)
                     {
                         current_volume -= 5;
@@ -80,12 +80,17 @@ void input_task_main(void *pvParameters)
                         DisplayTask_PostCommand(display_ctx, DISPLAY_HANDLE_INPUT, &event);
                     }
                 }
-                if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
-                    if (audio_ctx) {
+                if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9)
+                {
+                    if (audio_ctx)
+                    {
                         AudioTask_PostCommand(audio_ctx, AUDIO_PLAY_TICK, NULL);
                     }
-                } else {
-                    if (audio_ctx) {
+                }
+                else
+                {
+                    if (audio_ctx)
+                    {
                         AudioTask_PostCommand(audio_ctx, AUDIO_PLAY_BLOOP, NULL);
                     }
                 }

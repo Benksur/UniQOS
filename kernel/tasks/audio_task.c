@@ -39,18 +39,25 @@ typedef void (*AudioCmdHandler)(AudioTaskContext *ctx, AudioMessage *msg);
 /* ===== HANDLERS ===== */
 static void handle_volume_up(AudioTaskContext *ctx, AudioMessage *msg)
 {
+    uint8_t new_volume = 0;
     if (ctx->settings.selected_output == AUDIO_OUTPUT_SPK)
     {
         uint8_t v = ctx->settings.volume_speaker;
         ctx->settings.volume_speaker = (v > 95) ? 100 : (uint8_t)(v + 5);
         ctx->codec->speaker.set_volume(ctx->settings.volume_speaker);
+        new_volume = ctx->settings.volume_speaker;
     }
     else
     {
         uint8_t v = ctx->settings.volume_headphones;
         ctx->settings.volume_headphones = (v > 95) ? 100 : (uint8_t)(v + 5);
         ctx->codec->headphones.set_volume(ctx->settings.volume_headphones);
+        new_volume = ctx->settings.volume_headphones;
     }
+
+    // Send updated volume back to input task for display sync
+    // Note: This would require a callback mechanism, but for now we'll rely on
+    // the input task to keep track correctly
 }
 
 static void handle_volume_down(AudioTaskContext *ctx, AudioMessage *msg)
@@ -201,6 +208,23 @@ static void handle_play_bloop(AudioTaskContext *ctx, AudioMessage *msg)
     }
 }
 
+static void handle_get_current_volume(AudioTaskContext *ctx, AudioMessage *msg)
+{
+    // Return the current volume based on selected output
+    uint8_t *volume_ptr = (uint8_t *)msg->data;
+    if (volume_ptr)
+    {
+        if (ctx->settings.selected_output == AUDIO_OUTPUT_SPK)
+        {
+            *volume_ptr = ctx->settings.volume_speaker;
+        }
+        else
+        {
+            *volume_ptr = ctx->settings.volume_headphones;
+        }
+    }
+}
+
 /* ===== DISPATCH TABLE ===== */
 static AudioCmdHandler audio_cmd_table[] = {
     // using designated initializers
@@ -218,6 +242,7 @@ static AudioCmdHandler audio_cmd_table[] = {
     [AUDIO_SELECT_MIC] = handle_select_mic,
     [AUDIO_PLAY_TICK] = handle_play_tick,
     [AUDIO_PLAY_BLOOP] = handle_play_bloop,
+    [AUDIO_GET_CURRENT_VOLUME] = handle_get_current_volume,
 };
 
 static void dispatch_audio_command(AudioTaskContext *ctx, AudioMessage *msg)
