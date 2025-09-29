@@ -77,6 +77,34 @@ static void handle_incoming_call(DisplayTaskContext *ctx, DisplayMessage *msg)
     }
 }
 
+static void handle_active_call(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
+    if (data)
+    {
+        // TODO: Create active call page/overlay
+        // Page *active_call_page = active_call_overlay_create(data->caller_id, NULL, NULL);
+        // screen_push_page(active_call_page);
+    }
+}
+
+static void handle_call_ended(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    // TODO: Handle call ended - return to previous screen or show call ended message
+    // screen_pop_page(); // Return to previous screen
+}
+
+static void handle_dialling(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
+    if (data)
+    {
+        // TODO: Create dialling page/overlay
+        // Page *dialling_page = dialling_overlay_create(data->caller_id, NULL, NULL);
+        // screen_push_page(dialling_page);
+    }
+}
+
 static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_HANDLE_INPUT] = handle_input_event,
     [DISPLAY_SET_PAGE] = handle_set_page,
@@ -85,6 +113,9 @@ static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_SET_BATTERY_STATUS] = handle_set_battery_status,
     [DISPLAY_SET_VOLUME] = handle_set_volume,
     [DISPLAY_INCOMING_CALL] = handle_incoming_call,
+    [DISPLAY_ACTIVE_CALL] = handle_active_call,
+    [DISPLAY_CALL_ENDED] = handle_call_ended,
+    [DISPLAY_DIALLING] = handle_dialling,
 };
 
 static void dispatch_display_command(DisplayTaskContext *ctx, DisplayMessage *msg)

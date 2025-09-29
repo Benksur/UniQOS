@@ -39,7 +39,34 @@ static void update_display(CallStateContext *ctx)
         .caller_id = ctx->caller_id,
     };
     
-    DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_INCOMING_CALL, &display_data);
+    switch (ctx->current_state)
+    {
+        case CALL_STATE_RINGING:
+            // Incoming call - show incoming call overlay
+            DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_INCOMING_CALL, &display_data);
+            break;
+            
+        case CALL_STATE_ACTIVE:
+            // Call picked up - show active call screen
+            DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_ACTIVE_CALL, &display_data);
+            break;
+            
+        case CALL_STATE_ENDING:
+            // Call hung up - return to previous screen or idle
+            DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_CALL_ENDED, &display_data);
+            break;
+            
+        case CALL_STATE_DIALLING:
+            // Dialling out - show dialling screen
+            DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_DIALLING, &display_data);
+            break;
+            
+        case CALL_STATE_IDLE:
+        default:
+            // No call - ensure we're back to normal screen
+            // This might not need any special display command
+            break;
+    }
 }
 
 // Process call commands directly
