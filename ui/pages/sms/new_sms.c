@@ -2,6 +2,7 @@
 #include "multitap.h"
 #include "bottom_bar.h"
 #include "option_overlay.h"
+#include "memwrap.h"
 
 #define MAX_PHONE_NUMBER_LENGTH 10
 #define MAX_SMS_LENGTH 84
@@ -478,15 +479,15 @@ static void new_sms_destroy(Page *self)
     if (self)
     {
         NewSmsState *state = (NewSmsState *)self->state;
-        free(state);
-        free(self);
+        mem_free(state);
+        mem_free(self);
     }
 }
 
 Page *new_sms_page_create()
 {
-    Page *page = malloc(sizeof(Page));
-    NewSmsState *state = malloc(sizeof(NewSmsState));
+    Page *page = mem_malloc(sizeof(Page));
+    NewSmsState *state = mem_malloc(sizeof(NewSmsState));
 
     state->cursor = (Cursor){0, 0, 0, MAX_PHONE_NUMBER_LENGTH - 1, false};
     memset(state->phone_number, 0, sizeof(state->phone_number));

@@ -3,6 +3,7 @@
 #include "theme.h"
 #include "display.h"
 #include "tile.h"
+#include "memwrap.h"
 
 typedef struct
 {
@@ -95,8 +96,8 @@ static void incoming_call_destroy(Page *self)
     if (!self)
         return;
     IncomingCallState *state = (IncomingCallState *)self->state;
-    free(state);
-    free(self);
+    mem_free(state);
+    mem_free(self);
 }
 
 Page *incoming_call_overlay_create(const char *phone_number, IncomingCallCallback callback, void *user_data)
@@ -104,8 +105,8 @@ Page *incoming_call_overlay_create(const char *phone_number, IncomingCallCallbac
     if (!phone_number)
         return NULL;
 
-    Page *page = (Page *)malloc(sizeof(Page));
-    IncomingCallState *state = (IncomingCallState *)malloc(sizeof(IncomingCallState));
+    Page *page = (Page *)mem_malloc(sizeof(Page));
+    IncomingCallState *state = (IncomingCallState *)mem_malloc(sizeof(IncomingCallState));
 
     state->phone_number = phone_number;
     state->callback = callback;

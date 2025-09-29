@@ -1,5 +1,5 @@
 #include "incoming_text.h"
-
+#include "memwrap.h"
 
 typedef struct
 {
@@ -92,8 +92,8 @@ static void incoming_text_destroy(Page *self)
     if (!self)
         return;
     IncomingTextState *state = (IncomingTextState *)self->state;
-    free(state);
-    free(self);
+    mem_free(state);
+    mem_free(self);
 }
 
 Page *incoming_text_overlay_create(const char *sender_number, IncomingTextCallback callback, void *user_data)
@@ -101,8 +101,8 @@ Page *incoming_text_overlay_create(const char *sender_number, IncomingTextCallba
     if (!sender_number)
         return NULL;
 
-    Page *page = (Page *)malloc(sizeof(Page));
-    IncomingTextState *state = (IncomingTextState *)malloc(sizeof(IncomingTextState));
+    Page *page = (Page *)mem_malloc(sizeof(Page));
+    IncomingTextState *state = (IncomingTextState *)mem_malloc(sizeof(IncomingTextState));
 
     state->sender_number = sender_number;
     state->callback = callback;

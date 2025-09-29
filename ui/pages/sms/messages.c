@@ -1,4 +1,5 @@
 #include "messages.h"
+#include "memwrap.h"
 
 // Helper function to draw wrapped text
 static void draw_wrapped_text(int start_x, int start_y, int max_width, const char *text, uint16_t colour, uint16_t bg_colour, uint8_t size)
@@ -68,14 +69,14 @@ static void messages_destroy(Page *self)
     if (self == NULL)
         return;
     MessagePageState *state = (MessagePageState *)self->state;
-    free(state);
-    free(self);
+    mem_free(state);
+    mem_free(self);
 }
 
 Page *messages_page_create(MessagePageState state)
 {
-    Page *page = malloc(sizeof(Page));
-    MessagePageState *page_state = malloc(sizeof(MessagePageState));
+    Page *page = mem_malloc(sizeof(Page));
+    MessagePageState *page_state = mem_malloc(sizeof(MessagePageState));
 
     // Copy the passed state data
     strncpy(page_state->sender, state.sender, sizeof(page_state->sender) - 1);

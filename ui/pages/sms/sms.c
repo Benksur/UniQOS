@@ -1,5 +1,6 @@
 #include "sms.h"
 #include "incoming_text.h"
+#include "memwrap.h"
 
 #define SMS_OPTIONS_COUNT 3
 
@@ -134,7 +135,7 @@ static void sms_handle_input(Page *self, int event_type)
             Page *messages_page = messages_page_create(state);
             screen_push_page(messages_page);
             break;
-        case 2: 
+        case 2:
             Page *incoming_text_page = incoming_text_overlay_create("1234567890", sms_incoming_text_callback, NULL);
             screen_push_page(incoming_text_page);
             break;
@@ -153,17 +154,15 @@ static void sms_destroy(Page *self)
     if (self)
     {
         SmsState *state = (SmsState *)self->state;
-        free(state);
-        free(self);
+        mem_free(state);
+        mem_free(self);
     }
 }
 
-
-
 Page *sms_page_create()
 {
-    Page *page = malloc(sizeof(Page));
-    SmsState *state = malloc(sizeof(SmsState));
+    Page *page = mem_malloc(sizeof(Page));
+    SmsState *state = mem_malloc(sizeof(SmsState));
 
     state->cursor = (Cursor){0, 0, 0, SMS_OPTIONS_COUNT - 1, false};
 
