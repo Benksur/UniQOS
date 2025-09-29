@@ -4,20 +4,20 @@
 #define INPUT_BUFFER_SIZE 128
 #define RESPONSE_BUFFER_SIZE 256
 
-// redirect printf to DEBUG_UART_HANDLE
-int __io_putchar(int ch)
-{
-    // HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-    return ch;
-}
+// // redirect printf to DEBUG_UART_HANDLE
+// int __io_putchar(int ch)
+// {
+//     // HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+//     return ch;
+// }
 
-// redirect getchar to DEBUG_UART_HANDLE
-int __io_getchar(void)
-{
-    uint8_t ch;
-    // HAL_UART_Receive(&DEBUG_UART_HANDLE, &ch, 1, HAL_MAX_DELAY);
-    return ch;
-}
+// // redirect getchar to DEBUG_UART_HANDLE
+// int __io_getchar(void)
+// {
+//     uint8_t ch;
+//     // HAL_UART_Receive(&DEBUG_UART_HANDLE, &ch, 1, HAL_MAX_DELAY);
+//     return ch;
+// }
 
 HAL_StatusTypeDef read_line_from_debug_uart(char *buffer, uint16_t max_len)
 {
@@ -139,7 +139,7 @@ bool modem_terminal_test_uart_echo(void)
     // Wait for echo response
     while (index < RESPONSE_BUFFER_SIZE - 1)
     {
-        received_char = __io_getchar();
+        // received_char = __io_getchar();
         DEBUG_PRINTF("Received char: %c\r\n", received_char);
         // if (received_char == EOF)
         // {
@@ -175,7 +175,7 @@ void modem_terminal_test(void) {
     
     while (1)
     {
-            received_char = __io_getchar();
+            // received_char = __io_getchar();
             // Echo the character directly using UART
             // HAL_UART_Transmit(&DEBUG_UART_HANDLE, (uint8_t *)&received_char, 1, HAL_MAX_DELAY);
             
