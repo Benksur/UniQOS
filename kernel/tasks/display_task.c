@@ -124,7 +124,7 @@ DisplayTaskContext *DisplayTask_Init(void)
     memset(&display_ctx, 0, sizeof(display_ctx));
 
     // Create queue
-    display_ctx.queue = xQueueCreate(3, sizeof(DisplayMessage));
+    display_ctx.queue = xQueueCreate(5, sizeof(DisplayMessage));
     if (!display_ctx.queue)
     {
         return NULL; // Failed to create queue

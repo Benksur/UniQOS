@@ -152,7 +152,7 @@ static void phone_handle_input(Page *self, int event_type)
 static void phone_reset(Page *self)
 {
     PhoneState *state = (PhoneState *)self->state;
-    cursor_reset(&state->cursor);
+    // cursor_reset(&state->cursor);
 }
 
 static void phone_destroy(Page *self)

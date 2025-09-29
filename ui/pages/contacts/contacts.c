@@ -139,7 +139,7 @@ static void contacts_handle_input(Page *self, int event_type)
 static void contacts_reset(Page *self)
 {
     ContactsState *state = (ContactsState *)self->state;
-    cursor_reset(&state->cursor);
+    // cursor_reset(&state->cursor);
 }
 
 static void contacts_destroy(Page *self)

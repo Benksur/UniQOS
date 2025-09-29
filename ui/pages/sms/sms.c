@@ -146,7 +146,7 @@ static void sms_handle_input(Page *self, int event_type)
 static void sms_reset(Page *self)
 {
     SmsState *state = (SmsState *)self->state;
-    cursor_reset(&state->cursor);
+    // cursor_reset(&state->cursor);
 }
 
 static void sms_destroy(Page *self)
