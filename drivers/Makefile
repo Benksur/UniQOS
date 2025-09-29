@@ -94,7 +94,7 @@ $(CSRCS) \
 ../../drivers/display/LCD_Controller.c \
 ../../drivers/display/display.c \
 ../../drivers/peripherals/keypad.c \
-../../ui/navbar.c \
+../../ui/status_bar.c \
 ../../ui/screen.c \
 ../../ui/theme.c \
 ../../ui/tile.c \

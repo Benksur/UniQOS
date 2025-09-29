@@ -8,6 +8,7 @@
 #include "tile.h"
 #include "keypad.h"
 #include "option_overlay.h"
+#include "status_bar.h"
 
 #include "nau88c22.h"
 #include "bloop_x.h"
@@ -60,6 +61,7 @@ int main(void)
   codec = nau88c22_get_driver();
   codec->init();
   codec->speaker.mute(false);
+  uint8_t current_volume = 50;
   codec->speaker.set_volume(100);
 
   display_init();
@@ -68,16 +70,11 @@ int main(void)
   HAL_Delay(1000);
 
   theme_set_dark();
-  LCD_Fill(current_theme.fg_colour, 0, 0, 240, 25);
+  draw_status_bar();
+  status_bar_update_signal(5);
+  status_bar_update_battery(50);
 
-  char time_buffer[15] = {0};
-  RTC_DateTypeDef sDate;
-  HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-  // RTC_TimeTypeDef sTime;
-  // HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-  // sprintf(time_buffer, "%02d:%02d:%02d", sTime.Hours, sTime.Minutes, sTime.Seconds);
-  sprintf(time_buffer, "20%02d-%02d-%02d", sDate.Year, sDate.Month, sDate.Date);
-  display_draw_string(10, 5, time_buffer, current_theme.bg_colour, current_theme.fg_colour, 2);
+  // Initialize volume for testing
 
   screen_init(&menu_page);
   mark_all_tiles_dirty();
@@ -90,24 +87,52 @@ int main(void)
     for (int i = 0; i < 24; i++)
     {
       keypad_update_states();
-      
+
       // Check all buttons and handle input events
-      for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++) {
-        if (keypad_is_button_pressed(button_idx)) {
+      for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++)
+      {
+        if (keypad_is_button_pressed(button_idx))
+        {
           HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
           input_event_t event = keypad_get_button_event(button_idx);
-          
+
           // Handle special cases
-          if (event == INPUT_RIGHT) {
+          if (event == INPUT_RIGHT)
+          {
             screen_pop_page();
-          }  else {
+          }
+          else if (event == INPUT_VOLUME_UP)
+          {
+            // Volume up
+            if (current_volume < 100)
+            {
+              current_volume += 5;
+              codec->speaker.set_volume(current_volume);
+              status_bar_show_volume(current_volume);
+            }
+          }
+          else if (event == INPUT_VOLUME_DOWN)
+          {
+            // Volume down
+            if (current_volume > 0)
+            {
+              current_volume -= 5;
+              codec->speaker.set_volume(current_volume);
+              status_bar_show_volume(current_volume);
+            }
+          }
+          else
+          {
             screen_handle_input(event);
           }
-          
-          if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
-            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
-          } else {
-            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)bloop, 950, HAL_MAX_DELAY);
+
+          if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9)
+          {
+            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)tick, 50, HAL_MAX_DELAY);
+          }
+          else
+          {
+            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)bloop, 950, HAL_MAX_DELAY);
           }
           // Play sound for numeric keypad presses
         }

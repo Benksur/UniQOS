@@ -46,8 +46,8 @@ void display_set_rotation(uint8_t rotation);
 uint16_t display_colour565(uint8_t r, uint8_t g, uint8_t b);
 void display_scroll_text(uint16_t x, uint16_t y, uint16_t width, const char *text, uint16_t colour, uint16_t bg_colour, uint8_t size, int16_t offset);
 void display_draw_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t percent, uint16_t fill_colour, uint16_t bg_colour);
-void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t colour);
-void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t colour);
+void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t fg_colour, uint16_t bg_colour);
+void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t fg_colour, uint16_t bg_colour);
 void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour);
 
 #endif
