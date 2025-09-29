@@ -11,8 +11,7 @@ typedef struct DisplayTaskContext DisplayTaskContext;
 
 // Function declarations
 void input_task_main(void *pvParameters);
-void input_task_init(void);
-void input_task_set_display_context(DisplayTaskContext *ctx);
+void input_task_init(DisplayTaskContext *display_ctx);
 
 // Thread-safe input event functions
 bool input_get_event(input_event_t *out_event, TickType_t timeout);

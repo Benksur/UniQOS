@@ -7,10 +7,5 @@ void kernel_init(void)
 
     // Initialize display task
     display_ctx = DisplayTask_Init();
-
-    input_task_init();
-    if (display_ctx)
-    {
-        input_task_set_display_context(display_ctx);
-    }
+    input_task_init(display_ctx);
 }
