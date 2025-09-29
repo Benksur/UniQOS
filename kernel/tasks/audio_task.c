@@ -39,20 +39,17 @@ typedef void (*AudioCmdHandler)(AudioTaskContext *ctx, AudioMessage *msg);
 /* ===== HANDLERS ===== */
 static void handle_volume_up(AudioTaskContext *ctx, AudioMessage *msg)
 {
-    uint8_t new_volume = 0;
     if (ctx->settings.selected_output == AUDIO_OUTPUT_SPK)
     {
         uint8_t v = ctx->settings.volume_speaker;
         ctx->settings.volume_speaker = (v > 95) ? 100 : (uint8_t)(v + 5);
         ctx->codec->speaker.set_volume(ctx->settings.volume_speaker);
-        new_volume = ctx->settings.volume_speaker;
     }
     else
     {
         uint8_t v = ctx->settings.volume_headphones;
         ctx->settings.volume_headphones = (v > 95) ? 100 : (uint8_t)(v + 5);
         ctx->codec->headphones.set_volume(ctx->settings.volume_headphones);
-        new_volume = ctx->settings.volume_headphones;
     }
 
     // Send updated volume back to input task for display sync
