@@ -3,13 +3,19 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include "FreeRTOS.h"
 #include "task_types.h"
 #include "queue.h"
 #include "cmsis_os2.h"
 #include "screen.h"
-#include "theme.h"
 #include "rtc.h"
+#include "display.h"
+#include "tile.h"
+#include "input.h"
+#include "pages/menu.h"
+#include "status_bar.h"
+#include "task.h"
 
 typedef enum
 {
@@ -17,8 +23,7 @@ typedef enum
     DISPLAY_SET_PAGE,
     DISPLAY_CLEAR_SCREEN,
     DISPLAY_SET_BATTERY_STATUS,
-    DISPLAY_SET_TIME,
-    DISPLAY_SET_DATE,
+    DISPLAY_SET_SIGNAL_STATUS,
     DISPLAY_SET_VOLUME,
     DISPLAY_CMD_COUNT
 } DisplayCommand;

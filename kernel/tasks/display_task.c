@@ -1,14 +1,5 @@
 #include "display_task.h"
-#include "display.h"
-#include "input.h"
-#include "pages/menu.h"
-#include "status_bar.h"
-#include "theme.h"
-#include "tile.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "cmsis_os2.h"
-#include <string.h>
+
 
 struct DisplayTaskContext
 {
@@ -40,13 +31,31 @@ static void handle_set_page(DisplayTaskContext *ctx, DisplayMessage *msg)
     Page *page = (Page *)msg->data;
     if (page)
     {
-        screen_set_page(page);
+        screen_push_page(page);
     }
 }
 
 static void handle_clear_screen(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
     display_fill(COLOUR_BLACK);
+}
+
+static void handle_set_signal_status(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    uint8_t *signal = (uint8_t *)msg->data;
+    if (signal)
+    {
+        status_bar_update_signal(*signal);
+    }
+}
+
+static void handle_set_battery_status(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    uint8_t *battery = (uint8_t *)msg->data;
+    if (battery)
+    {
+        status_bar_update_battery(*battery);
+    }
 }
 
 static void handle_set_volume(DisplayTaskContext *ctx, DisplayMessage *msg)
@@ -62,6 +71,8 @@ static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_HANDLE_INPUT] = handle_input_event,
     [DISPLAY_SET_PAGE] = handle_set_page,
     [DISPLAY_CLEAR_SCREEN] = handle_clear_screen,
+    [DISPLAY_SET_SIGNAL_STATUS] = handle_set_signal_status,
+    [DISPLAY_SET_BATTERY_STATUS] = handle_set_battery_status,
     [DISPLAY_SET_VOLUME] = handle_set_volume,
 };
 
@@ -133,7 +144,7 @@ DisplayTaskContext *DisplayTask_Init(void)
     // Create and start the task
     osThreadAttr_t task_attr = {
         .name = "DisplayTask",
-        .stack_size = 1024, // Increased stack size for display operations
+        .stack_size = 2048, // Increased stack size for display operations
         .priority = osPriorityNormal};
 
     osThreadId_t thread_id = osThreadNew(display_task_main, &display_ctx, &task_attr);
