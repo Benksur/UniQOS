@@ -45,7 +45,9 @@
         "sms.h": "c",
         "incoming_text.h": "c",
         "kernel.h": "c",
-        "semphr.h": "c"
+        "semphr.h": "c",
+        "input_task.h": "c",
+        "call_state.h": "c"
     },
     // "files.autoSave": "onFocusChange",
     "cortex-debug.armToolchainPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin",

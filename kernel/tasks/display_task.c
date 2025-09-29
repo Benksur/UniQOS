@@ -67,6 +67,16 @@ static void handle_set_volume(DisplayTaskContext *ctx, DisplayMessage *msg)
     }
 }
 
+static void handle_incoming_call(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
+    if (data)
+    {
+        Page *incoming_call_page = incoming_call_overlay_create(data->caller_id, NULL, NULL);
+        screen_push_page(incoming_call_page);
+    }
+}
+
 static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_HANDLE_INPUT] = handle_input_event,
     [DISPLAY_SET_PAGE] = handle_set_page,
@@ -74,6 +84,7 @@ static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_SET_SIGNAL_STATUS] = handle_set_signal_status,
     [DISPLAY_SET_BATTERY_STATUS] = handle_set_battery_status,
     [DISPLAY_SET_VOLUME] = handle_set_volume,
+    [DISPLAY_INCOMING_CALL] = handle_incoming_call,
 };
 
 static void dispatch_display_command(DisplayTaskContext *ctx, DisplayMessage *msg)

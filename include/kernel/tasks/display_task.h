@@ -16,6 +16,7 @@
 #include "pages/menu.h"
 #include "status_bar.h"
 #include "task.h"
+#include "incoming_call.h"
 
 #define DISPLAY_TASK_STACK_SIZE 2048
 #define DISPLAY_TASK_PRIORITY osPriorityNormal
@@ -28,6 +29,7 @@ typedef enum
     DISPLAY_SET_BATTERY_STATUS,
     DISPLAY_SET_SIGNAL_STATUS,
     DISPLAY_SET_VOLUME,
+    DISPLAY_INCOMING_CALL,
     DISPLAY_CMD_COUNT
 } DisplayCommand;
 
