@@ -118,6 +118,8 @@ $(CSRCS) \
 ../../ui/components/contact_row.c \
 ../../ui/components/option_row.c \
 ../../ui/components/bottom_bar.c \
+../../ui/pages/games/snake.c\
+../../ui/pages/games/sweeper.c\
 ../../ui/overlays/option_overlay.c \
 ../../audio/mixer.c \
 ../../audio/oscillator.c \

@@ -8,6 +8,8 @@
 #include "tile.h"
 #include "keypad.h"
 #include "option_overlay.h"
+#include "snake.h"
+#include "sweeper.h"
 
 #include "nau88c22.h"
 #include "bloop_x.h"

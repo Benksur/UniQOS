@@ -12,6 +12,8 @@
 #include "calculator.h"
 #include "theme.h"
 #include "contacts.h"
+#include "snake.h"
+#include "sweeper.h"
 #include "contacts_bptree.h"
 #include <stddef.h>
 
@@ -155,6 +157,14 @@ static void menu_handle_input(Page* self, int event_type) {
                 theme_toggle ? theme_set_dark() : theme_set_light(); 
                 theme_toggle = !theme_toggle; 
                 mark_all_tiles_dirty(); 
+                break;
+            case 7: 
+                Page* snake_page = snake_page_create();
+                screen_push_page(snake_page);
+                break;
+            case 8: 
+                Page* sweeper_page = snake_page_create();
+                screen_push_page(sweeper_page);
                 break;
         }
     }
