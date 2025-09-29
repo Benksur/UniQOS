@@ -46,10 +46,17 @@ static uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
     data[0] = (reg_addr << 1) | ((reg_data >> 8) & 0x01);
     data[1] = reg_data & 0xFF;
 
+    while (AUDIO_I2C_HANDLE.State != HAL_I2C_STATE_READY)
+    {
+        HAL_Delay(1);
+    }
+
     if (HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 2, 100) != HAL_OK)
     {
         return EIO;
     }
+
+    HAL_Delay(5);
 
     return 0;
 }
@@ -63,6 +70,12 @@ static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
     if (reg_data == NULL)
     {
         return EINVAL;
+    }
+
+    // Wait for I2C to be ready before reading
+    while (AUDIO_I2C_HANDLE.State != HAL_I2C_STATE_READY)
+    {
+        HAL_Delay(1);
     }
 
     addr_byte = reg_addr << 1;
@@ -79,6 +92,10 @@ static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
         return EIO;
     }
     *reg_data = ((data[0] & 0x01) << 8) | data[1];
+
+    // Add delay after read to allow codec to settle
+    HAL_Delay(2);
+
     return 0;
 }
 
@@ -451,12 +468,9 @@ const IAudioDriver_t *nau88c22_get_driver(void)
                 .mute = nau88c22_mute_mic_void,
                 .set_volume = nau88c22_set_mic_volume_void,
             }},
-        .headphones = {
-            .mute = nau88c22_mute_hp_void, 
-            .set_volume = nau88c22_set_hp_volume_void, 
-            .mic = {
-                .mute = nau88c22_mute_hp_mic_void,
-                .set_volume = nau88c22_set_hp_mic_volume_void,
-            }}};
+        .headphones = {.mute = nau88c22_mute_hp_void, .set_volume = nau88c22_set_hp_volume_void, .mic = {
+                                                                                                     .mute = nau88c22_mute_hp_mic_void,
+                                                                                                     .set_volume = nau88c22_set_hp_mic_volume_void,
+                                                                                                 }}};
     return &driver;
 }

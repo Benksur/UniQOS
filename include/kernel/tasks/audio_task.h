@@ -14,7 +14,7 @@
 #include "bloop_optimized.h"
 
 #define AUDIO_TASK_STACK_SIZE 1024
-#define AUDIO_TASK_PRIORITY osPriorityLow
+#define AUDIO_TASK_PRIORITY osPriorityHigh
 
 typedef enum
 {
