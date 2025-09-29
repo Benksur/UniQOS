@@ -17,7 +17,7 @@
 #include "contacts_bptree.h"
 #include <stddef.h>
 
-#define MENU_ITEMS_COUNT 7
+#define MENU_ITEMS_COUNT 9
 #define MENU_VISIBLE_COUNT 5
 
 typedef struct
@@ -37,7 +37,7 @@ static bool theme_toggle = false;
 // state is static since only one menu page exists
 static MenuState menu_state = {
     .cursor = {0, 0, 0, MENU_ITEMS_COUNT - 1, false},
-    .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"},
+    .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings", "Snake", "Sweeper"},
     .page_offset = 0};
 // --- Draw functions ---
 static void menu_draw(Page* self){}
