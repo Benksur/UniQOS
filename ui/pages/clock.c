@@ -31,6 +31,7 @@ typedef struct
     ClockMode mode;
     uint8_t prev_minute;
     uint8_t prev_hour;
+    uint8_t prev_second;
     bool mounted;
 } ClockState;
 
@@ -107,6 +108,25 @@ static void draw_curr_second_hand(uint8_t second)
     display_draw_line(CIRCLE_X, CIRCLE_Y, end_x, end_y, current_theme.accent_colour);
 }
 
+// Clear previously drawn second hand (even if seconds were skipped) and draw the current one
+static void update_second_hand(ClockState *state, uint8_t second)
+{
+    if (state->prev_second != 255 && state->prev_second != second)
+    {
+        float angle_prev = angle(state->prev_second);
+        int px = CIRCLE_X + (int)(SECONDS_LENGTH * cos(angle_prev));
+        int py = CIRCLE_Y + (int)(SECONDS_LENGTH * sin(angle_prev));
+        display_draw_line(CIRCLE_X, CIRCLE_Y, px, py, current_theme.bg_colour);
+    }
+
+    float ang = angle(second);
+    int x = CIRCLE_X + (int)(SECONDS_LENGTH * cos(ang));
+    int y = CIRCLE_Y + (int)(SECONDS_LENGTH * sin(ang));
+    display_draw_line(CIRCLE_X, CIRCLE_Y, x, y, current_theme.accent_colour);
+
+    state->prev_second = second;
+}
+
 static void draw_digital_minutes(RTC_TimeTypeDef sTime)
 {
     char m_buffer[3] = {0};
@@ -178,8 +198,10 @@ static void clock_draw_tile(Page *self, int tx, int ty)
                 display_fill_rect(0, 30, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * (TILE_ROWS + 1), current_theme.bg_colour);
                 draw_clock_face();
                 state->mounted = true;
+                // Initialize prev_second to current to avoid clearing a wrong second on first update
+                state->prev_second = sTime.Seconds;
             }
-            draw_curr_second_hand(sTime.Seconds);
+            update_second_hand(state, sTime.Seconds);
 
             if (sTime.Hours != state->prev_hour)
             {
@@ -245,6 +267,7 @@ Page *clock_page_create()
     state->mode = ANALOG;
     state->prev_minute = 255;
     state->prev_hour = 255;
+    state->prev_second = 255;
     state->mounted = false;
 
     page->draw = NULL;

@@ -97,13 +97,24 @@ static void display_task_main(void *pvParameters)
     // Task main loop - handles messages and ticks like the test file
     for (;;)
     {
-        if (xQueueReceive(ctx->queue, &msg, pdMS_TO_TICKS(100)))
+        // Drain a burst of messages quickly to limit backlog, but cap per cycle
+        int processed = 0;
+        while (xQueueReceive(ctx->queue, &msg, 0))
         {
             dispatch_display_command(ctx, &msg);
+            if (++processed >= 10)
+            {
+                break;
+            }
         }
-        // Update status bar and screen like the test file
+        // Update status bar and screen once per cycle
         status_bar_tick();
         screen_tick();
+        // Short wait to yield CPU if no messages
+        if (processed == 0)
+        {
+            osDelay(1);
+        }
     }
 }
 
@@ -113,7 +124,7 @@ DisplayTaskContext *DisplayTask_Init(void)
     memset(&display_ctx, 0, sizeof(display_ctx));
 
     // Create queue
-    display_ctx.queue = xQueueCreate(5, sizeof(DisplayMessage));
+    display_ctx.queue = xQueueCreate(3, sizeof(DisplayMessage));
     if (!display_ctx.queue)
     {
         return NULL; // Failed to create queue
