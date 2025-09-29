@@ -1,20 +1,19 @@
 #ifndef INPUT_TASK_H_
 #define INPUT_TASK_H_
 
+#include <stdbool.h>
+#include "FreeRTOS.h"
+#include "cmsis_os2.h"
+#include "task.h"
 #include "task_types.h"
 #include "input.h"
-#include "FreeRTOS.h"
-#include <stdbool.h>
+#include "keypad.h"
+#include "display_task.h"
+#include "audio_task.h"
 
-// Forward declaration
-typedef struct DisplayTaskContext DisplayTaskContext;
+#define INPUT_TASK_STACK_SIZE 512
+#define INPUT_TASK_PRIORITY osPriorityNormal
 
-// Function declarations
-void input_task_main(void *pvParameters);
-void input_task_init(DisplayTaskContext *display_ctx);
-
-// Thread-safe input event functions
-bool input_get_event(input_event_t *out_event, TickType_t timeout);
-bool input_queue_available(void);
+void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx);
 
 #endif // INPUT_TASK_H_

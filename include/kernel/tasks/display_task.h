@@ -17,6 +17,9 @@
 #include "status_bar.h"
 #include "task.h"
 
+#define DISPLAY_TASK_STACK_SIZE 2048
+#define DISPLAY_TASK_PRIORITY osPriorityNormal
+
 typedef enum
 {
     DISPLAY_HANDLE_INPUT,

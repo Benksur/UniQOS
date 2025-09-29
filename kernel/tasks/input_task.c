@@ -1,19 +1,18 @@
 #include "input_task.h"
-#include "input.h"
-#include "keypad.h"
-#include "display_task.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "cmsis_os2.h"
 
-#define INPUT_TASK_STACK_SIZE 512
-#define INPUT_TASK_PRIORITY osPriorityNormal
+typedef struct
+{
+    DisplayTaskContext *display_ctx;
+    AudioTaskContext *audio_ctx;
+} InputTaskContext;
 
 static uint8_t current_volume = 50;
 
 void input_task_main(void *pvParameters)
 {
-    DisplayTaskContext *display_ctx = (DisplayTaskContext *)pvParameters;
+    InputTaskContext *input_ctx = (InputTaskContext *)pvParameters;
+    DisplayTaskContext *display_ctx = input_ctx->display_ctx;
+    AudioTaskContext *audio_ctx = input_ctx->audio_ctx;
     input_event_t event;
 
     // Initialize keypad
@@ -32,9 +31,16 @@ void input_task_main(void *pvParameters)
                 HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
                 event = keypad_get_button_event(button_idx);
 
-                // Handle audio-specific events directly
+                // Handle audio-specific events
                 if (event == INPUT_VOLUME_UP)
                 {
+                    // Send volume up command to audio task
+                    if (audio_ctx)
+                    {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_VOLUME_UP, NULL);
+                    }
+
+                    // Update local volume for display
                     if (current_volume < 100)
                     {
                         current_volume += 5;
@@ -48,6 +54,13 @@ void input_task_main(void *pvParameters)
                 }
                 else if (event == INPUT_VOLUME_DOWN)
                 {
+                    // Send volume down command to audio task
+                    if (audio_ctx)
+                    {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_VOLUME_DOWN, NULL);
+                    }
+
+                    // Update local volume for display
                     if (current_volume > 0)
                     {
                         current_volume -= 5;
@@ -67,6 +80,15 @@ void input_task_main(void *pvParameters)
                         DisplayTask_PostCommand(display_ctx, DISPLAY_HANDLE_INPUT, &event);
                     }
                 }
+                if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
+                    if (audio_ctx) {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_PLAY_TICK, NULL);
+                    }
+                } else {
+                    if (audio_ctx) {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_PLAY_BLOOP, NULL);
+                    }
+                }
 
                 // Audio feedback removed as requested
             }
@@ -76,13 +98,15 @@ void input_task_main(void *pvParameters)
     }
 }
 
-void input_task_init(DisplayTaskContext *display_ctx)
+void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx)
 {
+    static InputTaskContext input_ctx;
+    input_ctx.display_ctx = display_ctx;
+    input_ctx.audio_ctx = audio_ctx;
+
     osThreadAttr_t task_attr = {
         .name = "InputTask",
         .stack_size = INPUT_TASK_STACK_SIZE,
         .priority = INPUT_TASK_PRIORITY};
-    osThreadNew(input_task_main, display_ctx, &task_attr);
+    osThreadNew(input_task_main, &input_ctx, &task_attr);
 }
-
-// removed input_task_set_display_context; context is passed at task creation

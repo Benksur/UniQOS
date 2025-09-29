@@ -144,8 +144,8 @@ DisplayTaskContext *DisplayTask_Init(void)
     // Create and start the task
     osThreadAttr_t task_attr = {
         .name = "DisplayTask",
-        .stack_size = 2048, // Increased stack size for display operations
-        .priority = osPriorityNormal};
+        .stack_size = DISPLAY_TASK_STACK_SIZE, // Increased stack size for display operations
+        .priority = DISPLAY_TASK_PRIORITY};
 
     osThreadId_t thread_id = osThreadNew(display_task_main, &display_ctx, &task_attr);
     if (!thread_id)
