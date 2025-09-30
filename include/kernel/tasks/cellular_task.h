@@ -9,7 +9,7 @@
 #include "call_state.h";
 #include "modem.h";
 
-#define CELLULAR_TASK_STACK_SIZE 1024
+#define CELLULAR_TASK_STACK_SIZE 2048
 #define CELLULAR_TASK_PRIORITY osPriorityNormal
 
 typedef enum

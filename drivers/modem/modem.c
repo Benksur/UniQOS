@@ -148,3 +148,8 @@ uint8_t modem_dial(const char *dial_string)
 {
     return at_call_dial(dial_string, NULL);
 }
+
+uint8_t modem_get_signal_strength(int16_t *rssi, uint8_t *ber)
+{
+    return at_get_signal_strength(rssi, ber);
+}

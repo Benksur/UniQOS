@@ -15,9 +15,9 @@
 typedef enum
 {
     CALL_STATE_IDLE,
-    CALL_STATE_DIALING,
-    CALL_STATE_CALLING,
-    CALL_STATE_CONNECTED
+    CALL_STATE_DIALLING,
+    CALL_STATE_ACTIVE,
+    CALL_STATE_ENDED,
 } CallStatus;
 
 typedef struct
@@ -87,7 +87,7 @@ static void make_call(Page *self)
     CallState *state = (CallState *)self->state;
     if (state->cursor.x > 0 && state->call_status == CALL_STATE_IDLE)
     {
-        state->call_status = CALL_STATE_CALLING;
+        state->call_status = CALL_STATE_DIALLING;
 
         // Mark entire screen dirty for redraw
         mark_all_tiles_dirty();
@@ -110,20 +110,20 @@ static void draw_call_status(Page *self)
 {
     CallState *state = (CallState *)self->state;
     const char *status_text = "Enter number:";
-    // switch (state->call_status) {
-    //     case CALL_STATE_DIALING:
-    //         status_text = "Dialing...";
-    //         break;
-    //     case CALL_STATE_CALLING:
-    //         status_text = "Calling...";
-    //         break;
-    //     case CALL_STATE_CONNECTED:
-    //         status_text = "Connected";
-    //         break;
-    //     default:
-    //         status_text = "";
-    //         break;
-    // }
+    switch (state->call_status) {
+        case CALL_STATE_DIALLING:
+            status_text = "Dialling...";
+            break;
+        case CALL_STATE_ACTIVE:
+            status_text = "Active";
+            break;
+        case CALL_STATE_ENDED:
+            status_text = "Ended";
+            break;
+        default:
+            status_text = "";
+            break;
+    }
     int px, py;
     tile_to_pixels(0, 2, &px, &py);
     int width = TILE_WIDTH * TILE_COLS;
@@ -262,6 +262,26 @@ static void call_destroy(Page *self)
         CallState *state = (CallState *)self->state;
         mem_free(state);
         mem_free(self);
+    }
+}
+
+static void call_data_response(Page *self, int type, void *resp)
+{
+    CallState *state = (CallState *)self->state;
+    if (type == PAGE_DATA_RESPONSE_DIALLING)
+    {
+        state->call_status = CALL_STATE_DIALLING;
+        draw_call_status(self);
+    }
+    else if (type == PAGE_DATA_RESPONSE_ACTIVE_CALL)
+    {
+        state->call_status = CALL_STATE_ACTIVE;
+        draw_call_status(self);
+    }
+    else if (type == PAGE_DATA_RESPONSE_CALL_ENDED)
+    {
+        state->call_status = CALL_STATE_ENDED;
+        draw_call_status(self);
     }
 }
 

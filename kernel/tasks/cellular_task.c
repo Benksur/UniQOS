@@ -1,11 +1,27 @@
 #include "cellular_task.h"
 
+// Convert dBm value to signal bars (0-5) based on signal strength ranges
+static uint8_t dbm_to_signal_bars(int16_t dbm_value)
+{
+    if (dbm_value == 0 || dbm_value <= -93)
+        return 0; // No service or very poor
+    if (dbm_value <= -85)
+        return 1; // Poor signal (1 bar)
+    if (dbm_value <= -77)
+        return 2; // Fair signal (2 bars)
+    if (dbm_value <= -69)
+        return 3; // Good signal (3 bars)
+    if (dbm_value <= -61)
+        return 4; // Very good signal (4 bars)
+    return 5; // Excellent signal (5 bars)
+}
+
 struct CellularTaskContext
 {
     QueueHandle_t queue;
     DisplayTaskContext *display_ctx;
     CallStateContext *call_ctx;
-    uint8_t signal_strength;
+    uint8_t signal_bars;
 };
 
 typedef void (*CellularCmdHandler)(CellularTaskContext *ctx, CellularMessage *msg);
@@ -39,7 +55,7 @@ static void handle_dial(CellularTaskContext *ctx, CellularMessage *msg)
 {
     modem_dial(msg->data);
     CallState_PostCommand(ctx->call_ctx, CALL_CMD_DIALLING, msg->data);
-    
+
 }
 
 static CellularCmdHandler cellular_cmd_table[] = {
@@ -69,6 +85,22 @@ static void cellular_task_main(void *pvParameters)
     CellularMessage msg;
     for (;;)
     {
+        int16_t current_signal_dbm;
+        uint8_t current_ber;
+        uint8_t current_signal_bars;
+        
+        // Get signal strength in dBm from modem
+        if (modem_get_signal_strength(&current_signal_dbm, &current_ber) == 0)
+        {
+            // Convert dBm value to signal bars (0-5)
+            current_signal_bars = dbm_to_signal_bars(current_signal_dbm);
+            
+            if (current_signal_bars != ctx->signal_bars)
+            {
+                ctx->signal_bars = current_signal_bars;
+                DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SET_SIGNAL_STATUS, &ctx->signal_bars);
+            }
+        }
         if (xQueueReceive(ctx->queue, &msg, 0))
         {
             dispatch_cellular_command(ctx, &msg);
@@ -83,7 +115,7 @@ CellularTaskContext *CellularTask_Init(DisplayTaskContext *display_ctx, CallStat
     cellular_ctx.queue = xQueueCreate(5, sizeof(CellularMessage));
     cellular_ctx.display_ctx = display_ctx;
     cellular_ctx.call_ctx = call_ctx;
-    cellular_ctx.signal_strength = 0;
+    cellular_ctx.signal_bars = 0;
 
     osThreadAttr_t task_attr = {
         .name = "CellularTask",
