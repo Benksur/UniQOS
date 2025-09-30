@@ -13,7 +13,7 @@
 #define GRID_SIZE_X TILE_COLS
 #define GRID_SIZE_Y TILE_ROWS
 
-#define MAX_MINES 20
+#define MAX_MINES 12
 
 #define TICK_TIME 100 // ms - can be super low redrawing is handled manually
 
@@ -196,12 +196,15 @@ void board_reveal(SweeperState *state, uint8_t reveal_x, uint8_t reveal_y, bool 
 void board_init(SweeperState *state, uint8_t reveal_x, uint8_t reveal_y)
 {
     uint8_t mine_count = 0;
+    int attempts = 0;
 
     // Add mines
-    while (mine_count < MAX_MINES)
+    while (mine_count < MAX_MINES && attempts < 1000)
     {
         uint8_t mine_x = rand() % GRID_SIZE_X;
         uint8_t mine_y = rand() % GRID_SIZE_Y;
+        attempts++;
+        
 
         // skip mines in 3x3 near first
         if (mine_x >= reveal_x - 1 && mine_x <= reveal_x + 1 &&
@@ -251,7 +254,7 @@ void board_init(SweeperState *state, uint8_t reveal_x, uint8_t reveal_y)
 /*
  * Initialise snake in game
  */
-void init_game(SweeperState *state)
+void init_game_sweeper(SweeperState *state)
 {
 
     state->last_tick = HAL_GetTick();
@@ -293,12 +296,12 @@ void sweeper_handle_input(Page *self, int event_type)
     else if (state->game_state == GAME_OVER && event_type == INPUT_SELECT)
     {
         // new game
-        init_game(state);
+        init_game_sweeper(state);
     }
     else if (state->game_state == GAME_WIN && event_type == INPUT_SELECT)
     {
         // new game
-        init_game(state);
+        init_game_sweeper(state);
     }
     else if (event_type == INPUT_SELECT)
     {
@@ -330,19 +333,22 @@ void sweeper_handle_input(Page *self, int event_type)
 void draw_cell(Cell *cell, uint16_t x, uint16_t y)
 {
     // Default cell border
-    display_draw_rect(x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH, 
+
+    int px, py;
+    tile_to_pixels(x, y, &px, &py);
+    display_draw_rect(px, py, TILE_WIDTH, 
         TILE_HEIGHT, CELL_BORDER_COLOR);
 
     // Draw flag
     if (cell->has_flag)
     {
-        display_draw_bits(x + 5, y + 5, flag_symbol, current_theme.text_colour, 
+        display_draw_bits(px + 5, px + 5, flag_symbol, current_theme.text_colour, 
             current_theme.bg_colour, 20, 20);
     }
     else if (!cell->is_hidden)
     {
         // default reveal background
-        display_fill_rect(x * TILE_WIDTH + 1, y * TILE_HEIGHT + 1,
+        display_fill_rect(px + 1, py + 1,
                           TILE_WIDTH - 2, TILE_HEIGHT - 2, current_theme.highlight_colour);
         if (cell->cell_val == CELL_MINE)
         {
@@ -352,23 +358,25 @@ void draw_cell(Cell *cell, uint16_t x, uint16_t y)
         else if (cell->cell_val != 0)
         {
             // Val type reveal
-            display_draw_char(x * TILE_WIDTH + 10, y * TILE_HEIGHT + 8,
+            display_draw_char(px + 10, py + 8,
                               '0' + cell->cell_val, current_theme.text_colour,
                               current_theme.highlight_colour, 2);
         }
     }
     else
     {
-        display_fill_rect(x * TILE_WIDTH + 1, y * TILE_HEIGHT + 1,
+        display_fill_rect(px + 1, py + 1,
                           TILE_WIDTH - 2, TILE_HEIGHT - 2, current_theme.bg_colour);
     }
 }
 
 void draw_cursor(uint16_t x, uint16_t y)
 {
-    display_draw_rect(x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH,
+    int px, py;
+    tile_to_pixels(x, y, &px, &py);
+    display_draw_rect(px, py, TILE_WIDTH,
                       TILE_HEIGHT, CURSOR_COLOUR);
-    display_draw_rect(x * TILE_WIDTH + 1, y * TILE_HEIGHT + 1,
+    display_draw_rect(px + 1, py + 1,
                       TILE_WIDTH - 2, TILE_HEIGHT - 2, CURSOR_COLOUR);
 }
 
@@ -386,6 +394,7 @@ static void sweeper_draw_tile(Page *self, int tx, int ty)
             {
                 if (state->grid[row][col].redraw)
                 {
+                    state->grid[row][col].redraw = false;
                     draw_cell(&state->grid[row][col], col, row);
                 }
             }
@@ -397,11 +406,11 @@ static void sweeper_draw_tile(Page *self, int tx, int ty)
         {
             draw_cell(&state->grid[state->old_cursor_y][state->old_cursor_x], 
                 state->old_cursor_x, state->old_cursor_y);
-            draw_cursor(state->cursor.x, state->cursor.y);
             state->old_cursor_x = state->cursor.x;
             state->old_cursor_y = state->cursor.y;
-        }
+            draw_cursor(state->cursor.x, state->cursor.y);
 
+        }
         state->last_tick = curr_time;
     }
 
@@ -444,7 +453,7 @@ Page *sweeper_page_create()
     SweeperState *state = malloc(sizeof(SweeperState));
     memset(state, 0, sizeof(SweeperState));
 
-    init_game(state);
+    init_game_sweeper(state);
 
     page->draw = NULL;
     page->draw_tile = sweeper_draw_tile;

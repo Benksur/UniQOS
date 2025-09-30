@@ -38,8 +38,8 @@ typedef struct
 {
     uint32_t last_tick;
     GameState game_state;
-    uint8_t snake_x[MAX_SNAKE]; // using last index as prev tail
-    uint8_t snake_y[MAX_SNAKE];
+    int8_t snake_x[MAX_SNAKE]; // using last index as prev tail
+    int8_t snake_y[MAX_SNAKE];
     uint8_t snake_len;
     uint8_t apple_x;
     uint8_t apple_y;
@@ -55,7 +55,8 @@ typedef struct
  */
 void game_tick(SnakeState *state)
 {
-    if (state->game_state != GAME_RUN){
+    if (state->game_state != GAME_RUN)
+    {
         return;
     }
 
@@ -175,7 +176,7 @@ void game_tick(SnakeState *state)
 /*
  * Init the game with a new grid
  */
-void init_game(SnakeState *state)
+void init_game_snake(SnakeState *state)
 {
     state->last_tick = HAL_GetTick();
     state->game_state = GAME_RUN;
@@ -184,20 +185,22 @@ void init_game(SnakeState *state)
     state->snake_y[0] = GRID_SIZE_Y / 2;
     state->new_apple = true;
     srand(state->last_tick);
-} 
+    int px, py;
+    tile_to_pixels(0, 0, &px, &py);
+    display_fill_rect(px, py, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * TILE_ROWS, current_theme.bg_colour);
+}
 
 static void snake_draw_tile(Page *self, int tx, int ty)
 {
     SnakeState *state = (SnakeState *)self->state;
     uint32_t curr_time = HAL_GetTick();
     uint16_t x_draw, y_draw;
+    int px, py;
 
     // Init a new game and reset display
-    if (state->game_state == GAME_NEW) {
-        init_game(state);
-
-        // Clear display
-        display_fill_rect(0, 0, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * TILE_ROWS, current_theme.bg_colour);
+    if (state->game_state == GAME_NEW)
+    {
+        init_game_snake(state);
     }
 
     // TODO: should probably confirm that this logic holds at tick reset
@@ -206,44 +209,45 @@ static void snake_draw_tile(Page *self, int tx, int ty)
         game_tick(state);
 
         // Clear tail
-        x_draw = (uint16_t)state->snake_x[MAX_SNAKE - 1] * TILE_WIDTH;
-        y_draw = (uint16_t)state->snake_y[MAX_SNAKE - 1] * TILE_HEIGHT;
-        display_fill_rect(x_draw, y_draw, TILE_WIDTH, TILE_HEIGHT, current_theme.bg_colour);
+        x_draw = (uint16_t)state->snake_x[MAX_SNAKE - 1];
+        y_draw = (uint16_t)state->snake_y[MAX_SNAKE - 1];
+        tile_to_pixels(x_draw, y_draw, &px, &py);
+        display_fill_rect(px, py, TILE_WIDTH, TILE_HEIGHT, current_theme.bg_colour);
 
         // Draw head
-        x_draw = (uint16_t)state->snake_x[0] * TILE_WIDTH;
-        y_draw = (uint16_t)state->snake_y[0] * TILE_HEIGHT;
-        display_fill_rect(x_draw, y_draw, TILE_WIDTH, TILE_HEIGHT, SNAKE_COLOUR);
+        x_draw = (uint16_t)state->snake_x[0];
+        y_draw = (uint16_t)state->snake_y[0];
+        tile_to_pixels(x_draw, y_draw, &px, &py);
+        display_fill_rect(px, py, TILE_WIDTH, TILE_HEIGHT, SNAKE_COLOUR);
 
         // Draw Apple if req
         if (state->new_apple)
         {
-            x_draw = (uint16_t)state->apple_x * TILE_WIDTH;
-            y_draw = (uint16_t)state->apple_y * TILE_HEIGHT;
-            display_fill_rect(x_draw, y_draw, TILE_WIDTH, TILE_HEIGHT, APPLE_COLOUR);
+            x_draw = (uint16_t)state->apple_x;
+            y_draw = (uint16_t)state->apple_y;
+            tile_to_pixels(x_draw, y_draw, &px, &py);
+            display_fill_rect(px, py, TILE_WIDTH, TILE_HEIGHT, APPLE_COLOUR);
             state->new_apple = false;
         }
 
         state->last_tick = curr_time;
-    }
 
-    // Handle game states
-    // TODO: May want to check these I'm sorta just guessing here
-    if (state->game_state == GAME_WIN)
-    {
-        char *title = "GAME WIN";
-        int text_width = strlen(title) * 6 * 3;
-        uint16_t center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
-        uint16_t center_y = (TILE_HEIGHT * TILE_ROWS) / 2;
-        display_draw_string(center_x, center_y, title, current_theme.text_colour, current_theme.bg_colour, 3);
-    }
-    else if (state->game_state == GAME_OVER)
-    {
-        char *title = "GAME OVER";
-        int text_width = strlen(title) * 6 * 3;
-        uint16_t center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
-        uint16_t center_y = (TILE_HEIGHT * TILE_ROWS) / 2;
-        display_draw_string(center_x, center_y, title, current_theme.text_colour, current_theme.bg_colour, 3);
+        if (state->game_state == GAME_WIN)
+        {
+            char *title = "GAME WIN";
+            int text_width = strlen(title) * 6 * 3;
+            uint16_t center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
+            uint16_t center_y = (TILE_HEIGHT * TILE_ROWS) / 2;
+            display_draw_string(center_x, center_y, title, current_theme.text_colour, current_theme.bg_colour, 3);
+        }
+        else if (state->game_state == GAME_OVER)
+        {
+            char *title = "GAME OVER";
+            int text_width = strlen(title) * 6 * 3;
+            uint16_t center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
+            uint16_t center_y = (TILE_HEIGHT * TILE_ROWS) / 2;
+            display_draw_string(center_x, center_y, title, current_theme.text_colour, current_theme.bg_colour, 3);
+        }
     }
 
     mark_all_tiles_dirty();
@@ -310,7 +314,7 @@ Page *snake_page_create()
     SnakeState *state = malloc(sizeof(SnakeState));
     memset(state, 0, sizeof(SnakeState));
 
-    init_game(state);
+    init_game_snake(state);
 
     page->draw = NULL;
     page->draw_tile = snake_draw_tile;

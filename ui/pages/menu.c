@@ -163,7 +163,7 @@ static void menu_handle_input(Page* self, int event_type) {
                 screen_push_page(snake_page);
                 break;
             case 8: 
-                Page* sweeper_page = snake_page_create();
+                Page* sweeper_page = sweeper_page_create();
                 screen_push_page(sweeper_page);
                 break;
         }
