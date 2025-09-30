@@ -123,3 +123,28 @@ uint8_t modem_init(void)
 
     return ret; // Initialization successful
 }
+
+uint8_t modem_sleep(void)
+{
+    return at_set_function_mode(MODE_OFFLINE);
+}
+
+uint8_t modem_airplane_mode_on(void)
+{
+    return at_set_function_mode(MODE_AIRPLANE);
+}
+
+uint8_t modem_airplane_mode_off(void)
+{
+    return at_set_function_mode(MODE_FULL);
+}
+
+uint8_t modem_send_sms(const char *sms_address, const char *sms_message)
+{
+    return at_send_sms(sms_address, sms_message);
+}
+
+uint8_t modem_dial(const char *dial_string)
+{
+    return at_call_dial(dial_string, NULL);
+}
