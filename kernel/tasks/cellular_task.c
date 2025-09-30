@@ -83,6 +83,7 @@ static void cellular_task_main(void *pvParameters)
 {
     CellularTaskContext *ctx = (CellularTaskContext *)pvParameters;
     CellularMessage msg;
+    modem_init();
     for (;;)
     {
         int16_t current_signal_dbm;
@@ -101,6 +102,10 @@ static void cellular_task_main(void *pvParameters)
                 DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SET_SIGNAL_STATUS, &ctx->signal_bars);
             }
         }
+
+        // check received sms here
+        modem_check_received_sms();
+        
         if (xQueueReceive(ctx->queue, &msg, 0))
         {
             dispatch_cellular_command(ctx, &msg);

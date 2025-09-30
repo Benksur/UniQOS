@@ -153,3 +153,9 @@ uint8_t modem_get_signal_strength(int16_t *rssi, uint8_t *ber)
 {
     return at_get_signal_strength(rssi, ber);
 }
+
+uint8_t modem_check_received_sms(void)
+{
+    // return at_check_received_sms();
+    return false;
+}
