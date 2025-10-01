@@ -98,11 +98,12 @@ $(CSRCS) \
 ../../drivers/display/LCD_Controller.c \
 ../../drivers/display/display.c \
 ../../drivers/peripherals/keypad.c \
-../../ui/navbar.c \
+../../ui/status_bar.c \
 ../../ui/screen.c \
 ../../ui/theme.c \
 ../../ui/tile.c \
 ../../ui/cursor.c \
+../../ui/multitap.c \
 ../../ui/pages/menu.c \
 ../../ui/pages/clock.c \
 ../../ui/pages/calendar.c \
@@ -121,6 +122,8 @@ $(CSRCS) \
 ../../ui/pages/games/snake.c\
 ../../ui/pages/games/sweeper.c\
 ../../ui/overlays/option_overlay.c \
+../../ui/overlays/incoming_call.c \
+../../ui/overlays/incoming_text.c \
 ../../audio/mixer.c \
 ../../audio/oscillator.c \
 ../../drivers/power/bq27441.c \

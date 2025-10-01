@@ -8,11 +8,10 @@
 #include "tile.h"
 #include "keypad.h"
 #include "option_overlay.h"
-#include "snake.h"
-#include "sweeper.h"
+#include "status_bar.h"
 
 #include "nau88c22.h"
-#include "bloop_x.h"
+#include "bloop_optimized.h"
 #include "tick_sound.h"
 #include "i2c.h"
 #include "i2s.h"
@@ -22,19 +21,22 @@
 
 void PeriphCommonClock_Config(void);
 
-// Option overlay callback
-static void test_overlay_callback(int selected_idx, void* user_data) {
-    // For demonstration, just pop the overlay
-    screen_pop_page();
-    // You can add more logic here based on selected_idx
-}
+void PeriphCommonClock_Config(void);
 
-static const char* overlay_options[] = {
-    "Send Message",
-    "Save to Drafts",
-    "Clear"
-};
-#define NUM_OVERLAY_OPTIONS (sizeof(overlay_options)/sizeof(overlay_options[0]))
+int16_t tick[] = {
+  // sharp attack
+  0, 8000, 16380, 24000, 32760, 32760, 32760, 32760, 32760, 32760,
+  // sustain
+  30000, 28000, 26000, 24000, 22000, 20000, 18000, 16000, 14000, 12000,
+  // decay
+  10000, 8000, 6000, 4000, 3000, 2500, 2000, 1500, 1000, 800,
+  600, 400, 300, 200, 150, 100, 75, 50, 25, 10,
+  5, 2, 1, 0, 0, 0, 0, 0, 0, 0};
+
+int16_t bloop_base[] = {
+  0, 8148, 15715, 22237, 27311, 30620, 31963, 31277, 28634, 24224,
+  18349, 11401, 3832, -3903, -11477, -18425, -24268, -28649, -31276, -31921,
+  -30524, -27186, -22158, -15799, -8537};
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -80,11 +82,12 @@ int main(void)
   // htim13.Instance->CCR3 = 65535;
 
   uint8_t status;
-  // static const IAudioDriver_t *codec = NULL;
-  // codec = nau88c22_get_driver();
-  // codec->init();
-  // codec->speaker.mute(false);
-  // codec->speaker.set_volume(100);
+  static const IAudioDriver_t *codec = NULL;
+  codec = nau88c22_get_driver();
+  codec->init();
+  codec->speaker.mute(false);
+  uint8_t current_volume = 50;
+  codec->speaker.set_volume(100);
 
   display_init();
   keypad_init();
@@ -92,16 +95,11 @@ int main(void)
   HAL_Delay(1000);
 
   theme_set_dark();
-  LCD_Fill(current_theme.fg_colour, 0, 0, 240, 25);
+  draw_status_bar();
+  status_bar_update_signal(5);
+  status_bar_update_battery(50);
 
-  char time_buffer[15] = {0};
-  RTC_DateTypeDef sDate;
-  HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-  // RTC_TimeTypeDef sTime;
-  // HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-  // sprintf(time_buffer, "%02d:%02d:%02d", sTime.Hours, sTime.Minutes, sTime.Seconds);
-  sprintf(time_buffer, "20%02d-%02d-%02d", sDate.Year, sDate.Month, sDate.Date);
-  display_draw_string(10, 5, time_buffer, current_theme.bg_colour, current_theme.fg_colour, 2);
+  // Initialize volume for testing
 
   screen_init(&menu_page);
   mark_all_tiles_dirty();
@@ -114,33 +112,55 @@ int main(void)
     for (int i = 0; i < 24; i++)
     {
       keypad_update_states();
-      
+
       // Check all buttons and handle input events
-      for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++) {
-        if (keypad_is_button_pressed(button_idx)) {
-          // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+      for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++)
+      {
+        if (keypad_is_button_pressed(button_idx))
+        {
+          HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
           input_event_t event = keypad_get_button_event(button_idx);
-          
+
           // Handle special cases
-          if (event == INPUT_RIGHT) {
+          if (event == INPUT_RIGHT)
+          {
             screen_pop_page();
-          } else if (event == INPUT_LEFT) {
-            // Show option overlay
-            Page* overlay = option_overlay_page_create(
-                "Message Options",
-                overlay_options,
-                NUM_OVERLAY_OPTIONS,
-                test_overlay_callback,
-                NULL);
-            if (overlay) screen_push_page(overlay);
-          } else {
+          }
+          else if (event == INPUT_VOLUME_UP)
+          {
+            // Volume up
+            if (current_volume < 100)
+            {
+              current_volume += 5;
+              codec->speaker.set_volume(current_volume);
+              status_bar_show_volume(current_volume);
+            }
+          }
+          else if (event == INPUT_VOLUME_DOWN)
+          {
+            // Volume down
+            if (current_volume > 0)
+            {
+              current_volume -= 5;
+              codec->speaker.set_volume(current_volume);
+              status_bar_show_volume(current_volume);
+            }
+          }
+          else
+          {
             screen_handle_input(event);
           }
-          
-          if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9) {
-            // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)tick, 50, HAL_MAX_DELAY);
-          } else {
-            // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)bloop, 950, HAL_MAX_DELAY);
+
+          if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9)
+          {
+            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)tick, 50, HAL_MAX_DELAY);
+          }
+          else
+          {
+            for (int i = 0; i < BLOOP_REPEAT_COUNT; i++)
+            {
+                HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)bloop_base, BLOOP_BASE_SIZE, HAL_MAX_DELAY);
+            }
           }
           // Play sound for numeric keypad presses
         }

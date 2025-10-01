@@ -3,6 +3,11 @@
 
 #include <stdbool.h>
 
+typedef enum {
+    PAGE_DATA_RESPONSE_DIALLING,
+    PAGE_DATA_RESPONSE_ACTIVE_CALL,
+    PAGE_DATA_RESPONSE_CALL_ENDED,
+} PageDataResponse;
 
 typedef struct Page Page; // Forward declaration
 
