@@ -14,13 +14,16 @@
 #include "rc7620_api.h"
 #endif
 
-// Standard Command Timeout Values
+// Standard Command Timeout Values See Table A-3 of RC76xx AT Command Reference
 #define TIMEOUT_1S 1000
 #define TIMEOUT_2S 2000
 #define TIMEOUT_5S 5000
 #define TIMEOUT_30S 30000
 #define TIMEOUT_60S 60000
 #define TIMEOUT_120S 120000
+
+// Max string size for phone number
+#define MAXNUMBERSTR 16
 
 enum FunctionModes
 {
@@ -49,6 +52,54 @@ enum ATV0ResultCodes
     ATV0_BUSY = 7,
     ATV0_NO_ANSWER = 8,    
 };
+
+enum CallDir
+{
+    DIR_MO = 0, // Mobile Originated
+    DIR_MT = 1, // Mobile Terminated
+};
+
+enum CallStat
+{
+    STAT_ACTIVE = 0,
+    STAT_HELD = 1,
+    STAT_DIALING = 2,  //
+    STAT_ALERTING = 3, //
+    STAT_INCOMMING = 4,
+    STAT_WAITING = 5,
+};
+
+enum CallMode
+{
+    MODE_VOICE = 0,
+    MODE_DATA = 1,
+    MODE_FAX = 2,
+    MODE_VFBD_VM = 3, // voice followed by data, voice mode
+    MODE_AVD_VM = 4, // alternating voice/data, voice mode
+    MODE_AVF_VM = 5, // alternating voice/fax, voice mode
+    MODE_VFBD_DM = 6, // voice followed by data, data mode
+    MODE_AVD_DM = 7, // alternating voice/data, data mode
+    MODE_AVF_FM = 8, // alternating voice/fax, fax mode
+    MODE_UNKNOWN = 9,
+};
+
+enum CallMPTY
+{
+    MPTY_NO = 0,
+    MPTY_YES = 1,
+};
+
+/* -------------------------------- Call Status -------------------------------- */
+
+typedef struct call_status_t
+{
+    int ccidx;
+    enum CallDir dir;
+    enum CallStat stat;
+    enum CallMode mode;
+    enum CallMPTY mpty;
+    char number[MAXNUMBERSTR];
+} call_status_t;
 
 /* -------------------------------- Phone Book -------------------------------- */
 
@@ -104,11 +155,13 @@ typedef struct modeminfo_t
     char modelId[RC7620_MODEL_ID_MAX_SIZE + 1];             // Model Identity
 } modeminfo_t;
 
+/* -------------------------------- Functions -------------------------------- */
+
 /* Governed By 3GPP TS 27.007*/
 uint8_t at_set_function_mode(enum FunctionModes mode);
 
 uint8_t at_set_auto_timezone(bool set_atz);
-uint8_t at_get_clock(enum FunctionModes mode, RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
+uint8_t at_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
 
 uint8_t at_get_signal_strength(int16_t *rssi, uint8_t *ber);
 
@@ -128,10 +181,13 @@ uint8_t at_get_modem_info(modeminfo_t *modem_info);
 uint8_t at_check_net_reg(void);
 uint8_t at_check_eps_net_reg(void);
 
+uint8_t at_call_status(call_status_t **status, int max_items);
+
 /* Governed By 3GPP TS 27.005*/
 uint8_t at_set_message_format(enum TextModes mode);
-uint8_t at_get_sms(int index, char *sms_buff);
+uint8_t at_get_sms(int index, char *sms_buff, int bufflen);
 uint8_t at_send_sms(const char *sms_address, const char *sms_message);
+
 
 /* Governed By ITU-T Recommendation V.250*/
 uint8_t at_call_dial(char *dial_string, enum ATV0ResultCodes *result_code);

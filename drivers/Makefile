@@ -58,7 +58,7 @@ TEST_FILE_PATH := ../../tests/test_nau88c22.c
 TARGET := test_nau88c22
 else ifeq ($(TEST), audio)
 TEST_FILE_PATH := ../../tests/test_audio.c
-TARGET := test_nau88c22
+TARGET := test_audio
 else ifeq ($(TEST), mobile)
 TEST_FILE_PATH := ../../tests/test_mobile.c
 TARGET := test_mobile

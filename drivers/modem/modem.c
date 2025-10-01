@@ -96,10 +96,10 @@ uint8_t modem_init(void)
     }
 
     // Set APN to telstra IP
-    DEBUG_PRINTF("Sending: AT+CGDCONT=1,\"IP\",\"telstra.internet\"\r\n");
-    modem_send_command("AT+CGDCONT=1,\"IP\",\"telstra.internet\"", response, sizeof(response), default_timeout);
-    DEBUG_PRINTF("Response: %s\r\n", response);
-    HAL_Delay(100);
+    // DEBUG_PRINTF("Sending: AT+CGDCONT=1,\"IP\",\"telstra.internet\"\r\n");
+    // modem_send_command("AT+CGDCONT=1,\"IP\",\"telstra.internet\"", response, sizeof(response), default_timeout);
+    // DEBUG_PRINTF("Response: %s\r\n", response);
+    // HAL_Delay(100);
 
     // notify on new sms
     DEBUG_PRINTF("Sending: AT+CNMI=1,1,0,0,0\r\n");

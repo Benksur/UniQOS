@@ -30,35 +30,35 @@ int main(void)
   HAL_StatusTypeDef ret;
   while (1)
   {
-    ret = lsm6dsv_read_reg(LSM6DSV_WHO_AM_I, &databuff, 1); // returns 0b01110000 always
-    HAL_Delay(1000);
-    if (ret || databuff != 0b01110000)
-    {
-      printf("FAILED SOMEWHERE\n\r");
-      HAL_Delay(1);
-    }
+    // ret = lsm6dsv_read_reg(LSM6DSV_WHO_AM_I, &databuff, 1); // returns 0b01110000 always
+    // HAL_Delay(1000);
+    // if (ret || databuff != 0b01110000)
+    // {
+    //   printf("FAILED SOMEWHERE\n\r");
+    //   HAL_Delay(1);
+    // }
 
-    ret |= lsm6dsv_read_reg(LSM6DSV_STATUS_REG, &databuff, 1);
-    if (ret)
-    {
-      printf("FAILED SOMEWHERE\n\r");
-      HAL_Delay(1);
-    }
+    // ret |= lsm6dsv_read_reg(LSM6DSV_STATUS_REG, &databuff, 1);
+    // if (ret)
+    // {
+    //   printf("FAILED SOMEWHERE\n\r");
+    //   HAL_Delay(1);
+    // }
 
-    ret |= lsm6dsv_get_all(&data);
-    if (ret == 0)
-    {
-      printf("temp: %.2f°C\n", data.temp);
-      printf("gyro: %.2fx, %.2fy, %.2fz\n", data.gx, data.gy, data.gz);
-      printf("accel: %.2fx, %.2fy, %.2fz\n", data.ax, data.ay, data.az);
-    }
-    else
-    {
-      printf("lsm6dsv_get_all() failed: %d\n", ret);
-    }
+    // ret |= lsm6dsv_get_all(&data);
+    // if (ret == 0)
+    // {
+    //   printf("temp: %.2f°C\n", data.temp);
+    //   printf("gyro: %.2fx, %.2fy, %.2fz\n", data.gx, data.gy, data.gz);
+    //   printf("accel: %.2fx, %.2fy, %.2fz\n", data.ax, data.ay, data.az);
+    // }
+    // else
+    // {
+    //   printf("lsm6dsv_get_all() failed: %d\n", ret);
+    // }
 
-    printf("DONE!");
-    HAL_Delay(100);
+    // printf("DONE!");
+    HAL_Delay(10000);
   }
 }
 
