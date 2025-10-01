@@ -58,7 +58,7 @@ int main(void)
     // }
 
     // printf("DONE!");
-    HAL_Delay(10000);
+    HAL_Delay(100000);
   }
 }
 

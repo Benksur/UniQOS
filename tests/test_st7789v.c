@@ -10,6 +10,7 @@
 #include "option_overlay.h"
 #include "status_bar.h"
 
+#include "bq27441.h"
 #include "nau88c22.h"
 #include "bloop_optimized.h"
 #include "tick_sound.h"
@@ -74,8 +75,8 @@ int main(void)
   MX_RTC_Init();
 
   
-  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,GPIO_PIN_1, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,LOAD_SW_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET); //backlight
 
   // MX_TIM13_Init();
   // HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);
@@ -104,6 +105,7 @@ int main(void)
   screen_init(&menu_page);
   mark_all_tiles_dirty();
   screen_tick();
+  // status_bar_tick();
   // draw_grid();
 
   while (1)
@@ -164,6 +166,9 @@ int main(void)
           }
           // Play sound for numeric keypad presses
         }
+        HAL_Delay(500);
+        status_bar_update_battery(bq27441_SOC());
+        status_bar_tick();
         screen_tick();
       }
     }

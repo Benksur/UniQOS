@@ -69,4 +69,7 @@ uint8_t bq27441_write_reg(uint8_t reg_addr, uint16_t *reg_data);
 uint8_t bq27441_read_reg(uint8_t reg_addr, uint16_t *reg_data);
 uint8_t bq27441_read_ctrl_reg(uint16_t subcmd, uint16_t *response);
 
+uint8_t bq27441_SOC();
+
+
 #endif
