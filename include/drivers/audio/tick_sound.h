@@ -1,10 +1,9 @@
-int16_t tick[] = {
-    // sharp attack
-    0, 8000, 16380, 24000, 32760, 32760, 32760, 32760, 32760, 32760,
-    // sustain
-    30000, 28000, 26000, 24000, 22000, 20000, 18000, 16000, 14000, 12000,
-    // decay
-    10000, 8000, 6000, 4000, 3000, 2500, 2000, 1500, 1000, 800,
-    600, 400, 300, 200, 150, 100, 75, 50, 25, 10,
-    5, 2, 1, 0, 0, 0, 0, 0, 0, 0
-};
+#ifndef TICK_SOUND_H
+#define TICK_SOUND_H
+
+#include <stdint.h>
+
+// External declaration for the tick sound array
+extern int16_t tick[];
+
+#endif // TICK_SOUND_H

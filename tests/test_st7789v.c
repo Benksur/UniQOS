@@ -11,13 +11,28 @@
 #include "status_bar.h"
 
 #include "nau88c22.h"
-#include "bloop_x.h"
+#include "bloop_optimized.h"
 #include "tick_sound.h"
 #include "i2c.h"
 #include "i2s.h"
 #include "rtc.h"
 
 #include <stdbool.h>
+
+int16_t tick[] = {
+  // sharp attack
+  0, 8000, 16380, 24000, 32760, 32760, 32760, 32760, 32760, 32760,
+  // sustain
+  30000, 28000, 26000, 24000, 22000, 20000, 18000, 16000, 14000, 12000,
+  // decay
+  10000, 8000, 6000, 4000, 3000, 2500, 2000, 1500, 1000, 800,
+  600, 400, 300, 200, 150, 100, 75, 50, 25, 10,
+  5, 2, 1, 0, 0, 0, 0, 0, 0, 0};
+
+int16_t bloop_base[] = {
+  0, 8148, 15715, 22237, 27311, 30620, 31963, 31277, 28634, 24224,
+  18349, 11401, 3832, -3903, -11477, -18425, -24268, -28649, -31276, -31921,
+  -30524, -27186, -22158, -15799, -8537};
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -132,7 +147,10 @@ int main(void)
           }
           else
           {
-            HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)bloop, 950, HAL_MAX_DELAY);
+            for (int i = 0; i < BLOOP_REPEAT_COUNT; i++)
+            {
+                HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)bloop_base, BLOOP_BASE_SIZE, HAL_MAX_DELAY);
+            }
           }
           // Play sound for numeric keypad presses
         }

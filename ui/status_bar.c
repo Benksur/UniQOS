@@ -61,12 +61,19 @@ static void update_volume_indicator(void)
         return;
     }
 
-    char volume_buffer[16];
-    sprintf(volume_buffer, "%d%%", status_state.current_volume);
-    int text_width = strlen(volume_buffer) * 6;
-    int center_x = (240 - text_width) / 2;
-    int center_y = (25 - 8) / 2;
-    display_draw_string(center_x, center_y, volume_buffer, current_theme.bg_colour, current_theme.fg_colour, 1);
+    // Only redraw if volume changed (this function is called every tick)
+    static uint8_t last_drawn_volume = 0;
+    if (status_state.current_volume != last_drawn_volume)
+    {
+        char volume_buffer[16];
+        sprintf(volume_buffer, "%d%%", status_state.current_volume);
+        int text_width = strlen(volume_buffer) * 6;
+        int center_x = (240 - text_width) / 2;
+        int center_y = (25 - 8) / 2;
+        display_fill_rect(90, 5, 60, 16, current_theme.fg_colour);
+        display_draw_string(center_x, center_y, volume_buffer, current_theme.bg_colour, current_theme.fg_colour, 1);
+        last_drawn_volume = status_state.current_volume;
+    }
 }
 
 void status_bar_show_volume(uint8_t volume)

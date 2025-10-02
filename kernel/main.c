@@ -17,16 +17,6 @@
 
 void SystemClock_Config(void);
 static void MPU_Config(void);
-void MX_FREERTOS_Init(void);
-
-void I2STestTask(void *argument)
-{
-  for (;;)
-  {
-    HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)audio, 7840, HAL_MAX_DELAY);
-    osDelay(2000); // 2 seconds delay
-  }
-}
 
 int main(void)
 {
@@ -34,29 +24,17 @@ int main(void)
   MPU_Config();
   HAL_Init();
   SystemClock_Config();
-
   MX_GPIO_Init();
+  MX_SPI4_Init();
   MX_I2C1_Init();
   MX_I2S1_Init();
   MX_RTC_Init();
-  MX_SDMMC1_SD_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_TIM5_Init();
-  MX_USART1_UART_Init();
-  MX_SPI4_Init();
-  MX_FATFS_Init();
+  
 
   osKernelInitialize();
   // dont want to use generated freertos init
   // MX_FREERTOS_Init();
   kernel_init();
-
-  osThreadAttr_t task_attr = {
-      .name = "TestTask",
-      .stack_size = 256,
-      .priority = osPriorityLow};
-  osThreadNew(I2STestTask, NULL, &task_attr);
 
   osKernelStart();
 
@@ -64,21 +42,40 @@ int main(void)
 
   while (1)
   {
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    HAL_Delay(100);
   }
 }
 
+/**
+ * @brief  The application entry point.
+ * @retval int
+ */
+
+/**
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
+  /** Supply configuration update enable
+   */
   HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+
+  /** Configure the main internal regulator output voltage
+   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
   {
   }
 
+  /** Initializes the RCC Oscillators according to the specified parameters
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = 64;
@@ -98,6 +95,8 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
+  /** Initializes the CPU, AHB and APB buses clocks
+   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
@@ -113,12 +112,21 @@ void SystemClock_Config(void)
   }
 }
 
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
+
+/* MPU Configuration */
+
 void MPU_Config(void)
 {
   MPU_Region_InitTypeDef MPU_InitStruct = {0};
 
+  /* Disables the MPU */
   HAL_MPU_Disable();
 
+  /** Initializes and configures the Region and the memory to be protected
+   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER0;
   MPU_InitStruct.BaseAddress = 0x0;
@@ -132,6 +140,7 @@ void MPU_Config(void)
   MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  /* Enables the MPU */
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
 
@@ -144,12 +153,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 }
 
+/**
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
-
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  // Add LED toggle for visual feedback
   while (1)
   {
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
+    HAL_Delay(100);                        // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */
 }

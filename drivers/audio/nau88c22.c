@@ -51,12 +51,12 @@ static uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
         return EIO;
     }
 
+
     return 0;
 }
 
 static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
 {
-    uint8_t addr_byte;
     uint8_t data[2] = {0, 0};
     HAL_StatusTypeDef status;
 
@@ -65,20 +65,15 @@ static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
         return EINVAL;
     }
 
-    addr_byte = reg_addr << 1;
 
-    status = HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, &addr_byte, 1, 100);
+    status = HAL_I2C_Mem_Read(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, reg_addr << 1, I2C_MEMADD_SIZE_8BIT, data, 2, 100);
     if (status != HAL_OK)
     {
         return EIO;
     }
-
-    status = HAL_I2C_Master_Receive(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 2, 100);
-    if (status != HAL_OK)
-    {
-        return EIO;
-    }
+    
     *reg_data = ((data[0] & 0x01) << 8) | data[1];
+
     return 0;
 }
 
@@ -451,12 +446,9 @@ const IAudioDriver_t *nau88c22_get_driver(void)
                 .mute = nau88c22_mute_mic_void,
                 .set_volume = nau88c22_set_mic_volume_void,
             }},
-        .headphones = {
-            .mute = nau88c22_mute_hp_void, 
-            .set_volume = nau88c22_set_hp_volume_void, 
-            .mic = {
-                .mute = nau88c22_mute_hp_mic_void,
-                .set_volume = nau88c22_set_hp_mic_volume_void,
-            }}};
+        .headphones = {.mute = nau88c22_mute_hp_void, .set_volume = nau88c22_set_hp_volume_void, .mic = {
+                                                                                                     .mute = nau88c22_mute_hp_mic_void,
+                                                                                                     .set_volume = nau88c22_set_hp_mic_volume_void,
+                                                                                                 }}};
     return &driver;
 }

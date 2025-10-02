@@ -1,8 +1,4 @@
 #include "incoming_call.h"
-#include "cursor.h"
-#include "theme.h"
-#include "display.h"
-#include "tile.h"
 #include "memwrap.h"
 
 typedef struct
@@ -71,6 +67,9 @@ static void incoming_call_handle_input(Page *self, int event_type)
         if (state->callback)
         {
             state->callback(INCOMING_CALL_ACTION_PICKUP, state->user_data);
+            Page *call_page = call_page_create(state->phone_number);
+            screen_set_page(call_page);
+            screen_handle_data_response(PAGE_DATA_RESPONSE_ACTIVE_CALL, NULL);
         }
         break;
     case INPUT_HANGUP:
@@ -78,6 +77,7 @@ static void incoming_call_handle_input(Page *self, int event_type)
         if (state->callback)
         {
             state->callback(INCOMING_CALL_ACTION_HANGUP, state->user_data);
+            screen_pop_page();
         }
         break;
     default:
