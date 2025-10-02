@@ -3,6 +3,7 @@
 #include "audio_task.h"
 #include "call_state.h"
 #include "cellular_task.h"
+#include "power_task.h"
 #include "test_task.h"
 
 void kernel_init(void)
@@ -11,6 +12,7 @@ void kernel_init(void)
     AudioTaskContext *audio_ctx = NULL;
     CallStateContext *call_ctx = NULL;
     CellularTaskContext *cellular_ctx = NULL;
+    PowerTaskContext *power_ctx = NULL;
     TestTaskContext *test_ctx = NULL;
 
     // Initialize audio task first (no dependencies)
@@ -24,6 +26,9 @@ void kernel_init(void)
 
     // Initialize cellular task (needs display and call contexts)
     cellular_ctx = CellularTask_Init(display_ctx, call_ctx);
+
+    // Initialize power task (needs display context)
+    power_ctx = PowerTask_Init(display_ctx);
 
     // Now set the cross-references
     CallState_SetDisplayContext(call_ctx, display_ctx);

@@ -44,9 +44,9 @@ void input_task_main(void *pvParameters)
                 // Handle test trigger - HASH key triggers incoming SMS test
                 else if (event == INPUT_KEYPAD_HASH && display_ctx)
                 {
-                    static ReceivedSmsData test_sms = {
+                    static ReceivedSms test_sms = {
                         .sender = "+61412345678",
-                        .message = "Hello! This is a test SMS message from the input task. Testing the SMS notification system."};
+                        .body = "Hello! This is a test SMS message from the input task. Testing the SMS notification system."};
                     DisplayTask_PostCommand(display_ctx, DISPLAY_SHOW_SMS, &test_sms);
                 }
                 // Handle audio-specific events

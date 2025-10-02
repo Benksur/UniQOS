@@ -97,6 +97,7 @@ $(CSRCS) \
 ../../kernel/tasks/call_state.c \
 ../../kernel/tasks/test_task.c \
 ../../kernel/tasks/cellular_task.c \
+../../kernel/tasks/power_task.c \
 ../../kernel/main.c 
 
 

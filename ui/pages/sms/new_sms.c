@@ -14,6 +14,23 @@
 #define TEXT_XPAD 5
 #define TEXT_YPAD 7
 
+typedef enum
+{
+    NUMBER_INPUT,
+    SMS_INPUT
+} InputMode;
+
+typedef struct
+{
+    Cursor cursor;
+    char phone_number[MAX_PHONE_NUMBER_LENGTH + 1];
+    char sms_content[MAX_SMS_LENGTH + 1];
+    InputMode mode;
+    bool multitap_enabled; // Whether multi-tap is enabled for SMS input
+    bool mounted;
+    bool overlay_open; // Track if overlay is currently open
+} NewSmsState;
+
 // Option overlay callback
 static void new_sms_overlay_callback(int selected_idx, void *user_data)
 {
@@ -47,22 +64,7 @@ static const char *overlay_options[] = {
     "Clear"};
 #define NUM_OVERLAY_OPTIONS (sizeof(overlay_options) / sizeof(overlay_options[0]))
 
-typedef enum
-{
-    NUMBER_INPUT,
-    SMS_INPUT
-} InputMode;
 
-typedef struct
-{
-    Cursor cursor;
-    char phone_number[MAX_PHONE_NUMBER_LENGTH + 1];
-    char sms_content[MAX_SMS_LENGTH + 1];
-    InputMode mode;
-    bool multitap_enabled; // Whether multi-tap is enabled for SMS input
-    bool mounted;
-    bool overlay_open; // Track if overlay is currently open
-} NewSmsState;
 
 static void new_sms_draw(Page *self);
 static void new_sms_draw_tile(Page *self, int tx, int ty);
