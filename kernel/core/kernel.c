@@ -34,15 +34,7 @@ void kernel_init(void)
     CallState_SetDisplayContext(call_ctx, display_ctx);
     DisplayTask_SetCellularContext(display_ctx, cellular_ctx);
 
-    // Initialize input task with all contexts.
     // input task should not have call ctx, this is just for testing
     InputTask_Init(display_ctx, audio_ctx, call_ctx);
 
-    // Initialize test task - DISABLED: Use manual test instead
-    // test_ctx = TestTask_Init(call_ctx, display_ctx);
-    // if (!test_ctx)
-    // {
-    //     // Test task failed to initialize, but continue with other tasks
-    //     // This allows the system to run even if testing is not available
-    // }
 }

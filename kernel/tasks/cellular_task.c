@@ -200,9 +200,7 @@ static void cellular_task_main(void *pvParameters)
                 if (modem_read_sms(sms_index, received_sms.sender, sizeof(received_sms.sender),
                                    received_sms.body, sizeof(received_sms.body)) == 0)
                 {
-                    // Successfully read SMS - pass full data to display task
-                    // Display will show notification initially, full message when user opens
-                    DEBUG_PRINTF("SMS from %s: %s\r\n", received_sms.sender, received_sms.body);
+
                     DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SHOW_SMS, &received_sms);
                 }
                 break;
