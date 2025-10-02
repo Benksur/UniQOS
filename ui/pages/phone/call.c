@@ -382,14 +382,15 @@ Page *call_page_create(const char *phone_number)
         strncpy(state->phone_number, phone_number, len);
         state->phone_number[len] = '\0';
         state->cursor = (Cursor){len, 0, 0, MAX_PHONE_NUMBER_LENGTH - 1, false};
-        state->call_status = CALL_STATE_ACTIVE; // Start in active state for incoming calls
     }
     else
     {
         // Initialize cursor at position 0
         state->cursor = (Cursor){0, 0, 0, MAX_PHONE_NUMBER_LENGTH - 1, false};
-        state->call_status = CALL_STATE_IDLE;
     }
+
+    // Always start in IDLE state - caller will set proper state via screen_handle_response
+    state->call_status = CALL_STATE_IDLE;
 
     state->mounted = false;
     state->overlay_open = false;

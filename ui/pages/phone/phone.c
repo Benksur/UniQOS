@@ -137,6 +137,7 @@ static void phone_handle_input(Page *self, int event_type)
         case 0:
             Page *call_page = call_page_create(NULL);
             screen_push_page(call_page);
+            screen_handle_response(PAGE_RESPONSE_DIALLING, NULL);
             break;
         case 1:
             Page *incoming_call_page = incoming_call_overlay_create("1234567890", my_callback, NULL);

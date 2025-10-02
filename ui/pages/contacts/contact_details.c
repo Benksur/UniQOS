@@ -61,7 +61,7 @@ static void contact_details_draw_tile(Page *self, int tx, int ty)
             int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
             display_draw_string(center_x, 80, title, current_theme.text_colour, current_theme.bg_colour, 2);
         }
-        draw_bottom_bar("Options", "Select", "Back", 0);
+        draw_bottom_bar("", "Select", "Back", 0);
 
         state->mounted = true;
     }
@@ -100,9 +100,25 @@ static void contact_details_handle_input(Page *self, int event_type)
     case INPUT_DPAD_RIGHT:
         moved = cursor_move(&state->cursor, +1, 0, &old_x, &old_y);
         break;
-    case INPUT_KEYPAD_0: // Back
-        // Go back to previous page
-        // This would typically involve a page stack in a full implementation
+    case INPUT_SELECT:
+        switch (state->cursor.y)
+        {
+        case 0:
+            // Call
+            Page *call_page = call_page_create(state->contact.phone);
+            screen_push_page(call_page);
+            break;
+        case 1:
+            Page *new_sms_page = new_sms_page_create(state->contact.phone);
+            screen_push_page(new_sms_page);
+            break;
+        case 2:
+            // Edit Contact
+            break;
+        case 3:
+            // Delete Contact
+            break;
+        }
         break;
     default:
         break;
