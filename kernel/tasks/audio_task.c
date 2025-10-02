@@ -285,7 +285,7 @@ static void audio_task_main(void *pvParameters)
         {
             dispatch_audio_command(ctx, &msg);
         }
-        vTaskDelay(pdMS_TO_TICKS(10));
+        osDelay(10);
     }
 }
 

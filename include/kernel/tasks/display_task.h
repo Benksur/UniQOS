@@ -50,10 +50,13 @@ typedef struct
     RTC_DateTypeDef date;
 } DisplayStatus;
 
+// Forward declaration
+typedef struct CallStateContext CallStateContext;
+
 // opaque context
 typedef struct DisplayTaskContext DisplayTaskContext;
 
-DisplayTaskContext *DisplayTask_Init(void);
+DisplayTaskContext *DisplayTask_Init(CallStateContext *call_ctx);
 bool DisplayTask_PostCommand(DisplayTaskContext *ctx, DisplayCommand cmd, void *data);
 
 #endif // DISPLAY_TASK_H_

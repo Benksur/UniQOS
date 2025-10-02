@@ -1,12 +1,35 @@
 #include "display_task.h"
-
+#include "call_state.h"
 
 struct DisplayTaskContext
 {
     QueueHandle_t queue;
+    CallStateContext *call_ctx; // Reference to call state for callbacks
 };
 
 typedef void (*DisplayCmdHandler)(DisplayTaskContext *ctx, DisplayMessage *msg);
+
+/* ===== CALLBACK FOR INCOMING CALL OVERLAY ===== */
+static void incoming_call_callback(int action, void *user_data)
+{
+    CallStateContext *call_ctx = (CallStateContext *)user_data;
+    if (!call_ctx)
+        return;
+
+    switch (action)
+    {
+    case INCOMING_CALL_ACTION_PICKUP:
+        // Answer the call
+        CallState_PostCommand(call_ctx, CALL_CMD_ANSWER_CALL, NULL);
+        break;
+    case INCOMING_CALL_ACTION_HANGUP:
+        // Reject/hangup the call
+        CallState_PostCommand(call_ctx, CALL_CMD_HANGUP_CALL, NULL);
+        break;
+    default:
+        break;
+    }
+}
 
 /* ===== HANDLERS ===== */
 static void handle_input_event(DisplayTaskContext *ctx, DisplayMessage *msg)
@@ -69,21 +92,21 @@ static void handle_set_volume(DisplayTaskContext *ctx, DisplayMessage *msg)
 
 static void handle_incoming_call(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
-    if (data)
+    char *caller_id = (char *)msg->data;
+    if (caller_id && ctx->call_ctx)
     {
-        Page *incoming_call_page = incoming_call_overlay_create(data->caller_id, NULL, NULL);
+        Page *incoming_call_page = incoming_call_overlay_create(caller_id, incoming_call_callback, ctx->call_ctx);
         screen_push_page(incoming_call_page);
     }
 }
 
 static void handle_active_call(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
-    if (data)
+    char *caller_id = (char *)msg->data;
+    if (caller_id)
     {
         // TODO: Create active call page/overlay
-        // Page *active_call_page = active_call_overlay_create(data->caller_id, NULL, NULL);
+        // Page *active_call_page = active_call_overlay_create(caller_id, NULL, NULL);
         // screen_push_page(active_call_page);
     }
 }
@@ -96,11 +119,11 @@ static void handle_call_ended(DisplayTaskContext *ctx, DisplayMessage *msg)
 
 static void handle_dialling(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
-    if (data)
+    char *caller_id = (char *)msg->data;
+    if (caller_id)
     {
         // TODO: Create dialling page/overlay
-        // Page *dialling_page = dialling_overlay_create(data->caller_id, NULL, NULL);
+        // Page *dialling_page = dialling_overlay_create(caller_id, NULL, NULL);
         // screen_push_page(dialling_page);
     }
 }
@@ -163,18 +186,18 @@ static void display_task_main(void *pvParameters)
         // Update status bar and screen once per cycle
         status_bar_tick();
         screen_tick();
-        // Short wait to yield CPU if no messages
-        if (processed == 0)
-        {
-            osDelay(1);
-        }
+        // Always yield to other tasks - critical for system responsiveness
+        osDelay(1);
     }
 }
 
-DisplayTaskContext *DisplayTask_Init(void)
+DisplayTaskContext *DisplayTask_Init(CallStateContext *call_ctx)
 {
     static DisplayTaskContext display_ctx;
     memset(&display_ctx, 0, sizeof(display_ctx));
+
+    // Store call state context for callbacks
+    display_ctx.call_ctx = call_ctx;
 
     // Create queue
     display_ctx.queue = xQueueCreate(5, sizeof(DisplayMessage));
