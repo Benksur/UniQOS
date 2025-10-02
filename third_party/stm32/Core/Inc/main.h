@@ -156,6 +156,9 @@ extern SPI_HandleTypeDef hspi4;
 #define PB_DPAD_SELECT_Pin GPIO_PIN_7
 #define PB_DPAD_SELECT_GPIO_Port GPIOB
 
+#define MODEM_RI_Pin GPIO_PIN_6
+#define MODEM_RI_GPIO_Port GPIOC
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

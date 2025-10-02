@@ -36,6 +36,12 @@ typedef struct
     char sms_message[161]; // SMS body (160 chars + null terminator)
 } SmsData;
 
+typedef struct
+{
+    char sender[32];   // Sender phone number
+    char message[256]; // SMS message content
+} ReceivedSmsData;
+
 typedef struct CellularTaskContext CellularTaskContext;
 
 CellularTaskContext *CellularTask_Init(DisplayTaskContext *display_ctx, CallStateContext *call_ctx);

@@ -269,6 +269,5 @@ uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
 
 uint8_t modem_hang_up(void)
 {
-    // return at_call_hang_up();
-    return 0;
+    return at_call_hook();
 }

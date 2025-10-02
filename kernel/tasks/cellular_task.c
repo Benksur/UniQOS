@@ -192,15 +192,18 @@ static void cellular_task_main(void *pvParameters)
             case MODEM_EVENT_INCOMING_SMS:
             {
                 // Incoming SMS detected - retrieve and process
-                char sms_sender[32] = {0};
-                char sms_message[256] = {0};
+                // Static so data persists until display task processes it
+                // Note: Will be overwritten if another SMS arrives before user views this one
+                static ReceivedSmsData received_sms;
+                memset(&received_sms, 0, sizeof(received_sms));
 
-                if (modem_read_sms(sms_index, sms_sender, sizeof(sms_sender),
-                                   sms_message, sizeof(sms_message)) == 0)
+                if (modem_read_sms(sms_index, received_sms.sender, sizeof(received_sms.sender),
+                                   received_sms.message, sizeof(received_sms.message)) == 0)
                 {
-                    // Successfully read SMS
-                    // TODO: Display SMS to user via display task
-                    DEBUG_PRINTF("SMS from %s: %s\r\n", sms_sender, sms_message);
+                    // Successfully read SMS - pass full data to display task
+                    // Display will show notification initially, full message when user opens
+                    DEBUG_PRINTF("SMS from %s: %s\r\n", received_sms.sender, received_sms.message);
+                    DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SHOW_SMS, &received_sms);
                 }
                 break;
             }
