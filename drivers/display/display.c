@@ -515,10 +515,10 @@ void display_draw_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t 
     display_fill_rect(x + 1, y + 1, fill_width, height - 2, fill_colour);
 }
 
-void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t colour)
+void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t fg_colour, uint16_t bg_colour)
 {
-    display_draw_rect(x, y + 2, 20, 10, colour);
-    display_fill_rect(x + 20, y + 4, 2, 6, colour);
+    display_draw_rect(x, y + 2, 20, 10, fg_colour);
+    display_fill_rect(x + 20, y + 4, 2, 6, fg_colour);
 
     if (percent > 100)
         percent = 100;
@@ -526,15 +526,15 @@ void display_draw_battery_icon(uint16_t x, uint16_t y, uint8_t percent, uint16_t
 
     if (percent > 20)
     {
-        display_fill_rect(x + 1, y + 3, fill_width, 8, COLOUR_GREEN);
+        display_fill_rect(x + 1, y + 3, fill_width, 8, fg_colour);
     }
     else
     {
-        display_fill_rect(x + 1, y + 3, fill_width, 8, COLOUR_RED);
+        display_fill_rect(x + 1, y + 3, fill_width, 8, fg_colour);
     }
 }
 
-void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t colour)
+void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t fg_colour, uint16_t bg_colour)
 {
     uint8_t i;
     if (strength > 5)
@@ -543,7 +543,11 @@ void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t
     for (i = 0; i < 5; i++)
     {
         uint16_t bar_height = (i + 1) * 3;
-        uint16_t bar_colour = (i < strength) ? colour : COLOUR_GRAY;
+        uint16_t bar_colour = (i < strength) ? fg_colour : bg_colour;
         display_fill_rect(x + i * 4, y + 15 - bar_height, 2, bar_height, bar_colour);
     }
+}
+
+void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour) {
+    driver->draw_bitmap(x, y, bitmap, width, height, fg_colour, bg_colour);
 }

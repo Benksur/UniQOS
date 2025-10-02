@@ -14,8 +14,6 @@ static uint8_t nau88c22_mute_mic(uint8_t enable);
 static uint8_t nau88c22_mute_hp_mic(uint8_t enable);
 static void nau88c22_mute_all(uint8_t enable);
 static uint8_t nau88c22_is_muted(uint8_t reg_addr);
-static nau_mute_states_t nau88c22_save_and_mute_all(void);
-static void nau88c22_restore_mute_state(nau_mute_states_t saved);
 static uint8_t nau88c22_sleep(uint8_t enable);
 static uint8_t nau88c22_hp_mic_toggle(uint8_t enable);
 static uint8_t nau88c22_hp_detect(void);
@@ -53,12 +51,12 @@ static uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data)
         return EIO;
     }
 
-    return 0; 
+
+    return 0;
 }
 
 static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
 {
-    uint8_t addr_byte;
     uint8_t data[2] = {0, 0};
     HAL_StatusTypeDef status;
 
@@ -67,21 +65,16 @@ static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data)
         return EINVAL;
     }
 
-    addr_byte = reg_addr << 1;
 
-    status = HAL_I2C_Master_Transmit(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, &addr_byte, 1, 100);
+    status = HAL_I2C_Mem_Read(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, reg_addr << 1, I2C_MEMADD_SIZE_8BIT, data, 2, 100);
     if (status != HAL_OK)
     {
         return EIO;
     }
-
-    status = HAL_I2C_Master_Receive(&AUDIO_I2C_HANDLE, NAU88C22_I2C_ADDR << 1, data, 2, 100);
-    if (status != HAL_OK)
-    {
-        return EIO;
-    }
+    
     *reg_data = ((data[0] & 0x01) << 8) | data[1];
-    return 0; 
+
+    return 0;
 }
 
 static uint8_t nau88c22_init(void)
@@ -104,12 +97,12 @@ static uint8_t nau88c22_init(void)
         // {NAU_JACK_DETECT2, 0x021}, // toggle loudspeaker to headphones on jack detect
         // for 44.1KHz sample rate
         // R = 9.408163070, f2 = 90.318MHz, f1 = 19.2/2 = 9.6MHz
-        {NAU_PPL_N, 0x019},  // N of 9
+        {NAU_PPL_N, 0x019}, // N of 9
         // fractional portion is 0x6872B0
-        {NAU_PPL_K1, 0x1A},  //highest 6 bits of fractional portion
-        {NAU_PPL_K2, 0x039}, // middle 9 bits of fractional portion
-        {NAU_PPL_K3, 0x0B0}, // lowest 9 bits of fractional portion
-        {NAU_INPUT_CONTROL, 0x0B3}, // 0.65x microphone bias
+        {NAU_PPL_K1, 0x1A},          // highest 6 bits of fractional portion
+        {NAU_PPL_K2, 0x039},         // middle 9 bits of fractional portion
+        {NAU_PPL_K3, 0x0B0},         // lowest 9 bits of fractional portion
+        {NAU_INPUT_CONTROL, 0x0B3},  // 0.65x microphone bias
         {NAU_OUTPUT_CONTROL, 0x002}, // May need to change, not sure how diff speak
         // PLL needs to be off until clock can be reduced
         {NAU_PWR1, 0x03D},
@@ -143,7 +136,8 @@ static uint8_t nau88c22_init(void)
     return 0;
 }
 
-static uint8_t nau88c22_enable_lin_mic(void) {
+static uint8_t nau88c22_enable_lin_mic(void)
+{
     typedef struct
     {
         uint8_t reg;
@@ -156,7 +150,7 @@ static uint8_t nau88c22_enable_lin_mic(void) {
         {NAU_COMPANDING, 0x001},
         {NAU_LEFT_ADC_BOOST, 0x177},
         {NAU_RIGHT_ADC_BOOST, 0x177},
-        
+
     };
 
     uint8_t i;
@@ -175,11 +169,17 @@ static uint8_t nau88c22_mute_reg(uint8_t reg_addr, uint8_t enable, uint8_t add_0
     uint16_t reg_data;
     const uint16_t mute_mask = (1 << 6);
     uint8_t err = nau88c22_read_reg(reg_addr, &reg_data);
-    if (err != 0) return EIO;
-    if (enable) reg_data |= mute_mask; else reg_data &= ~mute_mask;
-    if (add_0x100) reg_data |= 0x100;
+    if (err != 0)
+        return EIO;
+    if (enable)
+        reg_data |= mute_mask;
+    else
+        reg_data &= ~mute_mask;
+    if (add_0x100)
+        reg_data |= 0x100;
     err = nau88c22_write_reg(reg_addr, reg_data);
-    if (err != 0) return EIO;
+    if (err != 0)
+        return EIO;
     return 0;
 }
 
@@ -188,9 +188,11 @@ static uint8_t nau88c22_mute_lr(uint8_t left_reg, uint8_t right_reg, uint8_t ena
 {
     uint8_t err;
     err = nau88c22_mute_reg(left_reg, enable, 0);
-    if (err != 0) return err;
+    if (err != 0)
+        return err;
     err = nau88c22_mute_reg(right_reg, enable, 1);
-    if (err != 0) return err;
+    if (err != 0)
+        return err;
     return 0;
 }
 
@@ -226,44 +228,24 @@ static uint8_t nau88c22_is_muted(uint8_t reg_addr)
 {
     uint16_t reg_data;
     uint8_t ret;
-    
+
     if (nau88c22_read_reg(reg_addr, &reg_data) != 0)
     {
         return 0;
     }
-    
+
     ret = (reg_data & (1 << 6)) ? 1 : 0;
     return ret;
 }
 
-static nau_mute_states_t nau88c22_save_and_mute_all(void)
-{
-    nau_mute_states_t saved;
-    saved.speaker = nau88c22_is_muted(NAU_LHP_VOLUME);
-    saved.mic = nau88c22_is_muted(NAU_LEFT_INPUT_PGA_GAIN);
-    saved.hp_mic = nau88c22_is_muted(NAU_RIGHT_INPUT_PGA_GAIN);
-    saved.hp_out = nau88c22_is_muted(NAU_LHP_VOLUME);
-
-    nau88c22_mute_all(1);
-    return saved;
-}
-
-static void nau88c22_restore_mute_state(nau_mute_states_t saved)
-{
-    nau88c22_mute_speaker(saved.speaker);
-    nau88c22_mute_hp(saved.hp_out);
-    nau88c22_mute_mic(saved.mic);
-    nau88c22_mute_hp_mic(saved.hp_mic);
-}
-
 static uint8_t nau88c22_sleep(uint8_t enable)
 {
-
     uint16_t reg_data;
     uint8_t err = 0;
 
-    nau_mute_states_t saved = nau88c22_save_and_mute_all();
-    nau88c22_read_reg(NAU_PWR2, &reg_data);
+    err = nau88c22_read_reg(NAU_PWR2, &reg_data);
+    if (err != 0)
+        return EIO;
 
     if (enable)
         reg_data |= 0x040;
@@ -272,30 +254,20 @@ static uint8_t nau88c22_sleep(uint8_t enable)
 
     err = nau88c22_write_reg(NAU_PWR2, reg_data);
     if (err != 0)
-    {
-        nau88c22_restore_mute_state(saved);
         return EIO;
-    }
 
-    nau88c22_restore_mute_state(saved);
     return 0;
 }
 
 static uint8_t nau88c22_hp_mic_toggle(uint8_t enable)
 {
-
     uint8_t err = 0;
     uint16_t reg_value = enable ? 0x02A : 0x015;
 
-    nau_mute_states_t saved = nau88c22_save_and_mute_all();
     err = nau88c22_write_reg(NAU_PWR2, reg_value);
     if (err != 0)
-    {
-        nau88c22_restore_mute_state(saved);
         return EIO;
-    }
 
-    nau88c22_restore_mute_state(saved);
     return 0;
 }
 
@@ -339,19 +311,26 @@ static uint8_t nau88c22_set_volume_reg(uint8_t reg_addr, uint8_t volume, uint8_t
 {
     uint16_t reg_data;
     uint8_t err = nau88c22_read_reg(reg_addr, &reg_data);
-    if (err != 0) return EIO;
+    if (err != 0)
+        return EIO;
     uint16_t vol_val;
-    if (volume == 0) {
+    if (volume == 0)
+    {
         vol_val = 0x000;
-    } else {
-        if (volume > 100) volume = 100;
+    }
+    else
+    {
+        if (volume > 100)
+            volume = 100;
         vol_val = (volume * 63) / 100;
         vol_val &= 0x3F;
     }
     reg_data = (reg_data & ~0x3F) | vol_val;
-    if (add_0x100) reg_data |= 0x100;
+    if (add_0x100)
+        reg_data |= 0x100;
     err = nau88c22_write_reg(reg_addr, reg_data);
-    if (err != 0) return EIO;
+    if (err != 0)
+        return EIO;
     return 0;
 }
 
@@ -360,46 +339,34 @@ static uint8_t nau88c22_set_volume_lr(uint8_t left_reg, uint8_t right_reg, uint8
 {
     uint8_t err;
     err = nau88c22_set_volume_reg(left_reg, volume, 0);
-    if (err != 0) return err;
+    if (err != 0)
+        return err;
     err = nau88c22_set_volume_reg(right_reg, volume, 1);
-    if (err != 0) return err;
+    if (err != 0)
+        return err;
     return 0;
 }
 
 static uint8_t nau88c22_set_output_volume(uint8_t volume, uint8_t reg_addr)
 {
-    uint8_t err = 0;
-    nau_mute_states_t saved = nau88c22_save_and_mute_all();
-
-    if (err != 0)
-        return err;
-
-    err = nau88c22_set_volume_reg(reg_addr, volume, 0);
-    if (err != 0) {
-        nau88c22_restore_mute_state(saved);
-        return EIO;
-    };
-
-    nau88c22_restore_mute_state(saved);
-    return 0;
+    // Direct volume setting without mute/unmute cycle
+    // The mute/unmute cycle was causing volume corruption
+    return nau88c22_set_volume_reg(reg_addr, volume, 0);
 }
 
 static uint8_t nau88c22_set_output_volume_lr(uint8_t volume, uint8_t left_reg, uint8_t right_reg)
 {
-    uint8_t err = 0;
-    nau_mute_states_t saved = nau88c22_save_and_mute_all();
-
-    err = nau88c22_set_volume_lr(left_reg, right_reg, volume);
-    if (err != 0) {
-        nau88c22_restore_mute_state(saved);
-        return EIO;
-    };
-
-    nau88c22_restore_mute_state(saved);
+    // Direct volume setting without mute/unmute cycle for all outputs
+    // The mute/unmute cycle was causing volume corruption
+    uint8_t err;
+    err = nau88c22_set_volume_reg(left_reg, volume, 0);
+    if (err != 0)
+        return err;
+    err = nau88c22_set_volume_reg(right_reg, volume, 1);
+    if (err != 0)
+        return err;
     return 0;
 }
-
-
 
 static uint8_t nau88c22_set_mic_volume(uint8_t volume)
 {
@@ -421,8 +388,6 @@ static uint8_t nau88c22_set_hp_volume(uint8_t volume)
     return nau88c22_set_output_volume_lr(volume, NAU_LHP_VOLUME, NAU_RHP_VOLUME);
 }
 
-
-
 static uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain)
 {
     if (band > 4)
@@ -434,38 +399,43 @@ static uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain)
 
     switch (band)
     {
-    case 0: eq_reg = NAU_EQ1; break;
-    case 1: eq_reg = NAU_EQ2; break;
-    case 2: eq_reg = NAU_EQ3; break;
-    case 3: eq_reg = NAU_EQ4; break;
-    case 4: eq_reg = NAU_EQ5; break;
-    default: return EINVAL;
+    case 0:
+        eq_reg = NAU_EQ1;
+        break;
+    case 1:
+        eq_reg = NAU_EQ2;
+        break;
+    case 2:
+        eq_reg = NAU_EQ3;
+        break;
+    case 3:
+        eq_reg = NAU_EQ4;
+        break;
+    case 4:
+        eq_reg = NAU_EQ5;
+        break;
+    default:
+        return EINVAL;
     }
-
-    nau_mute_states_t saved = nau88c22_save_and_mute_all();
-    if (err != 0)
-        return err;
 
     uint16_t current_reg_data;
     uint16_t new_reg_data;
 
     err = nau88c22_read_reg(eq_reg, &current_reg_data);
-    if (err != 0) goto set_eq_cleanup_err;
+    if (err != 0)
+        return EIO;
 
     new_reg_data = (current_reg_data & ~0x1F) | gain_val;
 
     err = nau88c22_write_reg(eq_reg, new_reg_data);
-    if (err != 0) goto set_eq_cleanup_err;
+    if (err != 0)
+        return EIO;
 
-    nau88c22_restore_mute_state(saved);
     return 0;
-
-set_eq_cleanup_err:
-    nau88c22_restore_mute_state(saved);
-    return EIO;
 }
 
-const IAudioDriver_t* nau88c22_get_driver(void) {
+const IAudioDriver_t *nau88c22_get_driver(void)
+{
     static IAudioDriver_t driver = {
         .init = nau88c22_init_void,
         .sleep = nau88c22_sleep_void,
@@ -475,16 +445,10 @@ const IAudioDriver_t* nau88c22_get_driver(void) {
             .mic = {
                 .mute = nau88c22_mute_mic_void,
                 .set_volume = nau88c22_set_mic_volume_void,
-            }
-        },
-        .headphones = {
-            .mute = nau88c22_mute_hp_void,
-            .set_volume = nau88c22_set_hp_volume_void,
-            .mic = {
-                .mute = nau88c22_mute_hp_mic_void,
-                .set_volume = nau88c22_set_hp_mic_volume_void,
-            }
-        }
-    };
+            }},
+        .headphones = {.mute = nau88c22_mute_hp_void, .set_volume = nau88c22_set_hp_volume_void, .mic = {
+                                                                                                     .mute = nau88c22_mute_hp_mic_void,
+                                                                                                     .set_volume = nau88c22_set_hp_mic_volume_void,
+                                                                                                 }}};
     return &driver;
 }

@@ -81,6 +81,9 @@
 #define ST7789V_D15_Pin GPIO_PIN_10
 #define ST7789V_D15_GPIO_Port GPIOD
 
+#define AUDIO_SW_PORT AUD_SW_GPIO_Port
+#define AUDIO_SW_PIN AUD_SW_Pin
+
 
 
 #endif

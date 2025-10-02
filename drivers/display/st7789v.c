@@ -375,6 +375,17 @@ static void st7789v_fill_rect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint
   }
 }
 
+static void st7789v_draw_mono_bitmap(uint16_t Xpos, uint16_t Ypos, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour)
+{
+    st7789v_set_address_window(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
+    st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+    for (uint32_t i = 0; i < (uint32_t)width * height; i++) {
+        uint8_t pixel = bitmap[i];
+        uint16_t colour = pixel ? fg_colour : bg_colour;
+        lcd->write_data16(colour);
+    }
+}
+
 // abstract display driver interface to allow easy swapping of display drivers
 const IDisplayDriver_t* st7789v_get_driver(void)
 {
@@ -387,7 +398,8 @@ const IDisplayDriver_t* st7789v_get_driver(void)
         .draw_vline = st7789v_draw_vline,
         .set_orientation = st7789v_set_orientation_u8,
         .get_width = st7789v_get_pixel_width,
-        .get_height = st7789v_get_pixel_height
+        .get_height = st7789v_get_pixel_height,
+        .draw_bitmap = st7789v_draw_mono_bitmap // Added draw_bitmap to vtable
     };
     return &driver;
 }

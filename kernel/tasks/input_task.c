@@ -1,63 +1,127 @@
 #include "input_task.h"
-#include "input.h"
-#include "keypad.h"
-#include "display_task.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "cmsis_os2.h"
+#include "call_state.h"
 
-#define INPUT_TASK_STACK_SIZE 512
-#define INPUT_TASK_PRIORITY osPriorityNormal
+typedef struct
+{
+    DisplayTaskContext *display_ctx;
+    AudioTaskContext *audio_ctx;
+    CallStateContext *call_ctx;
+} InputTaskContext;
 
-static TaskHandle_t input_task_handle = NULL;
+static uint8_t current_volume = 100; // Initialize to match audio task default (speaker volume)
 
-static uint32_t prev_button_states[2] = {0};
-
-void input_task_main(void *pvParameters) {
+void input_task_main(void *pvParameters)
+{
+    InputTaskContext *input_ctx = (InputTaskContext *)pvParameters;
+    DisplayTaskContext *display_ctx = input_ctx->display_ctx;
+    AudioTaskContext *audio_ctx = input_ctx->audio_ctx;
     input_event_t event;
-    
+
+    // Initialize keypad
     keypad_init();
-    
-    while (1) {
+
+    while (1)
+    {
+
         keypad_update_states();
-        
-        for (uint8_t i = 0; i < keypad_get_button_count(); i++) {
-            bool current_state = keypad_is_button_pressed(i);
-            bool prev_state = (prev_button_states[0] & (1U << i)) != 0;
-            
-            if (current_state && !prev_state) {
-                event = keypad_get_button_event(i);
-                if (event != INPUT_NONE) {
-                    // Primary: Send to display task for UI handling
-                    display_send_command(DISPLAY_HANDLE_INPUT, &event);
-                    
-                    // Secondary: Send to queue for other tasks:
-                    // - Cellular task (call control, DTMF)
-                    // - Audio task (volume control, audio routing)
-                    // - Power task (power management, sleep/wake)
-                    // - Call state task (call state machine)
-                    // - Logging task (input logging, analytics)
-                    // - Watchdog task (system health monitoring)
-                    // - Sensor task (context awareness)
-                    
+
+        // Check all buttons and handle input events
+        for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++)
+        {
+            if (keypad_is_button_pressed(button_idx))
+            {
+                HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+                event = keypad_get_button_event(button_idx);
+
+                // Handle test trigger - STAR key triggers incoming call test
+                if (event == INPUT_KEYPAD_STAR && input_ctx->call_ctx)
+                {
+                    static CallData test_call = {
+                        .caller_id = "0413279693"};
+                    CallState_PostCommand(input_ctx->call_ctx, CALL_CMD_INCOMING_CALL, &test_call);
                 }
+                // Handle audio-specific events
+                else if (event == INPUT_VOLUME_UP)
+                {
+                    // Send volume up command to audio task
+                    if (audio_ctx)
+                    {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_VOLUME_UP, NULL);
+                    }
+
+                    // Update local volume for display (keep in sync)
+                    if (current_volume < 100)
+                    {
+                        current_volume += 5;
+                    }
+
+                    // Send volume update to display task (queue is thread-safe)
+                    if (display_ctx)
+                    {
+                        DisplayTask_PostCommand(display_ctx, DISPLAY_SET_VOLUME, &current_volume);
+                    }
+                }
+                else if (event == INPUT_VOLUME_DOWN)
+                {
+                    // Send volume down command to audio task
+                    if (audio_ctx)
+                    {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_VOLUME_DOWN, NULL);
+                    }
+
+                    // Update local volume for display (keep in sync)
+                    if (current_volume > 0)
+                    {
+                        current_volume -= 5;
+                    }
+
+                    // Send volume update to display task (queue is thread-safe)
+                    if (display_ctx)
+                    {
+                        DisplayTask_PostCommand(display_ctx, DISPLAY_SET_VOLUME, &current_volume);
+                    }
+                }
+                else
+                {
+                    // Dispatch all other input events to display task
+                    if (display_ctx)
+                    {
+                        DisplayTask_PostCommand(display_ctx, DISPLAY_HANDLE_INPUT, &event);
+                    }
+                }
+                if (event >= INPUT_KEYPAD_0 && event <= INPUT_KEYPAD_9)
+                {
+                    if (audio_ctx)
+                    {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_PLAY_TICK, NULL);
+                    }
+                }
+                else
+                {
+                    if (audio_ctx)
+                    {
+                        AudioTask_PostCommand(audio_ctx, AUDIO_PLAY_BLOOP, NULL);
+                    }
+                }
+
+                // Audio feedback removed as requested
             }
         }
-        
-        prev_button_states[0] = 0;
-        for (uint8_t i = 0; i < keypad_get_button_count(); i++) {
-            if (keypad_is_button_pressed(i)) {
-                prev_button_states[0] |= (1U << i);
-            }
-        }
-        
-        vTaskDelay(pdMS_TO_TICKS(5)); 
+
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
 
-void input_task_init(void) {
-    
-    xTaskCreate(input_task_main, "Input", INPUT_TASK_STACK_SIZE, NULL,
-                INPUT_TASK_PRIORITY, &input_task_handle);
-}
+void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx, CallStateContext *call_ctx)
+{
+    static InputTaskContext input_ctx;
+    input_ctx.display_ctx = display_ctx;
+    input_ctx.audio_ctx = audio_ctx;
+    input_ctx.call_ctx = call_ctx;
 
+    osThreadAttr_t task_attr = {
+        .name = "InputTask",
+        .stack_size = INPUT_TASK_STACK_SIZE,
+        .priority = INPUT_TASK_PRIORITY};
+    osThreadNew(input_task_main, &input_ctx, &task_attr);
+}
