@@ -3,6 +3,7 @@
 #include "cellular_task.h"
 #include "incoming_text.h"
 #include "messages.h"
+#include "sms_types.h"
 #include <string.h>
 
 struct DisplayTaskContext
@@ -39,7 +40,7 @@ static void incoming_call_callback(int action, void *user_data)
 /* ===== CALLBACK FOR INCOMING SMS OVERLAY ===== */
 static void incoming_text_callback(int action, void *user_data)
 {
-    ReceivedSmsData *sms_data = (ReceivedSmsData *)user_data;
+    ReceivedSms *sms_data = (ReceivedSms *)user_data;
     if (!sms_data)
         return;
 
@@ -50,7 +51,7 @@ static void incoming_text_callback(int action, void *user_data)
         MessagePageState state;
         strncpy(state.sender, sms_data->sender, sizeof(state.sender) - 1);
         state.sender[sizeof(state.sender) - 1] = '\0';
-        strncpy(state.message, sms_data->message, sizeof(state.message) - 1);
+        strncpy(state.message, sms_data->body, sizeof(state.message) - 1);
         state.message[sizeof(state.message) - 1] = '\0';
 
         Page *sms_page = messages_page_create(state);
@@ -175,7 +176,7 @@ static void handle_dialling(DisplayTaskContext *ctx, DisplayMessage *msg)
 
 static void handle_show_sms(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    ReceivedSmsData *sms_data = (ReceivedSmsData *)msg->data;
+    ReceivedSms *sms_data = (ReceivedSms *)msg->data;
     if (sms_data)
     {
         // Show SMS notification overlay with sender
@@ -253,19 +254,33 @@ static void display_task_main(void *pvParameters)
             // Handle the request by forwarding to appropriate task
             switch (request_type)
             {
-            case PAGE_DATA_REQUEST_HANGUP_CALL:
+            case PAGE_REQUEST_HANGUP_CALL:
                 if (ctx->cellular_ctx)
                 {
                     CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_HANG_UP, NULL);
                 }
                 break;
-            case PAGE_DATA_REQUEST_MAKE_CALL:
+            case PAGE_REQUEST_MAKE_CALL:
             {
                 char *phone_number = (char *)request_data;
                 if (phone_number && ctx->cellular_ctx)
                 {
                     // Post dial command to cellular task
                     CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_DIAL, phone_number);
+                }
+            }
+            break;
+            case PAGE_REQUEST_SMS_SEND:
+            {
+                SmsMessage *sms_data = (SmsMessage *)request_data;
+                if (sms_data && ctx->cellular_ctx)
+                {
+                    // Validate phone number and message are not empty
+                    if (sms_data->recipient[0] != '\0' && sms_data->body[0] != '\0')
+                    {
+                        // Post SMS send command to cellular task
+                        CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_SEND_SMS, sms_data);
+                    }
                 }
             }
             break;

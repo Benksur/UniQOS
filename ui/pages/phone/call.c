@@ -113,7 +113,7 @@ static void make_call(Page *self)
     if (state->cursor.x > 0 && state->call_status == CALL_STATE_IDLE)
     {
         state->call_status = CALL_STATE_DIALLING;
-        screen_data_request(PAGE_DATA_REQUEST_MAKE_CALL, state->phone_number);
+        screen_request(PAGE_REQUEST_MAKE_CALL, state->phone_number);
 
         // Mark entire screen dirty for redraw
         mark_all_tiles_dirty();
@@ -128,7 +128,7 @@ static void hang_up_call(Page *self)
         state->call_status = CALL_STATE_IDLE;
 
         // Send hangup request to display task to update call state
-        screen_data_request(PAGE_DATA_REQUEST_HANGUP_CALL, NULL);
+        screen_request(PAGE_REQUEST_HANGUP_CALL, NULL);
 
         // Mark entire screen dirty for redraw
         mark_all_tiles_dirty();
@@ -345,17 +345,17 @@ static void call_destroy(Page *self)
 static void call_data_response(Page *self, int type, void *resp)
 {
     CallState *state = (CallState *)self->state;
-    if (type == PAGE_DATA_RESPONSE_DIALLING)
+    if (type == PAGE_RESPONSE_DIALLING)
     {
         state->call_status = CALL_STATE_DIALLING;
         draw_call_status(self);
     }
-    else if (type == PAGE_DATA_RESPONSE_ACTIVE_CALL)
+    else if (type == PAGE_RESPONSE_ACTIVE_CALL)
     {
         state->call_status = CALL_STATE_ACTIVE;
         draw_call_status(self);
     }
-    else if (type == PAGE_DATA_RESPONSE_CALL_ENDED)
+    else if (type == PAGE_RESPONSE_CALL_ENDED)
     {
         state->call_status = CALL_STATE_ENDED;
         draw_call_status(self);

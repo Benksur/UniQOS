@@ -88,16 +88,16 @@ static void handle_send_sms(CellularTaskContext *ctx, CellularMessage *msg)
         return;
     }
 
-    SmsData *sms_data = (SmsData *)msg->data;
+    SmsMessage *sms_data = (SmsMessage *)msg->data;
 
     // Validate phone number and message are not empty
-    if (sms_data->sms_address[0] == '\0' || sms_data->sms_message[0] == '\0')
+    if (sms_data->recipient[0] == '\0' || sms_data->body[0] == '\0')
     {
         // TODO: Notify user of invalid input
         return;
     }
 
-    uint8_t result = modem_send_sms(sms_data->sms_address, sms_data->sms_message);
+    uint8_t result = modem_send_sms(sms_data->recipient, sms_data->body);
 
     if (result != 0)
     {
@@ -194,15 +194,15 @@ static void cellular_task_main(void *pvParameters)
                 // Incoming SMS detected - retrieve and process
                 // Static so data persists until display task processes it
                 // Note: Will be overwritten if another SMS arrives before user views this one
-                static ReceivedSmsData received_sms;
+                static ReceivedSms received_sms;
                 memset(&received_sms, 0, sizeof(received_sms));
 
                 if (modem_read_sms(sms_index, received_sms.sender, sizeof(received_sms.sender),
-                                   received_sms.message, sizeof(received_sms.message)) == 0)
+                                   received_sms.body, sizeof(received_sms.body)) == 0)
                 {
                     // Successfully read SMS - pass full data to display task
                     // Display will show notification initially, full message when user opens
-                    DEBUG_PRINTF("SMS from %s: %s\r\n", received_sms.sender, received_sms.message);
+                    DEBUG_PRINTF("SMS from %s: %s\r\n", received_sms.sender, received_sms.body);
                     DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SHOW_SMS, &received_sms);
                 }
                 break;

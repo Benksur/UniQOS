@@ -3,9 +3,10 @@
 #include "bottom_bar.h"
 #include "option_overlay.h"
 #include "memwrap.h"
+#include "sms_types.h"
 
-#define MAX_PHONE_NUMBER_LENGTH 10
-#define MAX_SMS_LENGTH 84
+#define MAX_PHONE_NUMBER_LENGTH SMS_MAX_PHONE_LENGTH
+#define MAX_SMS_LENGTH SMS_MAX_MESSAGE_LENGTH
 #define CHARS_PER_LINE 14
 #define CHAR_WIDTH 6
 #define CHAR_SCALE 2
@@ -14,11 +15,30 @@
 #define TEXT_YPAD 7
 
 // Option overlay callback
-static void test_overlay_callback(int selected_idx, void *user_data)
+static void new_sms_overlay_callback(int selected_idx, void *user_data)
 {
-    // For demonstration, just pop the overlay
+    NewSmsState *state = (NewSmsState *)user_data;
+    switch (selected_idx)
+    {
+    case 0:
+    {
+        // Create SMS message and send it
+        static SmsMessage sms_msg;
+        strncpy(sms_msg.recipient, state->phone_number, sizeof(sms_msg.recipient) - 1);
+        sms_msg.recipient[sizeof(sms_msg.recipient) - 1] = '\0';
+        strncpy(sms_msg.body, state->sms_content, sizeof(sms_msg.body) - 1);
+        sms_msg.body[sizeof(sms_msg.body) - 1] = '\0';
+        screen_request(PAGE_REQUEST_SMS_SEND, &sms_msg);
+        break;
+    }
+    case 1:
+        // screen_request(PAGE_REQUEST_SMS_SAVE_TO_DRAFTS, NULL);
+        break;
+    case 2:
+        // screen_request(PAGE_REQUEST_SMS_CLEAR, NULL);
+        break;
+    }
     screen_pop_page();
-    // You can add more logic here based on selected_idx
 }
 
 static const char *overlay_options[] = {
@@ -451,8 +471,8 @@ static void new_sms_handle_input(Page *self, int event_type)
             "Message Options",
             overlay_options,
             NUM_OVERLAY_OPTIONS,
-            test_overlay_callback,
-            NULL);
+            new_sms_overlay_callback,
+            state);
         if (overlay)
             screen_push_page(overlay);
         break;

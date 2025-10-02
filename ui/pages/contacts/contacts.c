@@ -155,7 +155,7 @@ static void contacts_data_request(int type, void *req);
 
 static void contacts_get_page(int type, void *req)
 {
-    screen_data_request(type, req);
+    screen_request(type, req);
 }
 
 Page *contacts_page_create()

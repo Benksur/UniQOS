@@ -9,6 +9,7 @@
 #include "call_state.h"
 #include "modem.h"
 #include "stm32_config.h"
+#include "sms_types.h"
 
 #define CELLULAR_TASK_STACK_SIZE 2048
 #define CELLULAR_TASK_PRIORITY osPriorityNormal
@@ -29,18 +30,6 @@ typedef struct
     CellularCommand cmd;
     void *data;
 } CellularMessage;
-
-typedef struct
-{
-    char sms_address[16];  // Phone number
-    char sms_message[161]; // SMS body (160 chars + null terminator)
-} SmsData;
-
-typedef struct
-{
-    char sender[32];   // Sender phone number
-    char message[256]; // SMS message content
-} ReceivedSmsData;
 
 typedef struct CellularTaskContext CellularTaskContext;
 
