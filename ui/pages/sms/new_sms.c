@@ -455,6 +455,7 @@ static void new_sms_handle_input(Page *self, int event_type)
             NULL);
         if (overlay)
             screen_push_page(overlay);
+        break;
     case INPUT_SELECT:
         break;
     default:

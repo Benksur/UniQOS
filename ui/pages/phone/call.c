@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bottom_bar.h"
+#include "option_overlay.h"
 #include "memwrap.h"
 
 #define MAX_PHONE_NUMBER_LENGTH 10
@@ -27,7 +28,21 @@ typedef struct
     char phone_number[MAX_PHONE_NUMBER_LENGTH + 1];
     CallStatus call_status;
     bool mounted;
+    bool overlay_open;
 } CallState;
+
+static void call_overlay_callback(int selected_idx, void *user_data)
+{
+    // For demonstration, just pop the overlay
+    screen_pop_page();
+    // You can add more logic here based on selected_idx
+}
+
+static const char *overlay_options[] = {
+    "Send Message",
+    "Set Speed Dial",
+    "Add to Contacts"};
+#define NUM_OVERLAY_OPTIONS (sizeof(overlay_options) / sizeof(overlay_options[0]))
 
 // Forward declarations
 static void call_draw(Page *self);
@@ -44,7 +59,8 @@ static void update_bottom_bar(CallState *state);
 
 static void update_bottom_bar(CallState *state)
 {
-    draw_bottom_bar("Options", "", "Back", 0);
+    int accent_index = state->overlay_open ? 1 : 0;
+    draw_bottom_bar("Options", "", "Back", accent_index);
 }
 
 static void add_digit(Page *self, char digit)
@@ -264,6 +280,18 @@ static void call_handle_input(Page *self, int event_type)
         case INPUT_DPAD_LEFT:
             remove_digit(self); // Use left as backspace
             break;
+        case INPUT_LEFT:
+            state->overlay_open = true;
+            update_bottom_bar(state);
+            Page *overlay = option_overlay_page_create(
+                "Call Options",
+                overlay_options,
+                NUM_OVERLAY_OPTIONS,
+                call_overlay_callback,
+                NULL);
+            if (overlay)
+                screen_push_page(overlay);
+            break;
         default:
             // Ignore other inputs
             break;
@@ -295,6 +323,7 @@ static void call_reset(Page *self)
         memset(state->phone_number, 0, sizeof(state->phone_number));
         state->call_status = CALL_STATE_IDLE;
         state->mounted = false;
+        state->overlay_open = false;
     }
 
     update_bottom_bar(state);
@@ -360,6 +389,7 @@ Page *call_page_create(const char *phone_number)
     }
 
     state->mounted = false;
+    state->overlay_open = false;
 
     page->draw = call_draw;
     page->draw_tile = call_draw_tile;

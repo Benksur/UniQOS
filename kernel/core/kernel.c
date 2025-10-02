@@ -23,7 +23,8 @@ void kernel_init(void)
     // Now set the display context in call state
     CallState_SetDisplayContext(call_ctx, display_ctx);
 
-    // Initialize input task with all contexts
+    // Initialize input task with all contexts.
+    // input task should not have call ctx, this is just for testing
     InputTask_Init(display_ctx, audio_ctx, call_ctx);
 
     // Initialize test task - DISABLED: Use manual test instead
