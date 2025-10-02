@@ -12,7 +12,7 @@
 #include "option_overlay.h"
 #include "memwrap.h"
 
-#define MAX_PHONE_NUMBER_LENGTH 10
+#define MAX_PHONE_NUMBER_LENGTH 12
 
 typedef enum
 {
@@ -81,9 +81,10 @@ static void clear_old_char(CallState *state)
 {
     // Calculate position of the digit and cursor to be removed
     int px, py;
-    tile_to_pixels(1, 5, &px, &py);
-    int digit_x = px + (state->cursor.x - 1) * 6 * 3; // Position of the digit to remove
-    int old_cursor_x = px + state->cursor.x * 6 * 3;  // Current cursor position
+    tile_to_pixels(0, 5, &px, &py);
+    int padx = 10;
+    int digit_x = px + padx + (state->cursor.x - 1) * 6 * 3; // Position of the digit to remove
+    int old_cursor_x = px + padx + state->cursor.x * 6 * 3;  // Current cursor position
 
     // Clear the specific digit area
     display_fill_rect(digit_x, py, 6 * 3, TILE_HEIGHT, current_theme.highlight_colour);
@@ -165,15 +166,16 @@ static void draw_number(Page *self)
 {
     CallState *state = (CallState *)self->state;
     int px, py;
-    tile_to_pixels(1, 5, &px, &py);
+    tile_to_pixels(0, 5, &px, &py);
+    int padx = 10;
 
     // Draw the phone number starting from tile (1, 5)
-    display_draw_string(px, py, state->phone_number, current_theme.fg_colour, current_theme.highlight_colour, 3);
+    display_draw_string(px + padx, py, state->phone_number, current_theme.fg_colour, current_theme.highlight_colour, 3);
 
     // Draw cursor after the phone number only if in IDLE state
     if (state->call_status == CALL_STATE_IDLE)
     {
-        int cursor_x = px + (strlen(state->phone_number) * 6 * 3); // 6 pixels per char * font size 3
+        int cursor_x = px + (strlen(state->phone_number) * 6 * 3) + padx; // 6 pixels per char * font size 3 + 5px padding
         display_fill_rect(cursor_x, py, 5, TILE_HEIGHT - 8, current_theme.fg_colour);
     }
 

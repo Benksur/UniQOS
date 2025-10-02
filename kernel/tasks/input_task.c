@@ -37,7 +37,7 @@ void input_task_main(void *pvParameters)
                 if (event == INPUT_KEYPAD_STAR && input_ctx->call_ctx)
                 {
                     static CallData test_call = {
-                        .caller_id = "0413279693"};
+                        .caller_id = "+61413279693"};
                     CallState_PostCommand(input_ctx->call_ctx, CALL_CMD_INCOMING_CALL, &test_call);
                 }
                 // Handle audio-specific events
