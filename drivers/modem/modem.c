@@ -1,5 +1,6 @@
 #include "modem.h"
 #include "stm32h7xx_hal.h"
+#include <stdlib.h>
 
 enum FunctionModes curr_function_mode = MODE_MIN;
 
@@ -9,14 +10,16 @@ uint8_t modem_toggle_airplane_mode(void)
     if (curr_function_mode == MODE_AIRPLANE)
     {
         ret = at_set_function_mode(MODE_FULL);
-        if (!ret) {
+        if (!ret)
+        {
             curr_function_mode = MODE_FULL;
         }
     }
     else
     {
         ret = at_set_function_mode(MODE_AIRPLANE);
-        if (!ret) {
+        if (!ret)
+        {
             curr_function_mode = MODE_AIRPLANE;
         }
     }
@@ -44,7 +47,8 @@ uint8_t modem_init(void)
 
     // disable echo
     ret |= at_set_echo(false);
-    if (ret) {
+    if (ret)
+    {
         DEBUG_PRINTF("FATAL ERROR ON INIT: ECHO");
         return ret;
     }
@@ -52,7 +56,8 @@ uint8_t modem_init(void)
 
     // disable GPS
     ret |= at_custom("GPSENABLE", 0);
-    if (ret) {
+    if (ret)
+    {
         DEBUG_PRINTF("FATAL ERROR ON INIT: GPSENABLE");
         return ret;
     }
@@ -60,7 +65,8 @@ uint8_t modem_init(void)
 
     // check SIM status and/or needs pin
     ret |= at_check_cpin();
-    if (ret) {
+    if (ret)
+    {
         DEBUG_PRINTF("FATAL ERROR ON INIT: SIM PASSWORD");
         return ret;
     }
@@ -83,14 +89,16 @@ uint8_t modem_init(void)
 
     // set phone functionality 1 (full functionality, high power draw)
     ret |= at_set_function_mode(MODE_FULL);
-    if (ret) {
+    if (ret)
+    {
         DEBUG_PRINTF("FATAL ERROR ON INIT: FUNCTION MODE");
         return ret;
     }
     HAL_Delay(100);
 
     ret |= at_set_auto_timezone(true);
-    if (ret) {
+    if (ret)
+    {
         DEBUG_PRINTF("FATAL ERROR ON INIT: AUTO TIMEZONE");
         return ret;
     }
@@ -113,9 +121,16 @@ uint8_t modem_init(void)
     DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
+    // Enable caller ID presentation (CLIP)
+    DEBUG_PRINTF("Sending: AT+CLIP=1\r\n");
+    modem_send_command("AT+CLIP=1", response, sizeof(response), default_timeout);
+    DEBUG_PRINTF("Response: %s\r\n", response);
+    HAL_Delay(100);
+
     // Setting message format
     at_set_message_format(TEXTMODE_TEXT);
-    if (ret) {
+    if (ret)
+    {
         DEBUG_PRINTF("FATAL ERROR ON INIT: TEXTMODE");
         return ret;
     }
@@ -154,8 +169,106 @@ uint8_t modem_get_signal_strength(int16_t *rssi, uint8_t *ber)
     return at_get_signal_strength(rssi, ber);
 }
 
-uint8_t modem_check_received_sms(void)
+ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index)
 {
-    // return at_check_received_sms();
-    return false;
+    char buffer[128];
+
+    // Non-blocking UART read to check for URCs (Unsolicited Result Codes)
+    if (HAL_UART_Receive(&MODEM_UART_HANDLE, (uint8_t *)buffer, sizeof(buffer) - 1, 100) == HAL_OK)
+    {
+        buffer[127] = '\0';
+
+        // Check for incoming call (RING or +CLIP with caller ID)
+        if (strstr(buffer, "RING") != NULL)
+        {
+            // Try to extract caller ID from +CLIP if present
+            char *clip_start = strstr(buffer, "+CLIP:");
+            if (clip_start != NULL && caller_id != NULL)
+            {
+                // Format: +CLIP: "<number>",<type>,...
+                char *quote1 = strchr(clip_start, '"');
+                if (quote1 != NULL)
+                {
+                    quote1++; // Move past first quote
+                    char *quote2 = strchr(quote1, '"');
+                    if (quote2 != NULL)
+                    {
+                        size_t len = quote2 - quote1;
+                        if (len < caller_id_size)
+                        {
+                            strncpy(caller_id, quote1, len);
+                            caller_id[len] = '\0';
+                        }
+                    }
+                }
+            }
+            return MODEM_EVENT_INCOMING_CALL;
+        }
+
+        // Check for incoming SMS notification
+        // Format: +CMTI: "<mem>",<index>
+        // Example: +CMTI: "SM",5
+        char *cmti_start = strstr(buffer, "+CMTI:");
+        if (cmti_start != NULL)
+        {
+            if (sms_index != NULL)
+            {
+                // Find the comma separating memory type and index
+                char *comma = strchr(cmti_start, ',');
+                if (comma != NULL)
+                {
+                    // Parse the index number after the comma
+                    *sms_index = (uint8_t)atoi(comma + 1);
+                }
+            }
+            return MODEM_EVENT_INCOMING_SMS;
+        }
+    }
+
+    return MODEM_EVENT_NONE;
+}
+
+uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
+                       char *message, size_t message_size)
+{
+    char response[512];
+    char cmd[16];
+    snprintf(cmd, sizeof(cmd), "AT+CMGR=%d", index);
+
+    if (modem_send_command(cmd, response, sizeof(response), TIMEOUT_5S) != 0)
+        return 1; // error
+
+    // Parse sender number
+    char *p = strstr(response, "+CMGR:");
+    if (p)
+    {
+        char *q1 = strchr(p, '"'); // first quote
+        if (q1)
+        {
+            q1++;
+            char *q2 = strchr(q1, '"');
+            if (q2 && (q2 - q1) < sender_size)
+            {
+                strncpy(sender, q1, q2 - q1);
+                sender[q2 - q1] = '\0';
+            }
+        }
+    }
+
+    // Find the actual message (after the header line)
+    char *msg = strstr(response, "\r\n");
+    if (msg)
+    {
+        msg += 2;
+        strncpy(message, msg, message_size - 1);
+        message[message_size - 1] = '\0';
+    }
+
+    return 0;
+}
+
+uint8_t modem_hang_up(void)
+{
+    // return at_call_hang_up();
+    return 0;
 }

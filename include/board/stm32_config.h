@@ -83,6 +83,8 @@
 
 #define AUDIO_SW_PORT AUD_SW_GPIO_Port
 #define AUDIO_SW_PIN AUD_SW_Pin
+#define MODEM_RI_Pin UART_RI_Pin
+#define MODEM_RI_PORT UART_RI_GPIO_Port
 
 
 
