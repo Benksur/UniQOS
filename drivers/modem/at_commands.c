@@ -59,7 +59,6 @@ uint8_t at_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 {
     char response[100];
     uint8_t ret = 0;
-    int matches = 0;
     int8_t utcoffset;
 
     RTC_DateTypeDef datestructure;
@@ -75,16 +74,26 @@ uint8_t at_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
     }
 
     // response should be in form \r\n+CCLK: "yy/MM/dd,hh:mm:ss"
-    matches = sscanf(response, "\r\n+CCLK: \"%02hhd/%02hhd/%02hhd,%02hhd:%02hhd:%02hhd\"",
-                     &datestructure.Year, &datestructure.Month, &datestructure.Date,
-                     &timestructure.Hours, &timestructure.Minutes, &timestructure.Seconds,
-                     &utcoffset);
-
-    if (matches != 7)
-    {
-        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
+    if (strlen(response) < 26) {
+        DEBUG_PRINTF("Response:\"%s\" Too short\r\n", response);
         return EBADMSG;
     }
+
+    const char *p = response;
+    while (*p && *p != '"') 
+    {
+        p++;
+    }
+    if (*p == '"') p++;
+
+    // Example format: 80/01/06,02:28:31
+    datestructure.Year   = toUint8(p);       // YY
+    datestructure.Month  = toUint8(p + 3);   // MM
+    datestructure.Date    = toUint8(p + 6);   // DD
+    timestructure.Hours   = toUint8(p + 9);   // hh
+    timestructure.Minutes = toUint8(p + 12);  // mm
+    timestructure.Seconds = toUint8(p + 15);  // ss
+
 
     memcpy(date, &datestructure, sizeof(RTC_DateTypeDef));
     memcpy(time, &timestructure, sizeof(RTC_TimeTypeDef));
