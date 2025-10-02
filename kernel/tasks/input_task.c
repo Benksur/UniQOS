@@ -1,5 +1,6 @@
 #include "input_task.h"
 #include "call_state.h"
+#include "cellular_task.h"
 
 typedef struct
 {
@@ -39,6 +40,14 @@ void input_task_main(void *pvParameters)
                     static CallData test_call = {
                         .caller_id = "+61413279693"};
                     CallState_PostCommand(input_ctx->call_ctx, CALL_CMD_INCOMING_CALL, &test_call);
+                }
+                // Handle test trigger - HASH key triggers incoming SMS test
+                else if (event == INPUT_KEYPAD_HASH && display_ctx)
+                {
+                    static ReceivedSmsData test_sms = {
+                        .sender = "+61412345678",
+                        .message = "Hello! This is a test SMS message from the input task. Testing the SMS notification system."};
+                    DisplayTask_PostCommand(display_ctx, DISPLAY_SHOW_SMS, &test_sms);
                 }
                 // Handle audio-specific events
                 else if (event == INPUT_VOLUME_UP)

@@ -2,6 +2,7 @@
 #include "call_state.h"
 #include "cellular_task.h"
 #include "incoming_text.h"
+#include "messages.h"
 #include <string.h>
 
 struct DisplayTaskContext
@@ -46,12 +47,17 @@ static void incoming_text_callback(int action, void *user_data)
     {
     case INCOMING_TEXT_ACTION_OPEN:
         // User wants to open and read the full SMS
-        // TODO: Create and push SMS reading page with full message
-        // Page *sms_page = sms_page_create(sms_data->sender, sms_data->message);
-        // screen_set_page(sms_page);
+        MessagePageState state;
+        strncpy(state.sender, sms_data->sender, sizeof(state.sender) - 1);
+        state.sender[sizeof(state.sender) - 1] = '\0';
+        strncpy(state.message, sms_data->message, sizeof(state.message) - 1);
+        state.message[sizeof(state.message) - 1] = '\0';
+
+        Page *sms_page = messages_page_create(state);
+        screen_set_page(sms_page);
         break;
     case INCOMING_TEXT_ACTION_CLOSE:
-        // User dismissed the notification
+        screen_pop_page();
         break;
     default:
         break;
@@ -67,7 +73,19 @@ static void handle_input_event(DisplayTaskContext *ctx, DisplayMessage *msg)
         // Handle special cases like the test file
         if (*event == INPUT_RIGHT)
         {
-            screen_pop_page();
+            // Only allow popping page if not currently in a call
+            CallState current_state = CALL_STATE_IDLE;
+            if (ctx->call_ctx)
+            {
+                current_state = CallState_GetCurrentState(ctx->call_ctx);
+            }
+
+            // Prohibit popping page if in an active call (ringing, dialing, or active)
+            if (current_state == CALL_STATE_IDLE)
+            {
+                screen_pop_page();
+            }
+            // If in a call, ignore the INPUT_RIGHT button press
         }
         else
         {

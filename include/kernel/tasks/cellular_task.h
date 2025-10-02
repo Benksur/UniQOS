@@ -6,9 +6,9 @@
 #include "queue.h"
 #include "cmsis_os2.h"
 #include "display_task.h"
-#include "call_state.h";
-#include "modem.h";
-#include "stm32_config.h";
+#include "call_state.h"
+#include "modem.h"
+#include "stm32_config.h"
 
 #define CELLULAR_TASK_STACK_SIZE 2048
 #define CELLULAR_TASK_PRIORITY osPriorityNormal

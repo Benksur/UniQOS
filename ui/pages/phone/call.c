@@ -113,6 +113,7 @@ static void make_call(Page *self)
     if (state->cursor.x > 0 && state->call_status == CALL_STATE_IDLE)
     {
         state->call_status = CALL_STATE_DIALLING;
+        screen_data_request(PAGE_DATA_REQUEST_MAKE_CALL, state->phone_number);
 
         // Mark entire screen dirty for redraw
         mark_all_tiles_dirty();
