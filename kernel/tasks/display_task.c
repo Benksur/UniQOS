@@ -1,5 +1,6 @@
 #include "display_task.h"
 #include "call_state.h"
+#include <string.h>
 
 struct DisplayTaskContext
 {
@@ -166,6 +167,7 @@ static void display_task_main(void *pvParameters)
     draw_status_bar();
     status_bar_update_signal(5);
     status_bar_update_battery(50);
+
     screen_init(&menu_page);
     mark_all_tiles_dirty();
     screen_tick();
@@ -183,6 +185,39 @@ static void display_task_main(void *pvParameters)
                 break;
             }
         }
+
+        // Check for pending requests from screen module
+        int request_type;
+        void *request_data;
+        if (screen_get_pending_request(&request_type, &request_data))
+        {
+            // Handle the request by forwarding to appropriate task
+            if (ctx->call_ctx)
+            {
+                switch (request_type)
+                {
+                case PAGE_DATA_REQUEST_HANGUP_CALL:
+                    CallState_PostCommand(ctx->call_ctx, CALL_CMD_HANGUP_CALL, NULL);
+                    break;
+                case PAGE_DATA_REQUEST_MAKE_CALL:
+                {
+                    char *phone_number = (char *)request_data;
+                    if (phone_number)
+                    {
+                        // Use stack allocation - data is copied by call_state task
+                        CallData call_data;
+                        strncpy(call_data.caller_id, phone_number, sizeof(call_data.caller_id) - 1);
+                        call_data.caller_id[sizeof(call_data.caller_id) - 1] = '\0';
+                        CallState_PostCommand(ctx->call_ctx, CALL_CMD_DIALLING, &call_data);
+                    }
+                }
+                break;
+                default:
+                    break;
+                }
+            }
+        }
+
         // Update status bar and screen once per cycle
         status_bar_tick();
         screen_tick();

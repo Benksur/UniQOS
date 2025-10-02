@@ -135,7 +135,7 @@ static void phone_handle_input(Page *self, int event_type)
         switch (state->cursor.y)
         {
         case 0:
-            Page *call_page = call_page_create();
+            Page *call_page = call_page_create(NULL);
             screen_push_page(call_page);
             break;
         case 1:

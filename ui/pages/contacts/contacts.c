@@ -151,7 +151,7 @@ static void contacts_destroy(Page *self)
     mem_free(self);
 }
 
-static void screen_data_request(int type, void *req);
+static void contacts_data_request(int type, void *req);
 
 static void contacts_get_page(int type, void *req)
 {
