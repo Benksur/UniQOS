@@ -19,6 +19,7 @@ typedef enum
     POWER_CMD_GET_VOLTAGE,
     POWER_CMD_GET_TEMPERATURE,
     POWER_CMD_SHUTDOWN,
+    POWER_CMD_STATS,
 } PowerCommand;
 
 typedef struct

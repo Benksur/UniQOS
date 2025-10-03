@@ -1,6 +1,7 @@
 #include "display_task.h"
 #include "call_state.h"
 #include "cellular_task.h"
+#include "power_task.h"
 #include "incoming_text.h"
 #include "messages.h"
 #include "sms_types.h"
@@ -11,6 +12,7 @@ struct DisplayTaskContext
     QueueHandle_t queue;
     CallStateContext *call_ctx;        // Reference to call state for callbacks
     CellularTaskContext *cellular_ctx; // Reference to cellular task for callbacks
+    PowerTaskContext *power_ctx;
 };
 
 typedef void (*DisplayCmdHandler)(DisplayTaskContext *ctx, DisplayMessage *msg);
@@ -188,6 +190,11 @@ static void handle_show_sms(DisplayTaskContext *ctx, DisplayMessage *msg)
     }
 }
 
+static void handle_set_battery_page(DisplayTaskContext *ctx, DisplayMessage *msg) {
+
+    screen_handle_response(PAGE_RESPONSE_BATTERY_HC, msg->data);
+}
+
 static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_HANDLE_INPUT] = handle_input_event,
     [DISPLAY_SET_PAGE] = handle_set_page,
@@ -200,6 +207,7 @@ static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_CALL_ENDED] = handle_call_ended,
     [DISPLAY_DIALLING] = handle_dialling,
     [DISPLAY_SHOW_SMS] = handle_show_sms,
+    [DISPLAY_SET_BATTERY_PAGE] = handle_set_battery_page,
 };
 
 static void dispatch_display_command(DisplayTaskContext *ctx, DisplayMessage *msg)
@@ -288,6 +296,10 @@ static void display_task_main(void *pvParameters)
                 }
             }
             break;
+            case PAGE_REQUEST_BATTERY_HC:
+            {
+                PowerTask_PostCommand(ctx->power_ctx, POWER_CMD_STATS, NULL);
+            }
             default:
                 break;
             }
@@ -338,6 +350,12 @@ void DisplayTask_SetCellularContext(DisplayTaskContext *ctx, CellularTaskContext
     if (ctx)
     {
         ctx->cellular_ctx = cellular_ctx;
+    }
+}
+
+void DisplayTask_SetPowerContext(DisplayTaskContext *ctx, PowerTaskContext *power_ctx) {
+    if (ctx) {
+        ctx->power_ctx = power_ctx;
     }
 }
 

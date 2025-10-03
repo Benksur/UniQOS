@@ -2,11 +2,21 @@
 #include "bq27441.h"
 #include <string.h>
 
+struct PowerTaskStats {
+    uint16_t soc;
+    int16_t current;
+    uint16_t voltage;
+    uint16_t capacity_avail;
+    uint16_t capacity_full;
+    uint16_t health;
+};
+
 struct PowerTaskContext
 {
     QueueHandle_t queue;
     DisplayTaskContext *display_ctx;
-    uint8_t last_soc;
+    struct PowerTaskStats stats;
+    uint16_t last_soc;
 };
 
 typedef void (*PowerCmdHandler)(PowerTaskContext *ctx, PowerMessage *msg);
@@ -56,6 +66,17 @@ static void handle_shutdown(PowerTaskContext *ctx, PowerMessage *msg)
     bq27441_read_ctrl_reg(subcmd, &subcmd);
 }
 
+static void handle_get_stats(PowerTaskContext *ctx, PowerMessage *msg) { 
+    ctx->stats.soc = bq27441_SOC();
+    ctx->stats.current = bq27441_avg_current();
+    ctx->stats.voltage = bq27441_voltage();
+    ctx->stats.capacity_avail = bq27441_available_capacity();
+    ctx->stats.capacity_full = bq27441_full_capacity();
+    ctx->stats.health = bq27441_health();
+    // VERY UNSAFE MEMORY HANDLING DO NOT COPY PLEASE FIX
+    DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SET_BATTERY_PAGE, &ctx->stats);
+}
+
 /* ===== DISPATCH TABLE ===== */
 static PowerCmdHandler power_cmd_table[] = {
     [POWER_CMD_INIT] = handle_init,
@@ -63,6 +84,7 @@ static PowerCmdHandler power_cmd_table[] = {
     [POWER_CMD_GET_VOLTAGE] = handle_get_voltage,
     [POWER_CMD_GET_TEMPERATURE] = handle_get_temperature,
     [POWER_CMD_SHUTDOWN] = handle_shutdown,
+    [POWER_CMD_STATS] = handle_get_stats,
 };
 
 static void dispatch_power_command(PowerTaskContext *ctx, PowerMessage *msg)
@@ -94,7 +116,7 @@ static void power_task_main(void *pvParameters)
             last_battery_check = HAL_GetTick();
 
             // Read current battery state of charge
-            uint8_t current_soc = bq27441_SOC();
+            uint16_t current_soc = bq27441_SOC();
 
             // Only update display if battery level changed
             if (current_soc != ctx->last_soc)
@@ -124,7 +146,7 @@ PowerTaskContext *PowerTask_Init(DisplayTaskContext *display_ctx)
 
     // Store display context for battery updates
     power_ctx.display_ctx = display_ctx;
-    power_ctx.last_soc = 0;
+    power_ctx.stats.soc = 0;
 
     // Create queue for commands
     power_ctx.queue = xQueueCreate(5, sizeof(PowerMessage));

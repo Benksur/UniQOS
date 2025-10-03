@@ -8,13 +8,15 @@ typedef enum
     PAGE_RESPONSE_DIALLING,
     PAGE_RESPONSE_ACTIVE_CALL,
     PAGE_RESPONSE_CALL_ENDED,
+    PAGE_RESPONSE_BATTERY_HC
 } PageDataResponse;
 
 typedef enum
 {
     PAGE_REQUEST_HANGUP_CALL,
     PAGE_REQUEST_MAKE_CALL,
-    PAGE_REQUEST_SMS_SEND
+    PAGE_REQUEST_SMS_SEND,
+    PAGE_REQUEST_BATTERY_HC
 } PageDataRequest;
 
 typedef struct Page Page; // Forward declaration

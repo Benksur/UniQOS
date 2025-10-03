@@ -33,6 +33,7 @@ void kernel_init(void)
     // Now set the cross-references
     CallState_SetDisplayContext(call_ctx, display_ctx);
     DisplayTask_SetCellularContext(display_ctx, cellular_ctx);
+    DisplayTask_SetPowerContext(display_ctx, power_ctx);
 
     // input task should not have call ctx, this is just for testing
     InputTask_Init(display_ctx, audio_ctx, call_ctx);
