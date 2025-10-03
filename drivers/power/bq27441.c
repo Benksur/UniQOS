@@ -78,15 +78,3 @@ uint8_t bq27441_SOC(void)
 
     return data;
 }
-
-uint8_t bq27441_SOC()
-{
-    uint16_t data;
-    uint8_t ret = bq27441_read_reg(BQ27441_CMD_STATE_OF_CHARGE, &data);
-
-    if(ret){
-        return 0;
-    }
-
-    return data;
-}

@@ -30,6 +30,8 @@ int main(void)
     modeminfo_t modem_info;
     HAL_StatusTypeDef res;
     GPIO_PinState stat;
+    HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port,AUDIO_SW_Pin, GPIO_PIN_SET);
+
     // ret |= at_set_echo(false);
     while(at_set_echo(false)){};
     
@@ -51,6 +53,9 @@ int main(void)
     res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT\r\n", 4, HAL_MAX_DELAY); 
     res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
     HAL_Delay(1000);
+
+    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT\r\n", 4, HAL_MAX_DELAY); 
+    res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
     // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
     // res = HAL_UART_Transmit(&huart1, (uint8_t *)"ATE0\r\n", 6, HAL_MAX_DELAY); 
     // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);

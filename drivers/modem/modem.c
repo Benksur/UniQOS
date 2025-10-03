@@ -34,16 +34,22 @@ uint8_t modem_init(void)
     uint8_t ret = 0;
     modeminfo_t modem_info;
 
+    modem_power_on();
+    HAL_Delay(1000);
+
     // test AT startup
-    DEBUG_PRINTF("Sending: AT\r\n");
-    ret |= modem_send_command("AT", response, sizeof(response), TIMEOUT_2S);
-    if (ret || !modem_check_response_ok(response))
-    {
+    while(1){
+        DEBUG_PRINTF("Sending: AT\r\n");
+        ret |= modem_send_command("AT", response, sizeof(response), TIMEOUT_2S);
+        if (ret || !modem_check_response_ok(response))
+        {
+            DEBUG_PRINTF("Response: %s\r\n", response);
+        } else {
+            break;
+        }
         DEBUG_PRINTF("Response: %s\r\n", response);
-        return ret;
+        HAL_Delay(100);
     }
-    DEBUG_PRINTF("Response: %s\r\n", response);
-    HAL_Delay(100);
 
     // disable echo
     ret |= at_set_echo(false);
@@ -78,23 +84,23 @@ uint8_t modem_init(void)
     //     DEBUG_PRINTF("FATAL ERROR ON INIT: MODEM INFO");
     //     return ret;
     // }
-    HAL_Delay(100);
+    // HAL_Delay(100);
 
     // check network registration status (Only debug out)
-    at_check_net_reg();
-    HAL_Delay(100);
+    // at_check_net_reg();
+    // HAL_Delay(100);
 
-    at_check_eps_net_reg();
-    HAL_Delay(100);
+    // at_check_eps_net_reg();
+    // HAL_Delay(100);
 
     // set phone functionality 1 (full functionality, high power draw)
-    ret |= at_set_function_mode(MODE_FULL);
-    if (ret)
-    {
-        DEBUG_PRINTF("FATAL ERROR ON INIT: FUNCTION MODE");
-        return ret;
-    }
-    HAL_Delay(100);
+    // ret |= at_set_function_mode(MODE_FULL);
+    // if (ret)
+    // {
+    //     DEBUG_PRINTF("FATAL ERROR ON INIT: FUNCTION MODE");
+    //     return ret;
+    // }
+    // HAL_Delay(100);
 
     ret |= at_set_auto_timezone(true);
     if (ret)
@@ -110,10 +116,10 @@ uint8_t modem_init(void)
     // HAL_Delay(100);
 
     // notify on new sms
-    DEBUG_PRINTF("Sending: AT+CNMI=1,1,0,0,0\r\n");
-    modem_send_command("AT+CNMI=1,1,0,0,0", response, sizeof(response), default_timeout);
-    DEBUG_PRINTF("Response: %s\r\n", response);
-    HAL_Delay(100);
+    // DEBUG_PRINTF("Sending: AT+CNMI=1,1,0,0,0\r\n");
+    // modem_send_command("AT+CNMI=1,1,0,0,0", response, sizeof(response), default_timeout);
+    // DEBUG_PRINTF("Response: %s\r\n", response);
+    // HAL_Delay(100);
 
     // Set ring indicator  4 | 8 | 16 = 28 -> Incomming Call, data call & text
     DEBUG_PRINTF("Sending: AT+WWAKESET=28\r\n");
@@ -156,7 +162,7 @@ uint8_t modem_airplane_mode_off(void)
 
 uint8_t modem_send_sms(const char *sms_address, const char *sms_message)
 {
-    return at_send_sms(sms_address, sms_message);
+    return at_send_sms_textmode(sms_address, sms_message);
 }
 
 uint8_t modem_dial(const char *dial_string)

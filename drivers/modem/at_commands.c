@@ -505,7 +505,7 @@ uint8_t at_set_message_format(enum TextModes mode)
     return ret;
 }
 
-uint8_t at_get_sms(int index, char *sms_buff, int bufflen)
+uint8_t at_get_sms_textmode(int index, char *sms_buff, int bufflen)
 {
     char command_buffer[32];
     char response[512]; // Internal buffer
@@ -543,7 +543,7 @@ uint8_t at_get_sms(int index, char *sms_buff, int bufflen)
     return ret;
 }
 
-uint8_t at_send_sms(const char *sms_address, const char *sms_message)
+uint8_t at_send_sms_textmode(const char *sms_address, const char *sms_message)
 {
     char command_buffer[160];
     char response[128];

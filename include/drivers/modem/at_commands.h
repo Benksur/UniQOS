@@ -185,8 +185,8 @@ uint8_t at_call_status(call_status_t **status, int max_items);
 
 /* Governed By 3GPP TS 27.005*/
 uint8_t at_set_message_format(enum TextModes mode);
-uint8_t at_get_sms(int index, char *sms_buff, int bufflen);
-uint8_t at_send_sms(const char *sms_address, const char *sms_message);
+uint8_t at_get_sms_textmode(int index, char *sms_buff, int bufflen);
+uint8_t at_send_sms_textmode(const char *sms_address, const char *sms_message);
 
 
 /* Governed By ITU-T Recommendation V.250*/
