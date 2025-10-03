@@ -23,7 +23,7 @@ endif
 
 # Combine common and board-specific C definitions
 # These will override the C_DEFS in the sub-makefile
-COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DDEBUG
+COMMON_C_DEFS = -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DDEBUG -DUSE_FREERTOS
 SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
 				  -I../../include/board \
                   -I../../include/drivers \
@@ -31,11 +31,15 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
                   -I../../include/drivers/power \
                   -I../../include/drivers/modem \
                   -I../../include/drivers/display \
+                  -I../../include/drivers/peripherals \
                   -I../../include/ui \
                   -I../../include/ui/pages \
                   -I../../include/ui/components \
-                  -I../../include/drivers/peripherals \
+                  -I../../include/ui/overlays \
+                  -I../../include/audio \
                   -I../../include/kernel \
+                  -I../../include/kernel/tasks \
+                  -I../../include/kernel/data_structures \
                   -I../../third_party/minIni/dev \
 
 
@@ -46,13 +50,33 @@ $(CSRCS) \
 ../../drivers/display/st7789v.c \
 ../../drivers/display/LCD_Controller.c \
 ../../drivers/display/display.c \
-../../ui/navbar.c \
+../../drivers/peripherals/keypad.c \
+../../ui/status_bar.c \
 ../../ui/screen.c \
 ../../ui/theme.c \
 ../../ui/tile.c \
-../../ui/pages/default.c \
+../../ui/cursor.c \
+../../ui/multitap.c \
 ../../ui/pages/menu.c \
+../../ui/pages/clock.c \
+../../ui/pages/calendar.c \
+../../ui/pages/calculator.c \
+../../ui/pages/phone/phone.c \
+../../ui/pages/phone/call.c \
+../../ui/pages/contacts/contacts.c \
+../../ui/pages/contacts/contact_details.c \
+../../ui/pages/sms/sms.c \
+../../ui/pages/sms/new_sms.c \
+../../ui/pages/sms/messages.c \
 ../../ui/components/menu_row.c \
+../../ui/components/contact_row.c \
+../../ui/components/option_row.c \
+../../ui/components/bottom_bar.c \
+../../ui/overlays/option_overlay.c \
+../../ui/overlays/incoming_call.c \
+../../ui/overlays/incoming_text.c \
+../../audio/mixer.c \
+../../audio/oscillator.c \
 ../../drivers/power/bq27441.c \
 ../../drivers/power/mcp73871.c \
 ../../drivers/audio/nau88c22.c \
@@ -65,6 +89,15 @@ $(CSRCS) \
 ../../drivers/peripherals/ws2812.c \
 ../../drivers/peripherals/sdcard.c \
 ../../third_party/minIni/dev/minIni.c \
+../../kernel/data_structures/contacts_bptree.c \
+../../kernel/core/kernel.c \
+../../kernel/tasks/input_task.c \
+../../kernel/tasks/display_task.c \
+../../kernel/tasks/audio_task.c \
+../../kernel/tasks/call_state.c \
+../../kernel/tasks/test_task.c \
+../../kernel/tasks/cellular_task.c \
+../../kernel/tasks/power_task.c \
 ../../kernel/main.c 
 
 

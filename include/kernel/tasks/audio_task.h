@@ -3,23 +3,21 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include "FreeRTOS.h"
 #include "task_types.h"
 #include "queue.h"
 #include "cmsis_os2.h"
 #include "nau88c22.h"
+#include "i2s.h"
+#include "tick_sound.h"
+#include "bloop_optimized.h"
 
-typedef enum {
-    AUDIO_OUTPUT_SPK,
-    AUDIO_OUTPUT_HP
-} AudioOutput;
+#define AUDIO_TASK_STACK_SIZE 1024
+#define AUDIO_TASK_PRIORITY osPriorityHigh
 
-typedef enum {
-    AUDIO_MIC_INT,
-    AUDIO_MIC_HP
-} AudioMic;
-
-typedef enum {
+typedef enum
+{
     AUDIO_VOLUME_UP,
     AUDIO_VOLUME_DOWN,
     AUDIO_MUTE_OUTPUT,
@@ -32,32 +30,34 @@ typedef enum {
     AUDIO_SET_VOLUME_HP_MIC,
     AUDIO_SELECT_OUTPUT,
     AUDIO_SELECT_MIC,
+    AUDIO_PLAY_TICK,
+    AUDIO_PLAY_BLOOP,
+    AUDIO_GET_CURRENT_VOLUME,
+    AUDIO_SEND_VOLUME_TO_INPUT,
 } AudioCommand;
 
-typedef struct {
+typedef enum
+{
+    AUDIO_OUTPUT_SPK,
+    AUDIO_OUTPUT_HP
+} AudioOutput;
+
+typedef enum
+{
+    AUDIO_MIC_INT,
+    AUDIO_MIC_HP
+} AudioMic;
+
+typedef struct
+{
     AudioCommand cmd;
-    void* data;
+    void *data;
 } AudioMessage;
 
-typedef struct {
-    uint8_t volume_speaker;
-    uint8_t volume_headphones;
-    uint8_t volume_mic_int;
-    uint8_t volume_mic_ext;
-    bool output_muted;
-    bool mic_muted;
-    AudioOutput selected_output;
-    AudioMic selected_mic;
-} AudioUserSettings;
+typedef struct AudioTaskContext AudioTaskContext;
 
-typedef struct {
-    AudioUserSettings settings;
-    // msg queue and codec driver instances
-    QueueHandle_t queue;
-    const IAudioDriver_t* codec;
-} AudioTaskContext;
-
-AudioTaskContext* AudioTask_Init(void);
-bool AudioTask_PostCommand(AudioTaskContext* ctx, AudioCommand cmd, void* data);
+// public API
+AudioTaskContext *AudioTask_Init(void);
+bool AudioTask_PostCommand(AudioTaskContext *ctx, AudioCommand cmd, void *data);
 
 #endif

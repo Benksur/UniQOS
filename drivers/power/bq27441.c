@@ -66,3 +66,27 @@ uint8_t bq27441_read_ctrl_reg(uint16_t subcmd, uint16_t *response)
 
     return bq27441_read_reg(BQ27441_CMD_CNTL, response);
 }
+
+uint8_t bq27441_SOC(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_STATE_OF_CHARGE, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}
+
+uint8_t bq27441_SOC()
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_STATE_OF_CHARGE, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}

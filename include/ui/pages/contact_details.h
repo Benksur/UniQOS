@@ -13,6 +13,8 @@
 #include "contacts_bptree.h"
 #include "option_row.h"
 #include "bottom_bar.h"
+#include "new_sms.h"
+#include "call.h"
 
 Page* contact_details_page_create(ContactRecord contact);
 

@@ -1,129 +1,170 @@
 #include "contact_details.h"
+#include "memwrap.h"
 
-typedef struct {
+typedef struct
+{
     ContactRecord contact;
     Cursor cursor;
     bool mounted;
 } ContactDetailsState;
 
 // Option row labels for contact actions
-static const char* option_labels[] = {
+static const char *option_labels[] = {
     "Call",
     "Send Message",
     "Edit Contact",
-    "Delete Contact"
-};
-#define NUM_OPTIONS (sizeof(option_labels)/sizeof(option_labels[0]))
+    "Delete Contact"};
+#define NUM_OPTIONS (sizeof(option_labels) / sizeof(option_labels[0]))
 
-static void contact_details_draw_tile(Page* self, int tx, int ty);
-static void contact_details_handle_input(Page* self, int event_type);
-static void contact_details_reset(Page* self);
-static void contact_details_destroy(Page* self);
+static void contact_details_draw_tile(Page *self, int tx, int ty);
+static void contact_details_handle_input(Page *self, int event_type);
+static void contact_details_reset(Page *self);
+static void contact_details_destroy(Page *self);
 
-static void draw_header(Page* self) {
-    ContactDetailsState* state = (ContactDetailsState*)self->state;
-    if (state->contact.name_len > 0) {
+static void draw_header(Page *self)
+{
+    ContactDetailsState *state = (ContactDetailsState *)self->state;
+    if (state->contact.name_len > 0)
+    {
         int text_width = state->contact.name_len * 6 * 2; // size 3 font
         int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
         display_draw_string(center_x, 40, state->contact.name, current_theme.text_colour, current_theme.bg_colour, 2);
-    } else {
-        char* title = "(Name)";
+    }
+    else
+    {
+        char *title = "(Name)";
         int text_width = strlen(title) * 6 * 2; // size 3 font
         int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
         display_draw_string(center_x, 40, title, current_theme.text_colour, current_theme.bg_colour, 2);
     }
 }
 
-static void contact_details_draw_tile(Page* self, int tx, int ty) {
-    ContactDetailsState* state = (ContactDetailsState*)self->state;
-    if (!state->mounted) {
+static void contact_details_draw_tile(Page *self, int tx, int ty)
+{
+    ContactDetailsState *state = (ContactDetailsState *)self->state;
+    if (!state->mounted)
+    {
         display_fill_rect(0, 30, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * (TILE_ROWS + 1), current_theme.bg_colour);
         draw_header(self);
 
         // Draw phone number
-        if (state->contact.phone_len > 0) {
+        if (state->contact.phone_len > 0)
+        {
             int text_width = state->contact.phone_len * 6 * 2; // size 3 font
             int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
             display_draw_string(center_x, 80, state->contact.phone, current_theme.text_colour, current_theme.bg_colour, 2);
-        } else {
-            char* title = "(Phone)";
+        }
+        else
+        {
+            char *title = "(Phone)";
             int text_width = strlen(title) * 6 * 2; // size 3 font
             int center_x = (TILE_WIDTH * TILE_COLS - text_width) / 2;
             display_draw_string(center_x, 80, title, current_theme.text_colour, current_theme.bg_colour, 2);
         }
-        draw_bottom_bar("Options", "Select", "Back", 1);
-        
+        draw_bottom_bar("", "Select", "Back", 0);
+
         state->mounted = true;
     }
     // Draw option rows for ty = 3, 4, 5, 6
-    if (ty > 2 && ty < 7) {
+    if (ty > 2 && ty < 7)
+    {
         int option_idx = ty - 3;
-        if (option_idx >= 0 && option_idx < NUM_OPTIONS) {
+        if (option_idx >= 0 && option_idx < NUM_OPTIONS)
+        {
             bool highlight = (state->cursor.y == option_idx);
             draw_option_row(ty, highlight, option_labels[option_idx]);
         }
     }
-    for (int i = 0; i < TILE_COLS; i++) {
+    for (int i = 0; i < TILE_COLS; i++)
+    {
         mark_tile_clean(i, ty);
     }
 }
 
-static void contact_details_handle_input(Page* self, int event_type) {
-    ContactDetailsState* state = (ContactDetailsState*)self->state;
+static void contact_details_handle_input(Page *self, int event_type)
+{
+    ContactDetailsState *state = (ContactDetailsState *)self->state;
     int old_x, old_y;
     bool moved = false;
-    switch (event_type) {
-        case INPUT_DPAD_UP:
-            moved = cursor_move(&state->cursor, 0, -1, &old_x, &old_y);
+    switch (event_type)
+    {
+    case INPUT_DPAD_UP:
+        moved = cursor_move(&state->cursor, 0, -1, &old_x, &old_y);
+        break;
+    case INPUT_DPAD_DOWN:
+        moved = cursor_move(&state->cursor, 0, +1, &old_x, &old_y);
+        break;
+    case INPUT_DPAD_LEFT:
+        moved = cursor_move(&state->cursor, -1, 0, &old_x, &old_y);
+        break;
+    case INPUT_DPAD_RIGHT:
+        moved = cursor_move(&state->cursor, +1, 0, &old_x, &old_y);
+        break;
+    case INPUT_SELECT:
+        switch (state->cursor.y)
+        {
+        case 0:
+            // Call
+            Page *call_page = call_page_create(state->contact.phone);
+            screen_push_page(call_page);
             break;
-        case INPUT_DPAD_DOWN:
-            moved = cursor_move(&state->cursor, 0, +1, &old_x, &old_y);
+        case 1:
+            Page *new_sms_page = new_sms_page_create(state->contact.phone);
+            screen_push_page(new_sms_page);
             break;
-        case INPUT_DPAD_LEFT:
-            moved = cursor_move(&state->cursor, -1, 0, &old_x, &old_y);
+        case 2:
+            // Edit Contact
             break;
-        case INPUT_DPAD_RIGHT:
-            moved = cursor_move(&state->cursor, +1, 0, &old_x, &old_y);
+        case 3:
+            // Delete Contact
             break;
-        case INPUT_KEYPAD_0: // Back
-            // Go back to previous page
-            // This would typically involve a page stack in a full implementation
-            break;
-        default:
-            break;
+        }
+        break;
+    default:
+        break;
     }
-    if (moved) {
+    if (moved)
+    {
         int old_row = old_y + 3; // option rows are at ty = 3, 4, 5, 6
         int new_row = state->cursor.y + 3;
-        if (old_row >= 3 && old_row < 7) mark_tile_dirty(0, old_row);
-        if (new_row >= 3 && new_row < 7 && new_row != old_row) mark_tile_dirty(0, new_row);
+        if (old_row >= 3 && old_row < 7)
+            mark_tile_dirty(0, old_row);
+        if (new_row >= 3 && new_row < 7 && new_row != old_row)
+            mark_tile_dirty(0, new_row);
     }
 }
 
-static void contact_details_reset(Page* self) {
-    ContactDetailsState* state = (ContactDetailsState*)self->state;
+static void contact_details_reset(Page *self)
+{
+    ContactDetailsState *state = (ContactDetailsState *)self->state;
     state->cursor.x = 0;
     state->cursor.y = 0;
-    state->cursor.max_x = 1; // Only one column for now
+    state->cursor.max_x = 1;           // Only one column for now
     state->cursor.max_y = NUM_OPTIONS; // Name and Phone
     state->mounted = false;
     mark_all_tiles_dirty();
 }
 
-static void contact_details_destroy(Page* self) {
-    if (self == NULL) return;
-    ContactDetailsState* state = (ContactDetailsState*)self->state;
-    free(state);
-    free(self);
+static void contact_details_destroy(Page *self)
+{
+    if (self == NULL)
+        return;
+    ContactDetailsState *state = (ContactDetailsState *)self->state;
+    mem_free(state);
+    mem_free(self);
 }
 
-Page* contact_details_page_create(ContactRecord contact) {
-    Page* page = (Page*)malloc(sizeof(Page));
-    ContactDetailsState* state = (ContactDetailsState*)malloc(sizeof(ContactDetailsState));
+Page *contact_details_page_create(ContactRecord contact)
+{
+    Page *page = (Page *)mem_malloc(sizeof(Page));
+    ContactDetailsState *state = (ContactDetailsState *)mem_malloc(sizeof(ContactDetailsState));
 
-    if (contact.name_len > 0) {
+    if (contact.name_len > 0)
+    {
         state->contact = contact;
-    } else {
+    }
+    else
+    {
         // Optionally, zero out state->contact or set defaults
         memset(&state->contact, 0, sizeof(ContactRecord));
     }

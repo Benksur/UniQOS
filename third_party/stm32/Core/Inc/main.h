@@ -156,6 +156,9 @@ void Error_Handler(void);
 #define AUDIO_SW_Pin GPIO_PIN_12
 #define AUDIO_SW_GPIO_Port GPIOD
 
+#define MODEM_RI_Pin GPIO_PIN_6
+#define MODEM_RI_GPIO_Port GPIOC
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
