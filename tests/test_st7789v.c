@@ -72,7 +72,7 @@ int main(void)
   MX_RTC_Init();
 
   
-  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,GPIO_PIN_1, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET);
 
   // MX_TIM13_Init();
