@@ -1,12 +1,69 @@
 #include "display_task.h"
-
+#include "call_state.h"
+#include "cellular_task.h"
+#include "incoming_text.h"
+#include "messages.h"
+#include "sms_types.h"
+#include <string.h>
 
 struct DisplayTaskContext
 {
     QueueHandle_t queue;
+    CallStateContext *call_ctx;        // Reference to call state for callbacks
+    CellularTaskContext *cellular_ctx; // Reference to cellular task for callbacks
 };
 
 typedef void (*DisplayCmdHandler)(DisplayTaskContext *ctx, DisplayMessage *msg);
+
+/* ===== CALLBACK FOR INCOMING CALL OVERLAY ===== */
+static void incoming_call_callback(int action, void *user_data)
+{
+    DisplayTaskContext *ctx = (DisplayTaskContext *)user_data;
+    if (!ctx)
+        return;
+
+    switch (action)
+    {
+    case INCOMING_CALL_ACTION_PICKUP:
+        // Answer the call
+        CallState_PostCommand(ctx->call_ctx, CALL_CMD_ANSWER_CALL, NULL);
+        break;
+    case INCOMING_CALL_ACTION_HANGUP:
+        // Reject/hangup the call
+        CallState_PostCommand(ctx->call_ctx, CALL_CMD_HANGUP_CALL, NULL);
+        break;
+    default:
+        break;
+    }
+}
+
+/* ===== CALLBACK FOR INCOMING SMS OVERLAY ===== */
+static void incoming_text_callback(int action, void *user_data)
+{
+    ReceivedSms *sms_data = (ReceivedSms *)user_data;
+    if (!sms_data)
+        return;
+
+    switch (action)
+    {
+    case INCOMING_TEXT_ACTION_OPEN:
+        // User wants to open and read the full SMS
+        MessagePageState state;
+        strncpy(state.sender, sms_data->sender, sizeof(state.sender) - 1);
+        state.sender[sizeof(state.sender) - 1] = '\0';
+        strncpy(state.message, sms_data->body, sizeof(state.message) - 1);
+        state.message[sizeof(state.message) - 1] = '\0';
+
+        Page *sms_page = messages_page_create(state);
+        screen_set_page(sms_page);
+        break;
+    case INCOMING_TEXT_ACTION_CLOSE:
+        screen_pop_page();
+        break;
+    default:
+        break;
+    }
+}
 
 /* ===== HANDLERS ===== */
 static void handle_input_event(DisplayTaskContext *ctx, DisplayMessage *msg)
@@ -17,7 +74,19 @@ static void handle_input_event(DisplayTaskContext *ctx, DisplayMessage *msg)
         // Handle special cases like the test file
         if (*event == INPUT_RIGHT)
         {
-            screen_pop_page();
+            // Only allow popping page if not currently in a call
+            CallState current_state = CALL_STATE_IDLE;
+            if (ctx->call_ctx)
+            {
+                current_state = CallState_GetCurrentState(ctx->call_ctx);
+            }
+
+            // Prohibit popping page if in an active call (ringing, dialing, or active)
+            if (current_state == CALL_STATE_IDLE)
+            {
+                screen_pop_page();
+            }
+            // If in a call, ignore the INPUT_RIGHT button press
         }
         else
         {
@@ -69,21 +138,21 @@ static void handle_set_volume(DisplayTaskContext *ctx, DisplayMessage *msg)
 
 static void handle_incoming_call(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
-    if (data)
+    char *caller_id = (char *)msg->data;
+    if (caller_id && ctx->call_ctx)
     {
-        Page *incoming_call_page = incoming_call_overlay_create(data->caller_id, NULL, NULL);
+        Page *incoming_call_page = incoming_call_overlay_create(caller_id, incoming_call_callback, ctx);
         screen_push_page(incoming_call_page);
     }
 }
 
 static void handle_active_call(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
-    if (data)
+    char *caller_id = (char *)msg->data;
+    if (caller_id)
     {
         // TODO: Create active call page/overlay
-        // Page *active_call_page = active_call_overlay_create(data->caller_id, NULL, NULL);
+        // Page *active_call_page = active_call_overlay_create(caller_id, NULL, NULL);
         // screen_push_page(active_call_page);
     }
 }
@@ -96,12 +165,26 @@ static void handle_call_ended(DisplayTaskContext *ctx, DisplayMessage *msg)
 
 static void handle_dialling(DisplayTaskContext *ctx, DisplayMessage *msg)
 {
-    DisplayNotificationData *data = (DisplayNotificationData *)msg->data;
-    if (data)
+    char *caller_id = (char *)msg->data;
+    if (caller_id)
     {
         // TODO: Create dialling page/overlay
-        // Page *dialling_page = dialling_overlay_create(data->caller_id, NULL, NULL);
+        // Page *dialling_page = dialling_overlay_create(caller_id, NULL, NULL);
         // screen_push_page(dialling_page);
+    }
+}
+
+static void handle_show_sms(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    ReceivedSms *sms_data = (ReceivedSms *)msg->data;
+    if (sms_data)
+    {
+        // Show SMS notification overlay with sender
+        // The full message is passed as user_data for when user opens it
+        Page *sms_notification = incoming_text_overlay_create(sms_data->sender,
+                                                              incoming_text_callback,
+                                                              sms_data);
+        screen_push_page(sms_notification);
     }
 }
 
@@ -116,6 +199,7 @@ static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_ACTIVE_CALL] = handle_active_call,
     [DISPLAY_CALL_ENDED] = handle_call_ended,
     [DISPLAY_DIALLING] = handle_dialling,
+    [DISPLAY_SHOW_SMS] = handle_show_sms,
 };
 
 static void dispatch_display_command(DisplayTaskContext *ctx, DisplayMessage *msg)
@@ -143,9 +227,13 @@ static void display_task_main(void *pvParameters)
     draw_status_bar();
     status_bar_update_signal(5);
     status_bar_update_battery(50);
+
     screen_init(&menu_page);
     mark_all_tiles_dirty();
     screen_tick();
+
+    // turn backlight full power
+    HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET);
 
     // Task main loop - handles messages and ticks like the test file
     for (;;)
@@ -160,21 +248,66 @@ static void display_task_main(void *pvParameters)
                 break;
             }
         }
+
+        // Check for pending requests from screen module
+        int request_type;
+        void *request_data;
+        if (screen_get_pending_request(&request_type, &request_data))
+        {
+            // Handle the request by forwarding to appropriate task
+            switch (request_type)
+            {
+            case PAGE_REQUEST_HANGUP_CALL:
+                if (ctx->cellular_ctx)
+                {
+                    CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_HANG_UP, NULL);
+                }
+                break;
+            case PAGE_REQUEST_MAKE_CALL:
+            {
+                char *phone_number = (char *)request_data;
+                if (phone_number && ctx->cellular_ctx)
+                {
+                    // Post dial command to cellular task
+                    CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_DIAL, phone_number);
+                }
+            }
+            break;
+            case PAGE_REQUEST_SMS_SEND:
+            {
+                SmsMessage *sms_data = (SmsMessage *)request_data;
+                if (sms_data && ctx->cellular_ctx)
+                {
+                    // Validate phone number and message are not empty
+                    if (sms_data->recipient[0] != '\0' && sms_data->body[0] != '\0')
+                    {
+                        // Post SMS send command to cellular task
+                        CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_SEND_SMS, sms_data);
+                    }
+                }
+            }
+            break;
+            default:
+                break;
+            }
+        }
+
         // Update status bar and screen once per cycle
         status_bar_tick();
         screen_tick();
-        // Short wait to yield CPU if no messages
-        if (processed == 0)
-        {
-            osDelay(1);
-        }
+        // Always yield to other tasks - critical for system responsiveness
+        osDelay(1);
     }
 }
 
-DisplayTaskContext *DisplayTask_Init(void)
+DisplayTaskContext *DisplayTask_Init(CallStateContext *call_ctx, CellularTaskContext *cellular_ctx)
 {
     static DisplayTaskContext display_ctx;
     memset(&display_ctx, 0, sizeof(display_ctx));
+
+    // Store call state and cellular contexts for callbacks
+    display_ctx.call_ctx = call_ctx;
+    display_ctx.cellular_ctx = cellular_ctx;
 
     // Create queue
     display_ctx.queue = xQueueCreate(5, sizeof(DisplayMessage));
@@ -197,6 +330,14 @@ DisplayTaskContext *DisplayTask_Init(void)
     }
 
     return &display_ctx;
+}
+
+void DisplayTask_SetCellularContext(DisplayTaskContext *ctx, CellularTaskContext *cellular_ctx)
+{
+    if (ctx)
+    {
+        ctx->cellular_ctx = cellular_ctx;
+    }
 }
 
 bool DisplayTask_PostCommand(DisplayTaskContext *ctx, DisplayCommand cmd, void *data)

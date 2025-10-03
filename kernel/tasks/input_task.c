@@ -1,9 +1,12 @@
 #include "input_task.h"
+#include "call_state.h"
+#include "cellular_task.h"
 
 typedef struct
 {
     DisplayTaskContext *display_ctx;
     AudioTaskContext *audio_ctx;
+    CallStateContext *call_ctx;
 } InputTaskContext;
 
 static uint8_t current_volume = 100; // Initialize to match audio task default (speaker volume)
@@ -31,8 +34,23 @@ void input_task_main(void *pvParameters)
                 HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
                 event = keypad_get_button_event(button_idx);
 
+                // Handle test trigger - STAR key triggers incoming call test
+                if (event == INPUT_KEYPAD_STAR && input_ctx->call_ctx)
+                {
+                    static CallData test_call = {
+                        .caller_id = "+61413279693"};
+                    CallState_PostCommand(input_ctx->call_ctx, CALL_CMD_INCOMING_CALL, &test_call);
+                }
+                // Handle test trigger - HASH key triggers incoming SMS test
+                else if (event == INPUT_KEYPAD_HASH && display_ctx)
+                {
+                    static ReceivedSms test_sms = {
+                        .sender = "+61412345678",
+                        .body = "Hello! This is a test SMS message from the input task. Testing the SMS notification system."};
+                    DisplayTask_PostCommand(display_ctx, DISPLAY_SHOW_SMS, &test_sms);
+                }
                 // Handle audio-specific events
-                if (event == INPUT_VOLUME_UP)
+                else if (event == INPUT_VOLUME_UP)
                 {
                     // Send volume up command to audio task
                     if (audio_ctx)
@@ -103,11 +121,12 @@ void input_task_main(void *pvParameters)
     }
 }
 
-void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx)
+void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx, CallStateContext *call_ctx)
 {
     static InputTaskContext input_ctx;
     input_ctx.display_ctx = display_ctx;
     input_ctx.audio_ctx = audio_ctx;
+    input_ctx.call_ctx = call_ctx;
 
     osThreadAttr_t task_attr = {
         .name = "InputTask",

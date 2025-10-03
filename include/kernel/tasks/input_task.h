@@ -11,9 +11,12 @@
 #include "display_task.h"
 #include "audio_task.h"
 
+// Forward declaration
+typedef struct CallStateContext CallStateContext;
+
 #define INPUT_TASK_STACK_SIZE 512
 #define INPUT_TASK_PRIORITY osPriorityNormal
 
-void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx);
+void InputTask_Init(DisplayTaskContext *display_ctx, AudioTaskContext *audio_ctx, CallStateContext *call_ctx);
 
 #endif // INPUT_TASK_H_

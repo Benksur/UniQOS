@@ -3,6 +3,12 @@
 
 #include "screen.h"
 #include "input.h"
+#include "call.h"
+#include "cursor.h"
+#include "theme.h"
+#include "display.h"
+#include "tile.h"
+
 #include <string.h>
 #include <stdlib.h>
 

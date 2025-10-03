@@ -3,6 +3,6 @@
 
 #include "screen.h"
 
-Page* call_page_create();
+Page *call_page_create(const char *phone_number);
 
 #endif

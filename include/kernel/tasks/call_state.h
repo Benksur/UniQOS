@@ -12,10 +12,11 @@
 #include "stm32_config.h"
 
 #define CALL_STATE_TASK_STACK_SIZE 1024
-#define CALL_STATE_TASK_PRIORITY osPriorityRealtime
+#define CALL_STATE_TASK_PRIORITY osPriorityAboveNormal
 
 // Call state definitions
-typedef enum {
+typedef enum
+{
     CALL_STATE_IDLE,
     CALL_STATE_RINGING,
     CALL_STATE_DIALLING,
@@ -24,7 +25,8 @@ typedef enum {
 } CallState;
 
 // Call commands
-typedef enum {
+typedef enum
+{
     CALL_CMD_INCOMING_CALL,
     CALL_CMD_ANSWER_CALL,
     CALL_CMD_DIALLING,
@@ -32,29 +34,30 @@ typedef enum {
 } CallCommand;
 
 // Event group bits for coordination
-#define CALL_EVENT_INCOMING     (1 << 0)  // Incoming call detected (controls vibration)
-#define CALL_EVENT_ANSWER       (1 << 1)  // Call answered (controls GPIO switching)
-#define CALL_EVENT_HANGUP       (1 << 2)  // Call ended (controls GPIO switching)
-#define CALL_EVENT_DISPLAY      (1 << 3)  // Display notification
+#define CALL_EVENT_INCOMING (1 << 0) // Incoming call detected (controls vibration)
+#define CALL_EVENT_ANSWER (1 << 1)   // Call answered (controls GPIO switching)
+#define CALL_EVENT_HANGUP (1 << 2)   // Call ended (controls GPIO switching)
+#define CALL_EVENT_DISPLAY (1 << 3)  // Display notification
+
+// Call data structure - for passing call information
+typedef struct
+{
+    char caller_id[32]; // Phone number or contact name
+} CallData;
 
 // Call message structure
-typedef struct {
+typedef struct
+{
     CallCommand cmd;
-    void *data;
+    void *data; // Points to CallData for commands that need it
 } CallMessage;
-
-
-// Display notification data
-typedef struct {
-    uint8_t call_state;
-    char *caller_id;
-} DisplayNotificationData;
 
 // Opaque context
 typedef struct CallStateContext CallStateContext;
 
 // Public API
 CallStateContext *CallState_Init(DisplayTaskContext *display_ctx);
+void CallState_SetDisplayContext(CallStateContext *ctx, DisplayTaskContext *display_ctx);
 bool CallState_PostCommand(CallStateContext *ctx, CallCommand cmd, void *data);
 CallState CallState_GetCurrentState(CallStateContext *ctx);
 

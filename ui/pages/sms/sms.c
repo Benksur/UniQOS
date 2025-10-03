@@ -125,7 +125,7 @@ static void sms_handle_input(Page *self, int event_type)
         switch (state->cursor.y)
         {
         case 0:
-            Page *new_sms_page = new_sms_page_create();
+            Page *new_sms_page = new_sms_page_create(NULL);
             screen_push_page(new_sms_page);
             break;
         case 1:

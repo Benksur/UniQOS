@@ -2,12 +2,18 @@
 #include "tile.h"
 #include "status_bar.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define MAX_PAGE_STACK 10
 
 static Page *page_stack[MAX_PAGE_STACK];
 static int page_top = -1;
 static Page *current_page = NULL;
+
+// Internal state for pending requests
+static bool has_pending_request = false;
+static int pending_request_type = 0;
+static void *pending_request_data = NULL;
 
 /**
  * Initialize the screen with the initial page.
@@ -108,12 +114,34 @@ void screen_handle_input(int event_type)
     }
 }
 
-void screen_data_request(int type, void *req)
+void screen_request(int type, void *req)
 {
-    // do stuff here
+    // Store the request for display_task to handle
+    // Only store one request at a time (latest request wins)
+    has_pending_request = true;
+    pending_request_type = type;
+    pending_request_data = req;
 }
 
-void screen_handle_data_response(int type, void *resp)
+bool screen_get_pending_request(int *type, void **req)
+{
+    if (!has_pending_request)
+        return false;
+
+    if (type)
+        *type = pending_request_type;
+    if (req)
+        *req = pending_request_data;
+
+    // Clear the pending request
+    has_pending_request = false;
+    pending_request_type = 0;
+    pending_request_data = NULL;
+
+    return true;
+}
+
+void screen_handle_response(int type, void *resp)
 {
     if (!current_page)
         return;

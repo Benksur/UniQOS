@@ -33,6 +33,7 @@ typedef enum
     DISPLAY_ACTIVE_CALL,
     DISPLAY_CALL_ENDED,
     DISPLAY_DIALLING,
+    DISPLAY_SHOW_SMS,
     DISPLAY_CMD_COUNT
 } DisplayCommand;
 
@@ -50,10 +51,15 @@ typedef struct
     RTC_DateTypeDef date;
 } DisplayStatus;
 
+// Forward declarations
+typedef struct CallStateContext CallStateContext;
+typedef struct CellularTaskContext CellularTaskContext;
+
 // opaque context
 typedef struct DisplayTaskContext DisplayTaskContext;
 
-DisplayTaskContext *DisplayTask_Init(void);
+DisplayTaskContext *DisplayTask_Init(CallStateContext *call_ctx, CellularTaskContext *cellular_ctx);
+void DisplayTask_SetCellularContext(DisplayTaskContext *ctx, CellularTaskContext *cellular_ctx);
 bool DisplayTask_PostCommand(DisplayTaskContext *ctx, DisplayCommand cmd, void *data);
 
 #endif // DISPLAY_TASK_H_

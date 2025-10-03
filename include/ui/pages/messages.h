@@ -6,6 +6,8 @@
 #include "tile.h"
 #include "theme.h"
 #include "bottom_bar.h"
+#include "sms_types.h"
+#include "new_sms.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,7 +15,7 @@
 
 typedef struct
 {
-    char sender[10];
+    char sender[SMS_MAX_PHONE_LENGTH + 1];
     char message[MAX_MESSAGE_LENGTH];
 } MessagePageState;
 
