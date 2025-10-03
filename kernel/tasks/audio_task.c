@@ -285,6 +285,19 @@ static void audio_task_main(void *pvParameters)
         {
             dispatch_audio_command(ctx, &msg);
         }
+
+        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) 
+        {
+            ctx->codec->speaker.mute(true);
+            ctx->codec->headphones.mute(false);
+        }
+        else
+        {
+            ctx->codec->headphones.mute(true);
+            ctx->codec->speaker.mute(false);
+        }
+        
+
         osDelay(10);
     }
 }
