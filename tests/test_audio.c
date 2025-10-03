@@ -83,7 +83,7 @@ int main(void)
     codec->speaker.mute(false);
     codec->speaker.mic.mute(false);
     codec->speaker.mic.set_volume(100);
-    write_reg(0x05, 0x001); 
+    // write_reg(0x05, 0x001); 
 
     HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port,AUDIO_SW_Pin, GPIO_PIN_RESET);
 
@@ -116,14 +116,213 @@ int main(void)
 
     int octave_shift = 0;
 
-    while(1) {
-        // HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 7840, HAL_MAX_DELAY);
-        HAL_Delay(1000);
-    }
+   
+
 
     while (1)
     {
-        mixer_init(&chord);
+        // mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
+        //                 play_chord(&chord, 200); // short
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 150); // short rest
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0));
+        //                 play_chord(&chord, 200); // short
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 150); // short rest
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0));
+        //                 play_chord(&chord, 200); // long
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 300); // short rest
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
+        //                 play_chord(&chord, 300); // long
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200); // short rest
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0));
+        //                 play_chord(&chord, 300); // long
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 150); // short rest
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // G
+        //                 play_chord(&chord, 300); // long
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 150); // short rest
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1)); // G
+        //                 play_chord(&chord, 400); // held
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200); // rest
+
+        //                 // Phrase 2: ^C G E
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 // Phrase 3: A B Bb A
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_A, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_B, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_AS, -1)); // Bb = A#
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_A, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 // Phrase 4: G ^E ^G ^A
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // ^G
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_A, 0)); // ^A
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 // Phrase 5: ^F ^G ^E ^C ^D B
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_F, 0)); // ^F
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // ^G
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_D, 0)); // ^D
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 mixer_add(&chord, NOTE_OCTAVE(NOTE_B, -1));
+        //                 play_chord(&chord, 200);
+
+        //                 mixer_init(&chord);
+        //                 play_chord(&chord, 200);
+        // Update keypad states and handle all inputs
+        if (HAL_GPIO_ReadPin(HP_DET_GPIO_Port, HP_DET_Pin) == GPIO_PIN_SET) {
+            codec->headphones.mute(true);
+            codec->speaker.mute(false);
+        } else {
+            codec->speaker.mute(true);
+            codec->headphones.mute(false);
+        }
+        for (int i = 0; i < 24; i++)
+        {
+            keypad_update_states();
+
+            // Check all buttons and handle input events
+            for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++)
+            {
+                if (keypad_is_button_pressed(button_idx))
+                {
+                    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+                    input_event_t event = keypad_get_button_event(button_idx);
+                    switch (event)
+                    {
+                    case INPUT_DPAD_UP:
+                        octave_shift++;
+                        break;
+                    case INPUT_DPAD_DOWN:
+                        octave_shift--;
+                        break;
+                    case INPUT_KEYPAD_0:
+
+                        // Phrase 1: ^E ^E ^E ^C ^E ^G G
+                        mixer_init(&chord);
                         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
                         play_chord(&chord, 200); // short
 
@@ -294,257 +493,63 @@ int main(void)
 
                         mixer_init(&chord);
                         play_chord(&chord, 200);
-        // // Update keypad states and handle all inputs
-        // for (int i = 0; i < 24; i++)
-        // {
-        //     keypad_update_states();
 
-        //     // Check all buttons and handle input events
-        //     for (int button_idx = 0; button_idx < keypad_get_button_count(); button_idx++)
-        //     {
-        //         if (keypad_is_button_pressed(button_idx))
-        //         {
-        //             HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-        //             input_event_t event = keypad_get_button_event(button_idx);
-        //         //     switch (event)
-        //         //     {
-        //         //     case INPUT_DPAD_UP:
-        //         //         octave_shift++;
-        //         //         break;
-        //         //     case INPUT_DPAD_DOWN:
-        //         //         octave_shift--;
-        //         //         break;
-        //         //     case INPUT_KEYPAD_0:
+                        break;
 
-        //         //         // Phrase 1: ^E ^E ^E ^C ^E ^G G
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
-        //         //         play_chord(&chord, 200); // short
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 150); // short rest
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0));
-        //         //         play_chord(&chord, 200); // short
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 150); // short rest
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0));
-        //         //         play_chord(&chord, 200); // long
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 300); // short rest
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
-        //         //         play_chord(&chord, 300); // long
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200); // short rest
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0));
-        //         //         play_chord(&chord, 300); // long
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 150); // short rest
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // G
-        //         //         play_chord(&chord, 300); // long
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 150); // short rest
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1)); // G
-        //         //         play_chord(&chord, 400); // held
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200); // rest
-
-        //         //         // Phrase 2: ^C G E
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         // Phrase 3: A B Bb A
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_A, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_B, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_AS, -1)); // Bb = A#
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_A, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         // Phrase 4: G ^E ^G ^A
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // ^G
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_A, 0)); // ^A
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         // Phrase 5: ^F ^G ^E ^C ^D B
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_F, 0)); // ^F
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // ^G
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_D, 0)); // ^D
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_B, -1));
-        //         //         play_chord(&chord, 200);
-
-        //         //         mixer_init(&chord);
-        //         //         play_chord(&chord, 200);
-
-        //         //         break;
-
-        //         //     case INPUT_KEYPAD_1:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_C, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_2:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_D, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_3:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_4:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_F, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_5:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_6:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_A, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_7:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_B, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_8:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_C2, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     case INPUT_KEYPAD_9:
-        //         //         mixer_init(&chord);
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_C, octave_shift));
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, octave_shift));
-        //         //         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, octave_shift));
-        //         //         play_chord(&chord, 200);
-        //         //         break;
-        //         //     default:
-        //         //         break;
-        //         //     }
-        //         }
-        //         screen_tick();
-        //     }
-        // }
+                    case INPUT_KEYPAD_1:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_C, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_2:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_D, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_3:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_E, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_4:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_F, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_5:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_G, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_6:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_A, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_7:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_B, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_8:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_C2, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    case INPUT_KEYPAD_9:
+                        mixer_init(&chord);
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_C, octave_shift));
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_E, octave_shift));
+                        mixer_add(&chord, NOTE_OCTAVE(NOTE_G, octave_shift));
+                        play_chord(&chord, 200);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                screen_tick();
+            }
+        }
     }
 }
 

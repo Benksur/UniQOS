@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdlib.h>
 #include "at_commands.h"
 #include "stm32h7xx_hal.h"
 
@@ -59,7 +60,6 @@ uint8_t at_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 {
     char response[100];
     uint8_t ret = 0;
-    int matches = 0;
     int8_t utcoffset;
 
     RTC_DateTypeDef datestructure;
@@ -67,7 +67,10 @@ uint8_t at_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
 
     ret |= modem_send_command("AT+CCLK?", response, sizeof(response), TIMEOUT_2S);
 
-    if (!modem_check_response_ok(response)){return 52;}
+    if (!modem_check_response_ok(response))
+    {
+        return 52;
+    }
     if (ret) // not sure this will actually respond with OK but ig we can see
     {
         DEBUG_PRINTF("Response: %s\r\n", response);
@@ -75,16 +78,27 @@ uint8_t at_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
     }
 
     // response should be in form \r\n+CCLK: "yy/MM/dd,hh:mm:ss"
-    matches = sscanf(response, "\r\n+CCLK: \"%02hhd/%02hhd/%02hhd,%02hhd:%02hhd:%02hhd\"",
-                     &datestructure.Year, &datestructure.Month, &datestructure.Date,
-                     &timestructure.Hours, &timestructure.Minutes, &timestructure.Seconds,
-                     &utcoffset);
-
-    if (matches != 7)
+    if (strlen(response) < 26)
     {
-        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
+        DEBUG_PRINTF("Response:\"%s\" Too short\r\n", response);
         return EBADMSG;
     }
+
+    const char *p = response;
+    while (*p && *p != '"')
+    {
+        p++;
+    }
+    if (*p == '"')
+        p++;
+
+    // Example format: 80/01/06,02:28:31
+    datestructure.Year = atoi(p);         // YY
+    datestructure.Month = atoi(p + 3);    // MM
+    datestructure.Date = atoi(p + 6);     // DD
+    timestructure.Hours = atoi(p + 9);    // hh
+    timestructure.Minutes = atoi(p + 12); // mm
+    timestructure.Seconds = atoi(p + 15); // ss
 
     memcpy(date, &datestructure, sizeof(RTC_DateTypeDef));
     memcpy(time, &timestructure, sizeof(RTC_TimeTypeDef));
@@ -609,7 +623,8 @@ uint8_t at_send_sms(const char *sms_address, const char *sms_message)
     return ret;
 }
 
-uint8_t at_call_status(call_status_t **status, int max_items){
+uint8_t at_call_status(call_status_t **status, int max_items)
+{
     char response[512], *splt_ptr;
     uint8_t ret = 0;
     int matches, ccidx, dir, stat, mode, mpty;
@@ -633,25 +648,28 @@ uint8_t at_call_status(call_status_t **status, int max_items){
 
         // +CLCC: <ccid1>,<dir>,<stat>,<mode>,<mpty>, [number???]
         matches = sscanf(splt_ptr, "+CLCC: %d,%d,%d,%d,%d,%15s",
-            &ccidx, &dir, &stat, &mode, &mpty, number);
+                         &ccidx, &dir, &stat, &mode, &mpty, number);
 
         if (matches != 6)
         {
             DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
             return EBADMSG;
-        }    
+        }
 
-        if (dir > DIR_MT) {
+        if (dir > DIR_MT)
+        {
             DEBUG_PRINTF("Bad Dir Value %d\r\n", dir);
             return EBADMSG;
         }
 
-        if (mode > MODE_UNKNOWN) {
+        if (mode > MODE_UNKNOWN)
+        {
             DEBUG_PRINTF("Bad mode Value %d\r\n", mode);
             return EBADMSG;
         }
 
-        if (mpty > MPTY_YES) {
+        if (mpty > MPTY_YES)
+        {
             DEBUG_PRINTF("Bad moty Value %d\r\n", mpty);
             return EBADMSG;
         }
@@ -799,10 +817,9 @@ uint8_t at_call_hook(void)
         DEBUG_PRINTF("Response: %s\r\n", response);
         return EBADMSG;
     }
- 
+
     return ret;
 }
-
 
 uint8_t at_set_echo(bool echo)
 {
