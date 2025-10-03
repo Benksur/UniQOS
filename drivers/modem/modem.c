@@ -38,13 +38,16 @@ uint8_t modem_init(void)
     HAL_Delay(1000);
 
     // test AT startup
-    while(1){
+    while (1)
+    {
         DEBUG_PRINTF("Sending: AT\r\n");
         ret |= modem_send_command("AT", response, sizeof(response), TIMEOUT_2S);
         if (ret || !modem_check_response_ok(response))
         {
             DEBUG_PRINTF("Response: %s\r\n", response);
-        } else {
+        }
+        else
+        {
             break;
         }
         DEBUG_PRINTF("Response: %s\r\n", response);
@@ -244,30 +247,68 @@ uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
     if (modem_send_command(cmd, response, sizeof(response), TIMEOUT_5S) != 0)
         return 1; // error
 
-    // Parse sender number
+    // Parse sender number (second quoted field)
+    // Format: +CMGR: "status","phone_number",,"timestamp"
     char *p = strstr(response, "+CMGR:");
     if (p)
     {
-        char *q1 = strchr(p, '"'); // first quote
+        // Skip first quoted field (status)
+        char *q1 = strchr(p, '"');
         if (q1)
         {
-            q1++;
+            q1++; // Move past first quote
             char *q2 = strchr(q1, '"');
-            if (q2 && (q2 - q1) < sender_size)
+            if (q2)
             {
-                strncpy(sender, q1, q2 - q1);
-                sender[q2 - q1] = '\0';
+                // Now find second quoted field (phone number)
+                char *q3 = strchr(q2 + 1, '"');
+                if (q3)
+                {
+                    q3++; // Move past opening quote
+                    char *q4 = strchr(q3, '"');
+                    if (q4 && (q4 - q3) < sender_size)
+                    {
+                        strncpy(sender, q3, q4 - q3);
+                        sender[q4 - q3] = '\0';
+                    }
+                }
             }
         }
     }
 
     // Find the actual message (after the header line)
-    char *msg = strstr(response, "\r\n");
+    // The message is on the line(s) after the +CMGR header
+    char *msg = strstr(response, "+CMGR:");
     if (msg)
     {
-        msg += 2;
-        strncpy(message, msg, message_size - 1);
-        message[message_size - 1] = '\0';
+        // Find the end of the +CMGR header line
+        msg = strstr(msg, "\r\n");
+        if (msg)
+        {
+            msg += 2; // Skip \r\n to start of message
+
+            // Find message end (before \r\n\r\nOK or \r\nOK)
+            char *msg_end = strstr(msg, "\r\n\r\nOK");
+            if (!msg_end)
+            {
+                msg_end = strstr(msg, "\r\nOK");
+            }
+
+            if (msg_end)
+            {
+                size_t len = msg_end - msg;
+                if (len >= message_size)
+                    len = message_size - 1;
+                strncpy(message, msg, len);
+                message[len] = '\0';
+            }
+            else
+            {
+                // Fallback: copy everything remaining
+                strncpy(message, msg, message_size - 1);
+                message[message_size - 1] = '\0';
+            }
+        }
     }
 
     return 0;
