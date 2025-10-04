@@ -1,6 +1,13 @@
 # UniQOS
 
-Custom embedded operating system for mobile devices built on STM32 ecosystem.
+A FreeRTOS based operating system for a custom embedded mobile phone inspired by the Nokia 2730c.
+
+Project under the supervision of Professor Pauline Pounds.
+
+UQ Phone Team Year 1 (2025):
+Ty Behnke (Firmware)
+James Wood (Hardware)
+Caiyan Jin (UI/UX Design)
 
 ## Dependencies
 
@@ -32,9 +39,5 @@ doxygen Doxyfile
 ```
 
 The documentation will be generated in the `docs/html/` directory. Open `docs/html/index.html` in your web browser to view the complete API documentation.
-
-## Project Information
-
-For detailed project information, architecture overview, hardware components, and development guidelines, see the [project documentation](docs/html/index.html) or the [mainpage.dox](docs/mainpage.dox) file.
 
 

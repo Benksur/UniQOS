@@ -34,6 +34,7 @@
  * 
  * - **STM32H7xx:** Microcontroller
  * - **RC7620:** Cellular Module
+ * - **ST7789V:** 240x320 TFT LCD
  * - **NAU88C22:** Audio Codec
  * - **DRV2603:** Vibration Motor Driver
  * - **LSM6DSVTR:** Motion sensor
