@@ -183,14 +183,22 @@ uint8_t modem_get_signal_strength(int16_t *rssi, uint8_t *ber)
     return at_get_signal_strength(rssi, ber);
 }
 
+uint8_t modem_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
+{
+    return at_get_clock(date, time);
+}
+
 ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index)
 {
     char buffer[128];
+    uint16_t received_len = 0;
 
-    // Non-blocking UART read to check for URCs (Unsolicited Result Codes)
-    if (HAL_UART_Receive(&MODEM_UART_HANDLE, (uint8_t *)buffer, sizeof(buffer) - 1, 100) == HAL_OK)
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle(&MODEM_UART_HANDLE, (uint8_t *)buffer, sizeof(buffer) - 1, &received_len, 100);
+
+    if ((status == HAL_OK || status == HAL_TIMEOUT) && received_len > 0)
     {
-        buffer[127] = '\0';
+        // Null-terminate at actual received length
+        buffer[received_len] = '\0';
 
         // Check for incoming call (RING or +CLIP with caller ID)
         if (strstr(buffer, "RING") != NULL)
