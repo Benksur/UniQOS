@@ -19,6 +19,16 @@ static uint8_t dbm_to_signal_bars(int16_t dbm_value)
     return 5;     // Excellent signal (5 bars)
 }
 
+// Sync onboard RTC with cellular modem clock via display task
+static uint8_t sync_rtc_with_modem(DisplayTaskContext *display_ctx)
+{
+    static RtcSyncData rtc_data; // Static to persist until display task processes it
+    modem_get_clock(&rtc_data.date, &rtc_data.time);
+    DisplayTask_PostCommand(display_ctx, DISPLAY_SYNC_RTC, &rtc_data);
+
+    return 0;
+}
+
 // Configure EXTI interrupt for RI pin (PC6)
 static void configure_ri_interrupt(void)
 {
@@ -156,6 +166,8 @@ static void cellular_task_main(void *pvParameters)
     CellularTaskContext *ctx = (CellularTaskContext *)pvParameters;
     CellularMessage msg;
     uint32_t last_signal_check = 0;
+    uint32_t last_rtc_sync = 0;
+    bool rtc_synced_on_boot = false;
 
     // modem_init();
     // pull down to prevent sleep
@@ -252,6 +264,23 @@ static void cellular_task_main(void *pvParameters)
                     DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SET_SIGNAL_STATUS, &ctx->signal_bars);
                 }
             }
+        }
+
+        // RTC synchronization with modem clock
+        // On boot: sync after modem is initialized (detected by first signal check)
+        // Periodic: sync every 24 hours to compensate for RTC drift
+        uint32_t current_tick = HAL_GetTick();
+        if (!rtc_synced_on_boot && last_signal_check > 0)
+        {
+
+            sync_rtc_with_modem(ctx->display_ctx);
+            rtc_synced_on_boot = true;
+            last_rtc_sync = current_tick;
+        }
+        else if (rtc_synced_on_boot && (current_tick - last_rtc_sync >= 86400000)) // 24 hours in milliseconds
+        {
+            sync_rtc_with_modem(ctx->display_ctx);
+            last_rtc_sync = current_tick;
         }
 
         // Process any queued commands (non-blocking)

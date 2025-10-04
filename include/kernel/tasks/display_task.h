@@ -35,6 +35,7 @@ typedef enum
     DISPLAY_DIALLING,
     DISPLAY_SHOW_SMS,
     DISPLAY_SET_BATTERY_PAGE,
+    DISPLAY_SYNC_RTC,
     DISPLAY_CMD_COUNT
 } DisplayCommand;
 
@@ -51,6 +52,12 @@ typedef struct
     RTC_TimeTypeDef time;
     RTC_DateTypeDef date;
 } DisplayStatus;
+
+typedef struct
+{
+    RTC_TimeTypeDef time;
+    RTC_DateTypeDef date;
+} RtcSyncData;
 
 // Forward declarations
 typedef struct CallStateContext CallStateContext;

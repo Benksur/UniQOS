@@ -183,6 +183,11 @@ uint8_t modem_get_signal_strength(int16_t *rssi, uint8_t *ber)
     return at_get_signal_strength(rssi, ber);
 }
 
+uint8_t modem_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
+{
+    return at_get_clock(date, time);
+}
+
 ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index)
 {
     char buffer[128];

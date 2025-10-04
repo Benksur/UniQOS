@@ -196,6 +196,16 @@ static void handle_set_battery_page(DisplayTaskContext *ctx, DisplayMessage *msg
     screen_handle_response(PAGE_RESPONSE_BATTERY_HC, msg->data);
 }
 
+static void handle_sync_rtc(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
+    RtcSyncData *rtc_data = (RtcSyncData *)msg->data;
+    if (rtc_data)
+    {
+        HAL_RTC_SetTime(&hrtc, &rtc_data->time, RTC_FORMAT_BIN);
+        HAL_RTC_SetDate(&hrtc, &rtc_data->date, RTC_FORMAT_BIN);
+    }
+}
+
 static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_HANDLE_INPUT] = handle_input_event,
     [DISPLAY_SET_PAGE] = handle_set_page,
@@ -209,6 +219,7 @@ static DisplayCmdHandler display_cmd_table[] = {
     [DISPLAY_DIALLING] = handle_dialling,
     [DISPLAY_SHOW_SMS] = handle_show_sms,
     [DISPLAY_SET_BATTERY_PAGE] = handle_set_battery_page,
+    [DISPLAY_SYNC_RTC] = handle_sync_rtc,
 };
 
 static void dispatch_display_command(DisplayTaskContext *ctx, DisplayMessage *msg)
