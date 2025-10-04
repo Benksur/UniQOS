@@ -1,3 +1,13 @@
+/**
+ * @file contact_details.h
+ * @brief Contact details view page
+ * @ingroup ui_pages
+ *
+ * Provides the contact details interface for viewing and managing individual
+ * contact information. Displays contact data and provides options for calling,
+ * messaging, and editing contacts.
+ */
+
 #ifndef CONTACT_DETAILS_H
 #define CONTACT_DETAILS_H
 
@@ -16,8 +26,16 @@
 #include "new_sms.h"
 #include "call.h"
 
-Page* contact_details_page_create(ContactRecord contact);
-
-
+/**
+ * @ingroup ui_pages
+ * @brief Create a contact details page
+ * @param contact Contact record to display
+ * @return Pointer to the contact details page structure
+ *
+ * Creates and initializes a new contact details page for the specified
+ * contact. The page displays contact information and provides options
+ * for calling, messaging, and editing the contact.
+ */
+Page *contact_details_page_create(ContactRecord contact);
 
 #endif

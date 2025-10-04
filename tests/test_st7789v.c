@@ -1,3 +1,12 @@
+/**
+ * @file test_st7789v.c
+ * @brief ST7789V display controller test program
+ * @ingroup tests
+ *
+ * Test program for the ST7789V LCD display controller including graphics
+ * rendering, color testing, and UI component demonstration.
+ */
+
 #include "st7789v.h"
 #include "display.h"
 #include "theme.h"
@@ -25,19 +34,19 @@ void PeriphCommonClock_Config(void);
 void PeriphCommonClock_Config(void);
 
 int16_t tick[] = {
-  // sharp attack
-  0, 8000, 16380, 24000, 32760, 32760, 32760, 32760, 32760, 32760,
-  // sustain
-  30000, 28000, 26000, 24000, 22000, 20000, 18000, 16000, 14000, 12000,
-  // decay
-  10000, 8000, 6000, 4000, 3000, 2500, 2000, 1500, 1000, 800,
-  600, 400, 300, 200, 150, 100, 75, 50, 25, 10,
-  5, 2, 1, 0, 0, 0, 0, 0, 0, 0};
+    // sharp attack
+    0, 8000, 16380, 24000, 32760, 32760, 32760, 32760, 32760, 32760,
+    // sustain
+    30000, 28000, 26000, 24000, 22000, 20000, 18000, 16000, 14000, 12000,
+    // decay
+    10000, 8000, 6000, 4000, 3000, 2500, 2000, 1500, 1000, 800,
+    600, 400, 300, 200, 150, 100, 75, 50, 25, 10,
+    5, 2, 1, 0, 0, 0, 0, 0, 0, 0};
 
 int16_t bloop_base[] = {
-  0, 8148, 15715, 22237, 27311, 30620, 31963, 31277, 28634, 24224,
-  18349, 11401, 3832, -3903, -11477, -18425, -24268, -28649, -31276, -31921,
-  -30524, -27186, -22158, -15799, -8537};
+    0, 8148, 15715, 22237, 27311, 30620, 31963, 31277, 28634, 24224,
+    18349, 11401, 3832, -3903, -11477, -18425, -24268, -28649, -31276, -31921,
+    -30524, -27186, -22158, -15799, -8537};
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -74,9 +83,8 @@ int main(void)
   MX_I2S1_Init();
   MX_RTC_Init();
 
-  
-  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,LOAD_SW_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET); //backlight
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET); // backlight
 
   // MX_TIM13_Init();
   // HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);
@@ -161,7 +169,7 @@ int main(void)
           {
             for (int i = 0; i < BLOOP_REPEAT_COUNT; i++)
             {
-                HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)bloop_base, BLOOP_BASE_SIZE, HAL_MAX_DELAY);
+              HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)bloop_base, BLOOP_BASE_SIZE, HAL_MAX_DELAY);
             }
           }
           // Play sound for numeric keypad presses
@@ -294,7 +302,7 @@ void Error_Handler(void)
   while (1)
   {
     // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
-    HAL_Delay(100);                        // Blink rate
+    HAL_Delay(100); // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */
 }
@@ -316,18 +324,17 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-
 /**
-  * @brief Peripherals Common Clock Configuration
-  * @retval None
-  */
+ * @brief Peripherals Common Clock Configuration
+ * @retval None
+ */
 void PeriphCommonClock_Config(void)
 {
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Initializes the peripherals clock
-  */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1|RCC_PERIPHCLK_SPI4;
+   */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SPI4;
   PeriphClkInitStruct.PLL3.PLL3M = 4;
   PeriphClkInitStruct.PLL3.PLL3N = 12;
   PeriphClkInitStruct.PLL3.PLL3P = 3;

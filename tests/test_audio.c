@@ -1,3 +1,12 @@
+/**
+ * @file test_audio.c
+ * @brief Audio system test program
+ * @ingroup tests
+ *
+ * Comprehensive test program for the audio system including NAU88C22 codec,
+ * audio mixer, oscillator testing, and keypad-controlled musical playback.
+ */
+
 #include "st7789v.h"
 #include "display.h"
 #include "theme.h"
@@ -42,7 +51,7 @@ void MPU_Config(void);
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 
-static uint8_t write_reg  (uint8_t reg_addr, uint16_t reg_data)
+static uint8_t write_reg(uint8_t reg_addr, uint16_t reg_data)
 {
     uint8_t data[2];
     data[0] = (reg_addr << 1) | ((reg_data >> 8) & 0x01);
@@ -53,7 +62,7 @@ static uint8_t write_reg  (uint8_t reg_addr, uint16_t reg_data)
         return EIO;
     }
 
-    return 0; 
+    return 0;
 }
 
 int main(void)
@@ -73,7 +82,6 @@ int main(void)
     //   htim2.Instance->CCR3 = 80;
     modem_power_on();
 
-
     uint8_t status;
     static const IAudioDriver_t *codec = NULL;
     codec = nau88c22_get_driver();
@@ -83,9 +91,9 @@ int main(void)
     codec->speaker.mute(false);
     codec->speaker.mic.mute(false);
     codec->speaker.mic.set_volume(100);
-    // write_reg(0x05, 0x001); 
+    // write_reg(0x05, 0x001);
 
-    HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port,AUDIO_SW_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port, AUDIO_SW_Pin, GPIO_PIN_RESET);
 
     display_init();
     keypad_init();
@@ -115,9 +123,6 @@ int main(void)
     //   mixer_add(&chord, 392.00f);
 
     int octave_shift = 0;
-
-   
-
 
     while (1)
     {
@@ -293,10 +298,13 @@ int main(void)
         //                 mixer_init(&chord);
         //                 play_chord(&chord, 200);
         // Update keypad states and handle all inputs
-        if (HAL_GPIO_ReadPin(HP_DET_GPIO_Port, HP_DET_Pin) == GPIO_PIN_SET) {
+        if (HAL_GPIO_ReadPin(HP_DET_GPIO_Port, HP_DET_Pin) == GPIO_PIN_SET)
+        {
             codec->headphones.mute(true);
             codec->speaker.mute(false);
-        } else {
+        }
+        else
+        {
             codec->speaker.mute(true);
             codec->headphones.mute(false);
         }
@@ -324,7 +332,7 @@ int main(void)
                         // Phrase 1: ^E ^E ^E ^C ^E ^G G
                         mixer_init(&chord);
                         mixer_add(&chord, NOTE_OCTAVE(NOTE_E, 0)); // ^E
-                        play_chord(&chord, 200); // short
+                        play_chord(&chord, 200);                   // short
 
                         mixer_init(&chord);
                         play_chord(&chord, 150); // short rest
@@ -345,7 +353,7 @@ int main(void)
 
                         mixer_init(&chord);
                         mixer_add(&chord, NOTE_OCTAVE(NOTE_C, 0)); // ^C
-                        play_chord(&chord, 300); // long
+                        play_chord(&chord, 300);                   // long
 
                         mixer_init(&chord);
                         play_chord(&chord, 200); // short rest
@@ -359,14 +367,14 @@ int main(void)
 
                         mixer_init(&chord);
                         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, 0)); // G
-                        play_chord(&chord, 300); // long
+                        play_chord(&chord, 300);                   // long
 
                         mixer_init(&chord);
                         play_chord(&chord, 150); // short rest
 
                         mixer_init(&chord);
                         mixer_add(&chord, NOTE_OCTAVE(NOTE_G, -1)); // G
-                        play_chord(&chord, 400); // held
+                        play_chord(&chord, 400);                    // held
 
                         mixer_init(&chord);
                         play_chord(&chord, 200); // rest
@@ -659,32 +667,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
-
 /**
-  * @brief Peripherals Common Clock Configuration
-  * @retval None
-  */
+ * @brief Peripherals Common Clock Configuration
+ * @retval None
+ */
 void PeriphCommonClock_Config(void)
 {
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Initializes the peripherals clock
-  */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1|RCC_PERIPHCLK_SPI4;
-  PeriphClkInitStruct.PLL3.PLL3M = 4;
-  PeriphClkInitStruct.PLL3.PLL3N = 12;
-  PeriphClkInitStruct.PLL3.PLL3P = 3;
-  PeriphClkInitStruct.PLL3.PLL3Q = 1;
-  PeriphClkInitStruct.PLL3.PLL3R = 2;
-  PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_3;
-  PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
-  PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
-  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
-  PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PLL3;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    /** Initializes the peripherals clock
+     */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SPI4;
+    PeriphClkInitStruct.PLL3.PLL3M = 4;
+    PeriphClkInitStruct.PLL3.PLL3N = 12;
+    PeriphClkInitStruct.PLL3.PLL3P = 3;
+    PeriphClkInitStruct.PLL3.PLL3Q = 1;
+    PeriphClkInitStruct.PLL3.PLL3R = 2;
+    PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_3;
+    PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+    PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+    PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+    PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PLL3;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /**

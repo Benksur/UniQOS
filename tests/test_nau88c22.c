@@ -1,3 +1,12 @@
+/**
+ * @file test_nau88c22.c
+ * @brief NAU88C22 audio codec test program
+ * @ingroup tests
+ *
+ * Test program for the NAU88C22 audio codec including I2C communication,
+ * audio playback, and codec configuration verification.
+ */
+
 #include "nau88c22.h"
 #include "sm64_mario_boing.h"
 #include "i2c.h"
@@ -13,41 +22,40 @@ const int16_t sine_wave[48] = {
     28377, 25995, 23169, 19947, 16383, 12539, 8480, 4276,
     0, -4276, -8480, -12539, -16383, -19947, -23169, -25995,
     -28377, -30272, -31650, -32486, -32767, -32486, -31650, -30272,
-    -28377, -25995, -23169, -19947, -16383, -12539, -8480, -4276
-};
+    -28377, -25995, -23169, -19947, -16383, -12539, -8480, -4276};
 
 int main(void)
 {
-    uint8_t status;
-    uint16_t i = 0;
-    int16_t audio_buffer[2];
-    static const IAudioDriver_t* codec = NULL;
-    
-    MPU_Config();
-    HAL_Init();
-    SystemClock_Config();
+  uint8_t status;
+  uint16_t i = 0;
+  int16_t audio_buffer[2];
+  static const IAudioDriver_t *codec = NULL;
 
-    MX_GPIO_Init();
-    MX_I2C1_Init();
-    MX_I2S1_Init();
+  MPU_Config();
+  HAL_Init();
+  SystemClock_Config();
 
-    codec = nau88c22_get_driver();
-    codec->init();
-    codec->speaker.mute(false);
-    codec->speaker.set_volume(100);
+  MX_GPIO_Init();
+  MX_I2C1_Init();
+  MX_I2S1_Init();
 
-    // Reset the codec first - toggle LED during initialization
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-    HAL_Delay(100);
-    
+  codec = nau88c22_get_driver();
+  codec->init();
+  codec->speaker.mute(false);
+  codec->speaker.set_volume(100);
 
-    HAL_Delay(100);
+  // Reset the codec first - toggle LED during initialization
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+  HAL_Delay(100);
 
-    while(1) {
+  HAL_Delay(100);
 
-        HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t*)audio, 7840, HAL_MAX_DELAY);
-        HAL_Delay(2000);
-    }
+  while (1)
+  {
+
+    HAL_I2S_Transmit(&AUDIO_I2S_HANDLE, (uint16_t *)audio, 7840, HAL_MAX_DELAY);
+    HAL_Delay(2000);
+  }
 }
 
 void SystemClock_Config(void)
@@ -56,19 +64,21 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Supply configuration update enable
-  */
+   */
   HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+  while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY))
+  {
+  }
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+   * in the RCC_OscInitTypeDef structure.
+   */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = 64;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -88,10 +98,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
@@ -110,7 +118,7 @@ void SystemClock_Config(void)
 
 /* USER CODE END 4 */
 
- /* MPU Configuration */
+/* MPU Configuration */
 
 void MPU_Config(void)
 {
@@ -120,7 +128,7 @@ void MPU_Config(void)
   HAL_MPU_Disable();
 
   /** Initializes and configures the Region and the memory to be protected
-  */
+   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER0;
   MPU_InitStruct.BaseAddress = 0x0;
@@ -136,17 +144,16 @@ void MPU_Config(void)
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
 }
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM1 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
@@ -162,9 +169,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -176,14 +183,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
