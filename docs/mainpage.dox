@@ -13,7 +13,6 @@
  * @subsection doc_organization Documentation Organization
  * 
  * The documentation is organized into logical **module groups** for easy navigation:
- * - Use the **Modules** tab to browse the hierarchical API structure
  * - See @ref drivers "Hardware Drivers" for all peripheral and device drivers
  * - See @ref kernel "Kernel" for RTOS tasks and core system components
  * - See @ref ui "User Interface" for UI pages, components, and rendering
@@ -53,18 +52,16 @@
  * - **BQ27441:** Fuel Gauge IC
  * - **MCP73871:** Battery Management
  * 
- * @section task_mapping_sec Planned Task Mapping
+ * @section task_mapping_sec Task Priorities
  * 
- * | Task               | Priority |
- * | :----------------- | -------: |
- * | Cellular Task      |     High |
- * | Audio Task         |     High |
- * | Call State Task    |   Medium |
- * | Power Management   |   Medium |
- * | Watchdog Task      |   Medium |
- * | UI/Display Task    |  Low-mid |
- * | Input handler Task |  Low-mid |
- * | Logging Task       |      Low |
+ * | Task               |   Priority  |
+ * | :----------------- | ----------: |
+ * | Audio Task         |        High |
+ * | Call State Task    | AboveNormal |
+ * | Cellular Task      |      Normal |
+ * | Display Task       |      Normal |
+ * | Input Task         |      Normal |
+ * | Power Task         |         Low |
  * 
  * @section task_comm_sec Task Communication
  * 

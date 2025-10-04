@@ -1,7 +1,7 @@
 /**
  * @file iaudio_driver.h
  * @brief Audio driver interface definitions
- * @ingroup audio_drivers
+ * @ingroup codec_vtable
  *
  * Defines the abstract interface for audio drivers. This allows the system
  * to work with different audio codecs through a common interface.
@@ -12,7 +12,7 @@
 
 /**
  * @brief Microphone interface structure
- * @ingroup audio_drivers
+ * @ingroup codec_vtable
  *
  * Defines the interface for microphone control operations.
  */
@@ -24,7 +24,7 @@ typedef struct
 
 /**
  * @brief Speaker interface structure
- * @ingroup audio_drivers
+ * @ingroup codec_vtable
  *
  * Defines the interface for speaker control operations.
  */
@@ -37,7 +37,7 @@ typedef struct
 
 /**
  * @brief Headphones interface structure
- * @ingroup audio_drivers
+ * @ingroup codec_vtable
  *
  * Defines the interface for headphone control operations.
  */
@@ -50,7 +50,7 @@ typedef struct
 
 /**
  * @brief Main audio driver interface structure
- * @ingroup audio_drivers
+ * @ingroup codec_vtable
  *
  * Defines the complete interface for audio driver implementations.
  * All audio drivers must implement this interface.

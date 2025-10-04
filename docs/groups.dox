@@ -24,10 +24,17 @@
  */
 
 /**
- * @defgroup nau88c22_driver NAU88C22 Audio Codec
+ * @defgroup nau88c22_driver NAU88C22
  * @ingroup audio_drivers
  * @brief NAU88C22 I2S audio codec driver
  */
+
+/**
+ * @defgroup codec_vtable VTABLE
+ * @ingroup audio_drivers
+ * @brief Interface that must be utilised for the codec driver
+ */
+
 
 /**
  * @defgroup display_drivers Display Drivers
@@ -36,13 +43,25 @@
  */
 
 /**
- * @defgroup st7789v_driver ST7789V Display Controller
+ * @defgroup st7789v_driver ST7789V
  * @ingroup display_drivers
  * @brief Low-level ST7789V LCD controller driver
  */
 
 /**
- * @defgroup display_driver High-Level Display API
+ * @defgroup display_vtable VTABLE
+ * @ingroup display_drivers
+ * @brief Interface that must be used by the display driver
+ */
+
+ /**
+ * @defgroup display_controller Display Controller
+ * @ingroup display_drivers
+ * @brief Controller used by the display driver
+ */
+
+/**
+ * @defgroup display_driver Display API
  * @ingroup display_drivers
  * @brief High-level graphics and drawing functions
  */

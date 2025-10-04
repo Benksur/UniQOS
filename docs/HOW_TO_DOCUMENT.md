@@ -13,7 +13,7 @@ This guide explains how to add Doxygen documentation to the UniQOS codebase usin
 
 Every file should start with a file header:
 
-```c
+```
 /**
  * @file filename.h
  * @brief Brief description of what this file does
@@ -29,7 +29,7 @@ Every file should start with a file header:
 
 Document every public function:
 
-```c
+```
 /**
  * @ingroup group_name
  * @brief Brief one-line description
@@ -47,7 +47,7 @@ returntype function_name(type1 param1, type2 param2);
 
 Document structs and their members:
 
-```c
+```
 /**
  * @brief Structure description
  * @ingroup group_name
@@ -66,7 +66,7 @@ typedef struct {
 
 Document enums and their values:
 
-```c
+```
 /**
  * @brief Enum description
  * @ingroup group_name
@@ -84,7 +84,7 @@ typedef enum {
 
 Document important constants:
 
-```c
+```
 /** @ingroup group_name
  *  @brief Description of this constant */
 #define MY_CONSTANT 42
@@ -143,7 +143,7 @@ Use these `@ingroup` tags to organize your code:
 - Note any side effects or error conditions
 
 ### 3. Use Inline Comments for Members
-```c
+```
 typedef struct {
     int voltage;     /**< Battery voltage in millivolts */
     int current;     /**< Current draw in milliamperes */
@@ -152,7 +152,7 @@ typedef struct {
 ```
 
 ### 4. Cross-Reference Related Code
-```c
+```
 /**
  * @brief Initialize the display
  * @see display_fill() for filling the screen
@@ -162,7 +162,7 @@ void display_init(void);
 ```
 
 ### 5. Mark Deprecated Items
-```c
+```
 /**
  * @deprecated Use new_function() instead
  * @brief Old function description
@@ -186,7 +186,7 @@ The generated documentation will be available in:
 ## Common Patterns
 
 ### Driver Functions
-```c
+```
 /**
  * @ingroup audio_drivers
  * @brief Initialize the audio codec
@@ -199,7 +199,7 @@ uint8_t nau88c22_init(void);
 ```
 
 ### UI Component Functions
-```c
+```
 /**
  * @ingroup ui_components
  * @brief Draw a button component
@@ -215,7 +215,7 @@ void draw_button(uint16_t x, uint16_t y, const char* text, bool pressed);
 ```
 
 ### Data Structure with Members
-```c
+```
 /**
  * @brief Contact information structure
  * @ingroup data_structures

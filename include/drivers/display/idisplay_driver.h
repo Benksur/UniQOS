@@ -1,7 +1,7 @@
 /**
  * @file idisplay_driver.h
  * @brief Display driver interface definitions
- * @ingroup display_drivers
+ * @ingroup display_vtable
  *
  * Defines the abstract interface for display drivers. This allows the system
  * to work with different display controllers through a common interface.
@@ -12,7 +12,7 @@
 
 /**
  * @brief Display driver interface structure
- * @ingroup display_drivers
+ * @ingroup display_vtable
  *
  * Defines the complete interface for display driver implementations.
  * All display drivers must implement this interface.
