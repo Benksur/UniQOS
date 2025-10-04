@@ -284,7 +284,7 @@ static void audio_task_main(void *pvParameters)
     // ctx->codec->speaker.mic.mute(ctx->settings.mic_muted);
     // ctx->codec->headphones.mic.mute(ctx->settings.mic_muted);
     
-    HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port,AUDIO_SW_Pin, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port,AUDIO_SW_Pin, GPIO_PIN_RESET);
 
     for (;;)
     {
@@ -293,7 +293,7 @@ static void audio_task_main(void *pvParameters)
             dispatch_audio_command(ctx, &msg);
         }
 
-        if (HAL_GPIO_ReadPin(HP_DET_GPIO_Port, HP_DET_Pin) == GPIO_PIN_SET) 
+        if (HAL_GPIO_ReadPin(HP_DET_GPIO_Port, HP_DET_Pin) == GPIO_PIN_RESET) 
         {
             // No HP
             ctx->codec->headphones.mute(true);

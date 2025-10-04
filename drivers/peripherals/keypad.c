@@ -52,7 +52,7 @@ static const button_map_t button_map[] = {
     
     // Phone buttons
     {PB_CALL_GPIO_Port, PB_CALL_Pin, INPUT_PICKUP, 19},
-    {PB_END_CALL_GPIO_Port, PB_END_CALL_Pin, INPUT_HANGUP, 20},
+    {PB_HANG_GPIO_Port, PB_HANG_Pin, INPUT_HANGUP, 20},
     
     // Volume and power buttons
     {PB_VOL_UP_GPIO_Port, PB_VOL_UP_Pin, INPUT_VOLUME_UP, 21},
@@ -89,7 +89,7 @@ void keypad_update_states(void) {
         button_debounce_t* debounce = &button_debounce[i];
         
         // Read current GPIO state
-        bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_RESET);
+        bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_SET);
         
         // Debouncing logic
         if (current_gpio_state != debounce->is_pressed) {

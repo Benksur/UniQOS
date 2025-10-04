@@ -190,7 +190,8 @@ static void handle_show_sms(DisplayTaskContext *ctx, DisplayMessage *msg)
     }
 }
 
-static void handle_set_battery_page(DisplayTaskContext *ctx, DisplayMessage *msg) {
+static void handle_set_battery_page(DisplayTaskContext *ctx, DisplayMessage *msg)
+{
 
     screen_handle_response(PAGE_RESPONSE_BATTERY_HC, msg->data);
 }
@@ -241,8 +242,8 @@ static void display_task_main(void *pvParameters)
     screen_tick();
 
     // turn backlight full power
-    HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET); 
-    HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET); //backlight
+    // HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET); // backlight
 
     // Task main loop - handles messages and ticks like the test file
     for (;;)
@@ -252,7 +253,7 @@ static void display_task_main(void *pvParameters)
         while (xQueueReceive(ctx->queue, &msg, 0))
         {
             dispatch_display_command(ctx, &msg);
-            if (++processed >= 10)
+            if (++processed >= 5)
             {
                 break;
             }
@@ -353,8 +354,10 @@ void DisplayTask_SetCellularContext(DisplayTaskContext *ctx, CellularTaskContext
     }
 }
 
-void DisplayTask_SetPowerContext(DisplayTaskContext *ctx, PowerTaskContext *power_ctx) {
-    if (ctx) {
+void DisplayTask_SetPowerContext(DisplayTaskContext *ctx, PowerTaskContext *power_ctx)
+{
+    if (ctx)
+    {
         ctx->power_ctx = power_ctx;
     }
 }
