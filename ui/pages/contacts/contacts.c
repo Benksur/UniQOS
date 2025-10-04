@@ -33,6 +33,25 @@ static char *names[] = {
     "Liam Neeson",
 };
 
+static char *phones[] = {
+    "+61413279693",
+    "+61234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+    "1234567890",
+};
+
 static void mark_row_clean(Page *self, int row)
 {
     int tile_y = row;
@@ -125,11 +144,12 @@ static void contacts_handle_input(Page *self, int event_type)
     {
         ContactRecord contact = {
             .name_len = strlen(names[state->cursor.y]),
-            .phone_len = 10,
-            .phone = "1234567890",
+            .phone_len = SMS_MAX_PHONE_LENGTH - 2,
             .offset_id = 0};
         strncpy(contact.name, names[state->cursor.y], sizeof(contact.name) - 1);
         contact.name[sizeof(contact.name) - 1] = '\0';
+        strncpy(contact.phone, phones[state->cursor.y], sizeof(contact.phone) - 1);
+        contact.phone[sizeof(contact.phone) - 1] = '\0';
         Page *details_page = contact_details_page_create(contact);
         screen_push_page(details_page);
     }
@@ -155,7 +175,7 @@ static void contacts_data_request(int type, void *req);
 
 static void contacts_get_page(int type, void *req)
 {
-    screen_data_request(type, req);
+    screen_request(type, req);
 }
 
 Page *contacts_page_create()

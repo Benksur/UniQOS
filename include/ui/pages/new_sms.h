@@ -11,6 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-Page* new_sms_page_create();
+Page *new_sms_page_create(const char *phone_number);
 
 #endif

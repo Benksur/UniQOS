@@ -68,5 +68,17 @@ uint8_t bq27441_init(void);
 uint8_t bq27441_write_reg(uint8_t reg_addr, uint16_t *reg_data);
 uint8_t bq27441_read_reg(uint8_t reg_addr, uint16_t *reg_data);
 uint8_t bq27441_read_ctrl_reg(uint16_t subcmd, uint16_t *response);
+uint16_t bq27441_SOC(void);
+int16_t bq27441_avg_current(void);
+uint16_t bq27441_voltage(void);
+
+// Load compensated values
+uint16_t bq27441_available_capacity(void);
+uint16_t bq27441_full_capacity(void);
+
+// data returned is a bit weird
+// LSB corresponds to SOH %
+// MSB indicate status
+uint16_t bq27441_health(void);
 
 #endif

@@ -3,10 +3,14 @@ TARGET = Firmware
 BOARD ?= dev
 
 # Define linker and startup file based on BOARD
-ifeq ($(BOARD), pcb)
+ifeq ($(BOARD), pcb-old)
 LDSCRIPT = STM32H733XG_FLASH.ld
 STARTUP_FILE = startup_stm32h733xx.s
 BOARD_C_DEF = -DSTM32H733xx
+else ifeq ($(BOARD), pcb)
+LDSCRIPT = STM32H723XG_FLASH.ld
+STARTUP_FILE = startup_stm32h723xx.s
+BOARD_C_DEF = -DSTM32H723xx
 else ifeq ($(BOARD), dev)
 LDSCRIPT = STM32H753XX_FLASH.ld
 STARTUP_FILE = startup_stm32h753xx.s
@@ -72,6 +76,9 @@ $(CSRCS) \
 ../../ui/components/contact_row.c \
 ../../ui/components/option_row.c \
 ../../ui/components/bottom_bar.c \
+../../ui/pages/games/snake.c\
+../../ui/pages/games/sweeper.c\
+../../ui/pages/debug/power.c\
 ../../ui/overlays/option_overlay.c \
 ../../ui/overlays/incoming_call.c \
 ../../ui/overlays/incoming_text.c \
@@ -96,6 +103,8 @@ $(CSRCS) \
 ../../kernel/tasks/audio_task.c \
 ../../kernel/tasks/call_state.c \
 ../../kernel/tasks/test_task.c \
+../../kernel/tasks/cellular_task.c \
+../../kernel/tasks/power_task.c \
 ../../kernel/main.c 
 
 

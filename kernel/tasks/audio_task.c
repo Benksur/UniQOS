@@ -254,15 +254,20 @@ static void dispatch_audio_command(AudioTaskContext *ctx, AudioMessage *msg)
     }
 }
 
+#include"modem.h"
+
 static void audio_task_main(void *pvParameters)
 {
     AudioTaskContext *ctx = (AudioTaskContext *)pvParameters;
     AudioMessage msg;
 
+    // TODO REMOVE need to put this in cellular task
+    modem_power_on();
+
     ctx->codec = nau88c22_get_driver();
     ctx->codec->init();
     ctx->settings.volume_speaker = 100;
-    ctx->settings.volume_headphones = 50;
+    ctx->settings.volume_headphones = 100;
     ctx->settings.volume_mic_int = 50;
     ctx->settings.volume_mic_ext = 50;
     ctx->settings.output_muted = false;
@@ -271,13 +276,15 @@ static void audio_task_main(void *pvParameters)
     ctx->settings.selected_mic = AUDIO_MIC_INT;
 
     ctx->codec->speaker.set_volume(ctx->settings.volume_speaker);
-    // ctx->codec->headphones.set_volume(ctx->settings.volume_headphones);
+    ctx->codec->headphones.set_volume(ctx->settings.volume_headphones);
     // ctx->codec->speaker.mic.set_volume(ctx->settings.volume_mic_int);
     // ctx->codec->headphones.mic.set_volume(ctx->settings.volume_mic_ext);
     // ctx->codec->speaker.mute(ctx->settings.output_muted);
     // ctx->codec->headphones.mute(ctx->settings.output_muted);
     // ctx->codec->speaker.mic.mute(ctx->settings.mic_muted);
     // ctx->codec->headphones.mic.mute(ctx->settings.mic_muted);
+    
+    HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port,AUDIO_SW_Pin, GPIO_PIN_RESET);
 
     for (;;)
     {
@@ -285,6 +292,21 @@ static void audio_task_main(void *pvParameters)
         {
             dispatch_audio_command(ctx, &msg);
         }
+
+        if (HAL_GPIO_ReadPin(HP_DET_GPIO_Port, HP_DET_Pin) == GPIO_PIN_SET) 
+        {
+            // No HP
+            ctx->codec->headphones.mute(true);
+            ctx->codec->speaker.mute(false);
+        }
+        else
+        {
+            // Yes HP
+            ctx->codec->speaker.mute(true);
+            ctx->codec->headphones.mute(false);
+        }
+        
+
         osDelay(10);
     }
 }

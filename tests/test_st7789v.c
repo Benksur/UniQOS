@@ -10,6 +10,7 @@
 #include "option_overlay.h"
 #include "status_bar.h"
 
+#include "bq27441.h"
 #include "nau88c22.h"
 #include "bloop_optimized.h"
 #include "tick_sound.h"
@@ -18,6 +19,10 @@
 #include "rtc.h"
 
 #include <stdbool.h>
+
+void PeriphCommonClock_Config(void);
+
+void PeriphCommonClock_Config(void);
 
 int16_t tick[] = {
   // sharp attack
@@ -61,15 +66,21 @@ int main(void)
   MPU_Config();
   HAL_Init();
   SystemClock_Config();
+  PeriphCommonClock_Config();
+
   MX_GPIO_Init();
   MX_SPI4_Init();
   MX_I2C1_Init();
   MX_I2S1_Init();
   MX_RTC_Init();
 
-  // MX_TIM2_Init();
-  //   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  //   htim2.Instance->CCR3 = 80;
+  
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,LOAD_SW_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6, GPIO_PIN_SET); //backlight
+
+  // MX_TIM13_Init();
+  // HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);
+  // htim13.Instance->CCR3 = 65535;
 
   uint8_t status;
   static const IAudioDriver_t *codec = NULL;
@@ -94,6 +105,7 @@ int main(void)
   screen_init(&menu_page);
   mark_all_tiles_dirty();
   screen_tick();
+  // status_bar_tick();
   // draw_grid();
 
   while (1)
@@ -154,6 +166,9 @@ int main(void)
           }
           // Play sound for numeric keypad presses
         }
+        HAL_Delay(500);
+        status_bar_update_battery(bq27441_SOC());
+        status_bar_tick();
         screen_tick();
       }
     }
@@ -278,7 +293,7 @@ void Error_Handler(void)
   // Add LED toggle for visual feedback
   while (1)
   {
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
+    // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0); // Assuming LED is on PB0
     HAL_Delay(100);                        // Blink rate
   }
   /* USER CODE END Error_Handler_Debug */
@@ -300,3 +315,31 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1|RCC_PERIPHCLK_SPI4;
+  PeriphClkInitStruct.PLL3.PLL3M = 4;
+  PeriphClkInitStruct.PLL3.PLL3N = 12;
+  PeriphClkInitStruct.PLL3.PLL3P = 3;
+  PeriphClkInitStruct.PLL3.PLL3Q = 1;
+  PeriphClkInitStruct.PLL3.PLL3R = 2;
+  PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_3;
+  PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+  PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+  PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PLL3;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}

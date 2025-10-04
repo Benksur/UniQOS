@@ -66,3 +66,75 @@ uint8_t bq27441_read_ctrl_reg(uint16_t subcmd, uint16_t *response)
 
     return bq27441_read_reg(BQ27441_CMD_CNTL, response);
 }
+
+uint16_t bq27441_SOC(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_STATE_OF_CHARGE, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}
+
+int16_t bq27441_avg_current(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_AVERAGE_CURRENT, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}
+
+uint16_t bq27441_voltage(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_VOLTAGE, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}
+
+uint16_t bq27441_available_capacity(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_REMAINING_CAPACITY, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}
+
+uint16_t bq27441_full_capacity(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_FULL_CHARGE_CAPACITY, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}
+
+uint16_t bq27441_health(void)
+{
+    uint16_t data;
+    uint8_t ret = bq27441_read_reg(BQ27441_CMD_STATE_OF_HEALTH, &data);
+
+    if(ret){
+        return 0;
+    }
+
+    return data;
+}

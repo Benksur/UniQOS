@@ -1,19 +1,11 @@
 #include "drv2603.h"
 #include "errornum.h"
 
-static TIM_HandleTypeDef *htim_drv_pwm = NULL;
-
-uint8_t drv2603_init(TIM_HandleTypeDef *htim_pwm)
-{
-    if (htim_pwm == NULL)
-    {
-        return EINVAL;
-    }
-    
-    htim_drv_pwm = htim_pwm;
+uint8_t drv2603_init()
+{    
     HAL_GPIO_WritePin(DRV2603_ENABLE_PORT, DRV2603_ENABLE_PIN, GPIO_PIN_RESET);
-    __HAL_TIM_SET_COMPARE(htim_drv_pwm, TIM_CHANNEL_1, 0);
-    HAL_TIM_PWM_Start(htim_drv_pwm, TIM_CHANNEL_1);
+    __HAL_TIM_SET_COMPARE(DRV2603_TIM, DRV2603_TIM_CHANEL, 0);
+    HAL_TIM_PWM_Start(DRV2603_TIM, DRV2603_TIM_CHANEL);
     return 0;
 }
 
@@ -26,11 +18,6 @@ void drv2603_enable(uint8_t enable)
 // NOTE: WILL NEED TO ADJUST timer prescaler, seems to affect the vibration
 uint8_t drv2603_set_strength_lra(uint8_t strength_percent)
 {
-    if (htim_drv_pwm == NULL)
-    {
-        return EINVAL;
-    }
-
     if (strength_percent > 100)
     {
         strength_percent = 100;
@@ -40,22 +27,17 @@ uint8_t drv2603_set_strength_lra(uint8_t strength_percent)
     // max duty cycle = 77%, full breaking <50%
     // PWM = 50 + (strength * (77 - 50) / 100)
     uint32_t pwm_duty_scaled = 5000 + ((uint32_t)strength_percent * 27);
-    uint32_t arr = __HAL_TIM_GET_AUTORELOAD(htim_drv_pwm);
+    uint32_t arr = __HAL_TIM_GET_AUTORELOAD(DRV2603_TIM);
 
     // compare value: (ARR * PWM_Duty) / 10000
     uint32_t compare_value = (arr * pwm_duty_scaled) / 10000;
-    __HAL_TIM_SET_COMPARE(htim_drv_pwm, TIM_CHANNEL_1, compare_value);
+    __HAL_TIM_SET_COMPARE(DRV2603_TIM, DRV2603_TIM_CHANEL, compare_value);
 
     return 0;
 }
 
 uint8_t drv2603_set_strength_erm(uint8_t strength_percent)
 {
-    if (htim_drv_pwm == NULL)
-    {
-        return EINVAL;
-    }
-
     if (strength_percent > 100)
     {
         strength_percent = 100;
@@ -67,11 +49,11 @@ uint8_t drv2603_set_strength_erm(uint8_t strength_percent)
     // PWM = 50 + (strength * (91 - 50) / 100) = 50 + (strength * 41 / 100)
     uint32_t pwm_duty_scaled = 5000 + ((uint32_t)strength_percent * 41);
 
-    uint32_t arr = __HAL_TIM_GET_AUTORELOAD(htim_drv_pwm);
+    uint32_t arr = __HAL_TIM_GET_AUTORELOAD(DRV2603_TIM);
     // compare value: (ARR * PWM_Duty) / 10000
     uint32_t compare_value = (arr * pwm_duty_scaled) / 10000;
 
-    __HAL_TIM_SET_COMPARE(htim_drv_pwm, TIM_CHANNEL_1, compare_value);
+    __HAL_TIM_SET_COMPARE(DRV2603_TIM, DRV2603_TIM_CHANEL, compare_value);
 
     return 0;
 }

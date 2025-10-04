@@ -4,6 +4,7 @@
 #include "tim.h"
 #include "stm32_config.h"
 #include "ws2812.h"
+#include "stm32h7xx_hal.h"
 
 void SystemClock_Config(void)
 {
@@ -30,9 +31,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 34;
+  RCC_OscInitStruct.PLL.PLLN = 30;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLQ = 2;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -61,10 +62,32 @@ void SystemClock_Config(void)
   }
 }
 
-/* USER CODE BEGIN 4 */
+/**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-/* USER CODE END 4 */
-
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1|RCC_PERIPHCLK_SPI4;
+  PeriphClkInitStruct.PLL3.PLL3M = 4;
+  PeriphClkInitStruct.PLL3.PLL3N = 12;
+  PeriphClkInitStruct.PLL3.PLL3P = 3;
+  PeriphClkInitStruct.PLL3.PLL3Q = 1;
+  PeriphClkInitStruct.PLL3.PLL3R = 2;
+  PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_3;
+  PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+  PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+  PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PLL3;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
  /* MPU Configuration */
 
 void MPU_Config(void)
@@ -93,6 +116,7 @@ void MPU_Config(void)
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
 }
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -126,30 +150,39 @@ int main(void)
     HAL_Init();
 
     SystemClock_Config();
+    PeriphCommonClock_Config();
 
     MX_GPIO_Init();
     MX_TIM5_Init();
+
+    HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,GPIO_PIN_1, GPIO_PIN_SET);
 
     ws2812_init();
 
     while (1)
     {
+        printf("A");
         ws2812_set_brightness(10);
         ws2812_fill_led(0xFF, 0x00, 0x00);
         ws2812_update_leds();
         HAL_Delay(2000);
+        printf("A");
         ws2812_fill_led(0x00, 0xFF, 0x00);
         ws2812_update_leds();
         HAL_Delay(2000);
+        printf("A");
         ws2812_fill_led(0x00, 0x00, 0xFF);
         ws2812_update_leds();
         HAL_Delay(2000);
+        printf("A");
         ws2812_fill_led(0xFF, 0xFF, 0x00);
         ws2812_update_leds();
         HAL_Delay(2000);
+        printf("A");
         ws2812_fill_led(0xFF, 0x00, 0xFF);
         ws2812_update_leds();
         HAL_Delay(2000);
+        printf("A");
         ws2812_fill_led(0x00, 0xFF, 0xFF);
         ws2812_update_leds();
         HAL_Delay(2000);

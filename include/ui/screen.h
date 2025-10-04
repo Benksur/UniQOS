@@ -5,15 +5,18 @@
 
 typedef enum
 {
-    PAGE_DATA_RESPONSE_DIALLING,
-    PAGE_DATA_RESPONSE_ACTIVE_CALL,
-    PAGE_DATA_RESPONSE_CALL_ENDED,
+    PAGE_RESPONSE_DIALLING,
+    PAGE_RESPONSE_ACTIVE_CALL,
+    PAGE_RESPONSE_CALL_ENDED,
+    PAGE_RESPONSE_BATTERY_HC
 } PageDataResponse;
 
 typedef enum
 {
-    PAGE_DATA_REQUEST_HANGUP_CALL,
-    PAGE_DATA_REQUEST_MAKE_CALL,
+    PAGE_REQUEST_HANGUP_CALL,
+    PAGE_REQUEST_MAKE_CALL,
+    PAGE_REQUEST_SMS_SEND,
+    PAGE_REQUEST_BATTERY_HC
 } PageDataRequest;
 
 typedef struct Page Page; // Forward declaration
@@ -36,8 +39,8 @@ void screen_pop_page(void);
 void screen_set_page(Page *new_page);
 void screen_handle_input(int event_type);
 void screen_tick(void);
-void screen_data_request(int type, void *req);
+void screen_request(int type, void *req);
 bool screen_get_pending_request(int *type, void **req);
-void screen_handle_data_response(int type, void *resp);
+void screen_handle_response(int type, void *resp);
 
 #endif

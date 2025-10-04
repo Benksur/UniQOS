@@ -460,6 +460,29 @@ void display_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t colou
     }
 }
 
+void display_draw_bits(uint16_t x, uint16_t y, uint8_t *buff, uint16_t colour, uint16_t bg_colour, uint16_t w, uint16_t h)
+{
+    uint8_t i, j;
+
+    for (i = 0; i < h; i++)
+    {
+        for (j = 0; j < w; j++)
+        {
+            uint8_t byte = buff[i * ((w + 7) / 8) + (j / 8)];
+            uint8_t bit = (byte >> (7 - (j % 8))) & 0x01;
+
+            if (bit)
+            {
+                driver->draw_pixel(x + j, y + i, colour);
+            }
+            else
+            {
+                driver->draw_pixel(x + j, y + i, bg_colour);
+            }
+        }
+    }
+}
+
 void display_set_rotation(uint8_t rotation)
 {
     if (!driver)

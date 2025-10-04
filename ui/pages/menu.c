@@ -12,10 +12,13 @@
 #include "calculator.h"
 #include "theme.h"
 #include "contacts.h"
+#include "snake.h"
+#include "sweeper.h"
+#include "power.h"
 #include "contacts_bptree.h"
 #include <stddef.h>
 
-#define MENU_ITEMS_COUNT 7
+#define MENU_ITEMS_COUNT 10
 #define MENU_VISIBLE_COUNT 5
 
 typedef struct
@@ -35,7 +38,7 @@ static bool theme_toggle = false;
 // state is static since only one menu page exists
 static MenuState menu_state = {
     .cursor = {0, 0, 0, MENU_ITEMS_COUNT - 1, false},
-    .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings"},
+    .items = {"Phone", "SMS", "Contacts", "Clock", "Calculator", "Calendar", "Settings", "Snake", "Sweeper", "Power"},
     .page_offset = 0};
 // --- Draw functions ---
 static void menu_draw(Page* self){}
@@ -155,6 +158,18 @@ static void menu_handle_input(Page* self, int event_type) {
                 theme_toggle ? theme_set_dark() : theme_set_light(); 
                 theme_toggle = !theme_toggle; 
                 mark_all_tiles_dirty(); 
+                break;
+            case 7: 
+                Page* snake_page = snake_page_create();
+                screen_push_page(snake_page);
+                break;
+            case 8: 
+                Page* sweeper_page = sweeper_page_create();
+                screen_push_page(sweeper_page);
+                break;
+            case 9: 
+                Page* power_page = power_page_create();
+                screen_push_page(power_page);
                 break;
         }
     }

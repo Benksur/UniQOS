@@ -5,11 +5,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include "sms_types.h"
 
 #define MAX_KEYS 4
 #define MAX_KEY_LEN 16
 #define MAX_NAME_LEN 64
-#define MAX_PHONE_LEN 10
+#define MAX_PHONE_LEN SMS_MAX_PHONE_LENGTH
 #define CONTACTS_VISIBLE_COUNT 9
 #define BPTREE_NOT_FOUND UINT32_MAX
 

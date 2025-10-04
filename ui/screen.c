@@ -114,7 +114,7 @@ void screen_handle_input(int event_type)
     }
 }
 
-void screen_data_request(int type, void *req)
+void screen_request(int type, void *req)
 {
     // Store the request for display_task to handle
     // Only store one request at a time (latest request wins)
@@ -141,7 +141,7 @@ bool screen_get_pending_request(int *type, void **req)
     return true;
 }
 
-void screen_handle_data_response(int type, void *resp)
+void screen_handle_response(int type, void *resp)
 {
     if (!current_page)
         return;
