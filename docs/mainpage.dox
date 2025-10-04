@@ -10,16 +10,6 @@
  * 
  * This documentation covers the complete API for all drivers and system components.
  * 
- * @subsection doc_organization Documentation Organization
- * 
- * The documentation is organized into logical **module groups** for easy navigation:
- * - See @ref drivers "Hardware Drivers" for all peripheral and device drivers
- * - See @ref kernel "Kernel" for RTOS tasks and core system components
- * - See @ref ui "User Interface" for UI pages, components, and rendering
- * - See @ref audio "Audio System" for audio mixing and sound generation
- * 
- * **For developers:** See docs/doxygen_template.h for best practices on documenting new code.
- * 
  * @section project_structure Project Structure
  * 
  * @subsection drivers_dir @ref drivers "drivers/"
@@ -34,13 +24,32 @@
  * @subsection tests_dir @ref tests "tests/"
  * Any relevant tests you need to run will be stored here. Start with test_template.c and create a copy to run any tests you need, just make sure to create a new Makefile argument and specify the file path.
  * 
- * @subsection third_party_dir @ref third_party "third_party/"
- * Any external libraries not developed by the UQ Phone team is stored in this directory
- * 
  * @subsection ui_dir @ref ui "ui/"
  * Drawing functions and display ui level files stored here.
+ *
+ * @subsection audio_dir @ref audio "audio/"
+ * Audio mixing and sound generation functions, transmitted to codec through I2S
+ *
+ * @subsection third_party_dir @ref third_party "third_party/"
+ * Any external libraries not developed by the UQ Phone team is stored in this directory
+ *
+ * @section cubemx_config_sec CubeMX Configuration
  * 
- * @section hardware_sec Hardware Components
+ * @subsection cubemx_step1 Step 1: Project Settings
+ * These settings should already be set but double check:
+ * - `Project Manager` → `Project` → `Application Structure` "Do not generate the main()" is ticked and `Toolchain / IDE` is set to Makefile.
+ * - `Project Manager` → `Code Generator` → `Generate peripheral initialization as a pair of c/h files per peripheral` is ticked.
+ * 
+ * @subsection cubemx_step2 Step 2: Code Generation
+ * You can now make changes to the .ioc and generate the code. All files will be generated in their correct locations so you will not need to move them. After generation, if you have made any changes to the clock configurations or memory region (MPU), you will need to copy the MPU_Config and SystemClock_Config functions in third_party/stm32/Core/src/main.c and place these in your entry point files (test files and kernel). 
+ * 
+ * @subsection cubemx_step3 Step 3: Makefile Configuration
+ * Go to third_party/stm32/Makefile and copy all the defines in C_SOURCES and place them under STM32_BASE_SOURCES in both the drivers/Makefile and kernel/Makefile. These need to be redefined as when we use our custom Makefile it invokes the third-party Makefile after redefining C_SOURCES. The third-party Makefile uses the C_SOURCES value passed to it during the invocation, effectively replacing its own definition of C_SOURCES.
+ * 
+ *
+ * @section additional_info_sec Additional Information
+ * 
+ * @subsection hardware_sec Hardware Components
  * 
  * - **STM32H7xx:** Microcontroller
  * - **RC7620:** Cellular Module
@@ -52,7 +61,9 @@
  * - **BQ27441:** Fuel Gauge IC
  * - **MCP73871:** Battery Management
  * 
- * @section task_mapping_sec Task Priorities
+ * @subsection task_management_sec Task Management
+ * 
+ * @subsubsection task_mapping_sec Task Priorities
  * 
  * | Task               |   Priority  |
  * | :----------------- | ----------: |
@@ -63,78 +74,51 @@
  * | Input Task         |      Normal |
  * | Power Task         |         Low |
  * 
- * @section task_comm_sec Task Communication
+ * @subsubsection task_comm_sec Task Communication
  * 
- * - Queue from Input → UI
- * - Queue from UI → Call State
- * - Queue or event group from Call State → Cellular Task
- * - Queue from Cellular Task → Call State
- * - Event group or direct-to-task notification from Call State → Audio Codec Task
+ * All inter-task communication uses **FreeRTOS Queues** via `PostCommand()` API functions, except where noted.
  * 
- * @section cubemx_config_sec CubeMX Configuration
+ * **Input Task** sends to:
+ * - Display Task (Queue): Input events, volume display updates
+ * - Audio Task (Queue): Volume control commands, sound playback
+ * - Call State Task (Queue): Test commands (incoming call simulation)
  * 
- * I should eventually create a script to automate this process but for now please follow these instructions if you need to make changes to the .ioc file. The relevant .ioc files are found in third_party/stm32.
+ * **Display Task** sends to:
+ * - Cellular Task (Queue): Dial, hangup, send SMS commands
+ * - Call State Task (Queue): Answer call, hangup commands
+ * - Power Task (Queue): Battery statistics requests
  * 
- * @subsection cubemx_step1 Step 1: Project Settings
- * These settings should already be set but double check:
- * - `Project Manager` → `Project` → `Application Structure` "Do not generate the main()" is ticked and `Toolchain / IDE` is set to Makefile.
- * - `Project Manager` → `Code Generator` → `Generate peripheral initialization as a pair of c/h files per peripheral` is ticked.
+ * **Cellular Task** sends to:
+ * - Display Task (Queue): Signal status updates, incoming SMS notifications, RTC sync
+ * - Call State Task (Queue): Incoming call notifications, dialling status
+ * - Receives from: GPIO ISR via **Direct Task Notifications** (RI pin interrupt for incoming events)
  * 
- * @subsection cubemx_step2 Step 2: Code Generation
- * You can now make changes to the .ioc and generate the code. All files will be generated in their correct locations so you will not need to move them. After generation, if you have made any changes to the clock configurations or memory region (MPU), you will need to copy the MPU_Config and SystemClock_Config functions in third_party/stm32/Core/src and place these in your entry point files (test files and kernel). 
+ * **Call State Task** sends to:
+ * - Display Task (Queue): Call UI updates (incoming, active, ended, dialling screens)
+ * - Uses internally: **Event Groups** for state coordination (incoming, answer, hangup, display events)
  * 
- * Now go to third_party/stm32/Core/src and delete main.c. The reasoning behind this is that CubeMX does not expose the MPU_Config and SystemClock_Config configs to main.h for other files to access. This forces us to use main.c as the entry point for the project, as otherwise copying these functions out of main.c and reusing them in other files will result in a multiple definition error. While we can just rename these functions to avoid this error, I would prefer to just remove the file entirely.
+ * **Power Task** sends to:
+ * - Display Task (Queue): Battery status updates, battery statistics
  * 
- * @subsection cubemx_step3 Step 3: Makefile Configuration
- * Go to third_party/stm32/Makefile and first delete the Core/Src/main.c def then copy all the defines in C_SOURCES and place them under STM32_BASE_SOURCES in both the drivers/Makefile and kernel/Makefile. These need to be redefined as when we use our custom Makefile it invokes the third-party Makefile after redefining C_SOURCES. The third-party Makefile uses the C_SOURCES value passed to it during the invocation, effectively replacing its own definition of C_SOURCES.
+ * @subsubsection task_peripherals_sec Task Peripheral Ownership
  * 
- * @section drivers_sec Driver Modules
+ * Each task has exclusive control over specific hardware peripherals:
  * 
- * The system is organized into several driver modules:
+ * | Task               | Owned Peripherals                                                    |
+ * | :----------------- | :------------------------------------------------------------------- |
+ * | Audio Task         | NAU88C22 Audio Codec (I2S), HP_DET GPIO, AUDIO_SW GPIO              |
+ * | Call State Task    | DRV2603 Vibration Motor Driver (TIM3), LED GPIO (GPIOB Pin 0)       |
+ * | Cellular Task      | RC7620 Cellular Modem (UART), MODEM_RI GPIO (PC6 Interrupt), UART_DTR GPIO |
+ * | Display Task       | ST7789V Display Controller (SPI/FMC), Backlight GPIO (PA6), LOAD_SW GPIO |
+ * | Input Task         | Keypad GPIO Matrix                                                   |
+ * | Power Task         | BQ27441 Battery Fuel Gauge (I2C)                                     |
  * 
- * @subsection display_drivers Display Drivers
- * - @ref display_basic "Basic Display Functions" - Initialization and control
- * - @ref display_drawing "Drawing Functions" - Shapes, lines, and graphics
- * - @ref display_text "Text Functions" - Character and string rendering
- * - @ref display_utility "Utility Functions" - Color conversion and helpers
- * 
- * @subsection audio_drivers Audio Drivers 
- * - @ref nau88c22_basic "Basic Audio Functions" - Initialization and control
- * - @ref nau88c22_volume "Volume Control" - Audio volume management
- * - @ref nau88c22_mute "Mute Control" - Audio muting functions
- * 
- * @subsection modem_drivers Modem Drivers
- * - @ref modem_driver "Modem Driver" - Cellular communication
- * - @ref at_commands "AT Commands" - AT command interface
- * 
- * @subsection peripheral_drivers Peripheral Drivers
- * - @ref keypad_driver "Keypad Driver" - Input handling
- * - @ref power_driver "Power Management" - Battery and charging
- * - @ref sensor_drivers "Sensor Drivers" - IMU and other sensors
- * 
- * @section kernel_sec Kernel Components
- * 
- * @subsection task_system Task System
- * - @ref task_manager "Task Manager" - Core task scheduling
- * - @ref memory_management "Memory Management" - Dynamic memory allocation
- * 
- * @subsection data_structures Data Structures
- * - @ref bptree "B+ Tree" - Contact storage and management
- * - @ref sms_types "SMS Types" - Message handling structures
- * 
- * @section ui_sec User Interface
- * 
- * @subsection ui_components UI Components
- * - @ref ui_pages "UI Pages" - Application screens
- * - @ref ui_components "UI Components" - Reusable UI elements
- * - @ref ui_overlays "UI Overlays" - Modal dialogs and notifications
  * 
  * @section api_sec API Reference
  * 
  * For detailed API documentation, see the individual module pages:
- * - @ref display_basic "Display Functions"
- * - @ref nau88c22_basic "Audio Functions"  
- * - @ref modem_driver "Modem Functions"
- * - @ref kernel "Kernel Components"
- * - @ref ui "User Interface"
+ * - See @ref drivers "Hardware Drivers" for all peripheral and device drivers
+ * - See @ref kernel "Kernel" for RTOS tasks and core system components
+ * - See @ref ui "User Interface" for UI pages, components, and rendering
+ * - See @ref audio "Audio System" for audio mixing and sound generation
  */

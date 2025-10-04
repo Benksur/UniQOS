@@ -67,6 +67,8 @@ make BOARD=(dev or pcb)
 
 *Optional: add `-j(cpu thread-count)` flag to speed up execution*
 
+**NOTE: YOU MUST MAKE CLEAN BETWEEN COMPILING MAIN OS AND TEST FILES. THERE IS A C FLAG SET THAT DETERMINES WHICH HEAP ALLOCATION FUNCTIONS ARE CALLED BETWEEN STDLIB AND FREERTOS**
+
 ---
 
 ## Documentation
