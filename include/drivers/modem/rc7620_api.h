@@ -23,6 +23,8 @@ void modem_power_on(void);
 
 void modem_power_off(void);
 
+void modem_reset(void);
+
 uint8_t at_custom(char* customization, uint8_t value);
 
 #endif

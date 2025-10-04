@@ -3,10 +3,14 @@ TARGET = Firmware
 BOARD ?= dev
 
 # Define linker and startup file based on BOARD
-ifeq ($(BOARD), pcb)
+ifeq ($(BOARD), pcb-old)
 LDSCRIPT = STM32H733XG_FLASH.ld
 STARTUP_FILE = startup_stm32h733xx.s
 BOARD_C_DEF = -DSTM32H733xx
+else ifeq ($(BOARD), pcb)
+LDSCRIPT = STM32H723XG_FLASH.ld
+STARTUP_FILE = startup_stm32h723xx.s
+BOARD_C_DEF = -DSTM32H723xx
 else ifeq ($(BOARD), dev)
 LDSCRIPT = STM32H753XX_FLASH.ld
 STARTUP_FILE = startup_stm32h753xx.s
@@ -54,7 +58,7 @@ TEST_FILE_PATH := ../../tests/test_nau88c22.c
 TARGET := test_nau88c22
 else ifeq ($(TEST), audio)
 TEST_FILE_PATH := ../../tests/test_audio.c
-TARGET := test_nau88c22
+TARGET := test_audio
 else ifeq ($(TEST), mobile)
 TEST_FILE_PATH := ../../tests/test_mobile.c
 TARGET := test_mobile
@@ -63,7 +67,7 @@ TEST_FILE_PATH := ../../tests/test_terminal.c
 TARGET := test_terminal
 else ifeq ($(TEST), display)
 TEST_FILE_PATH := ../../tests/test_st7789v.c
-TARGET := test_display
+TARGET := test_st7789v
 else ifeq ($(TEST), microsd)
 TEST_FILE_PATH := ../../tests/test_microsd.c
 TARGET := test_microsd
@@ -115,6 +119,8 @@ $(CSRCS) \
 ../../ui/components/contact_row.c \
 ../../ui/components/option_row.c \
 ../../ui/components/bottom_bar.c \
+../../ui/pages/games/snake.c\
+../../ui/pages/games/sweeper.c\
 ../../ui/overlays/option_overlay.c \
 ../../ui/overlays/incoming_call.c \
 ../../ui/overlays/incoming_text.c \

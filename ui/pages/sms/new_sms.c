@@ -3,29 +3,19 @@
 #include "bottom_bar.h"
 #include "option_overlay.h"
 #include "memwrap.h"
+#include "sms_types.h"
 
-#define MAX_PHONE_NUMBER_LENGTH 10
-#define MAX_SMS_LENGTH 84
+#define MAX_PHONE_NUMBER_LENGTH SMS_MAX_PHONE_LENGTH
+#define MAX_SMS_LENGTH SMS_MAX_MESSAGE_LENGTH
 #define CHARS_PER_LINE 14
 #define CHAR_WIDTH 6
 #define CHAR_SCALE 2
+#define PHONE_CHAR_SCALE 2
 #define CHAR_DISPLAY_WIDTH (CHAR_WIDTH * CHAR_SCALE)
+#define PHONE_CHAR_DISPLAY_WIDTH (CHAR_WIDTH * PHONE_CHAR_SCALE)
 #define TEXT_XPAD 5
 #define TEXT_YPAD 7
-
-// Option overlay callback
-static void test_overlay_callback(int selected_idx, void *user_data)
-{
-    // For demonstration, just pop the overlay
-    screen_pop_page();
-    // You can add more logic here based on selected_idx
-}
-
-static const char *overlay_options[] = {
-    "Send Message",
-    "Save to Drafts",
-    "Clear"};
-#define NUM_OVERLAY_OPTIONS (sizeof(overlay_options) / sizeof(overlay_options[0]))
+#define PHONE_NUMBER_XPAD 10
 
 typedef enum
 {
@@ -43,6 +33,39 @@ typedef struct
     bool mounted;
     bool overlay_open; // Track if overlay is currently open
 } NewSmsState;
+
+// Option overlay callback
+static void new_sms_overlay_callback(int selected_idx, void *user_data)
+{
+    NewSmsState *state = (NewSmsState *)user_data;
+    switch (selected_idx)
+    {
+    case 0:
+    {
+        // Create SMS message and send it
+        static SmsMessage sms_msg;
+        strncpy(sms_msg.recipient, state->phone_number, sizeof(sms_msg.recipient) - 1);
+        sms_msg.recipient[sizeof(sms_msg.recipient) - 1] = '\0';
+        strncpy(sms_msg.body, state->sms_content, sizeof(sms_msg.body) - 1);
+        sms_msg.body[sizeof(sms_msg.body) - 1] = '\0';
+        screen_request(PAGE_REQUEST_SMS_SEND, &sms_msg);
+        break;
+    }
+    case 1:
+        // screen_request(PAGE_REQUEST_SMS_SAVE_TO_DRAFTS, NULL);
+        break;
+    case 2:
+        // screen_request(PAGE_REQUEST_SMS_CLEAR, NULL);
+        break;
+    }
+    screen_pop_page();
+}
+
+static const char *overlay_options[] = {
+    "Send Message",
+    "Save to Drafts",
+    "Clear"};
+#define NUM_OVERLAY_OPTIONS (sizeof(overlay_options) / sizeof(overlay_options[0]))
 
 static void new_sms_draw(Page *self);
 static void new_sms_draw_tile(Page *self, int tx, int ty);
@@ -136,8 +159,8 @@ static void clear_old_digit(NewSmsState *state)
 {
     int px, py;
     tile_to_pixels(1, 1, &px, &py);
-    int digit_x = px + TILE_WIDTH + (state->cursor.x - 1) * CHAR_DISPLAY_WIDTH;
-    display_fill_rect(digit_x, py + TEXT_YPAD, CHAR_DISPLAY_WIDTH, TILE_HEIGHT - TEXT_YPAD, current_theme.fg_colour);
+    int digit_x = px + PHONE_NUMBER_XPAD + (state->cursor.x - 1) * PHONE_CHAR_DISPLAY_WIDTH;
+    display_fill_rect(digit_x, py + TEXT_YPAD, PHONE_CHAR_DISPLAY_WIDTH, TILE_HEIGHT - TEXT_YPAD, current_theme.fg_colour);
 }
 
 static void clear_old_cursor(NewSmsState *state)
@@ -147,7 +170,7 @@ static void clear_old_cursor(NewSmsState *state)
     if (state->mode == NUMBER_INPUT)
     {
         tile_to_pixels(1, 1, &px, &py);
-        int cursor_x = px + TILE_WIDTH + (state->cursor.x * CHAR_DISPLAY_WIDTH);
+        int cursor_x = px + PHONE_NUMBER_XPAD + (state->cursor.x * PHONE_CHAR_DISPLAY_WIDTH);
         display_fill_rect(cursor_x, py + TEXT_YPAD, 5, TILE_HEIGHT - 8 - TEXT_YPAD, current_theme.fg_colour);
     }
     else if (state->mode == SMS_INPUT)
@@ -175,10 +198,9 @@ static void remove_digit(Page *self)
 static void draw_number(NewSmsState *state, int tx, int ty)
 {
     int px, py;
-    int xpad = TILE_WIDTH;
     tile_to_pixels(1, 1, &px, &py);
-    display_draw_string(px + xpad, py + TEXT_YPAD, state->phone_number, current_theme.text_colour, current_theme.fg_colour, CHAR_SCALE);
-    int cursor_x = px + xpad + (strlen(state->phone_number) * CHAR_DISPLAY_WIDTH);
+    display_draw_string(px + PHONE_NUMBER_XPAD, py + TEXT_YPAD, state->phone_number, current_theme.text_colour, current_theme.fg_colour, PHONE_CHAR_SCALE);
+    int cursor_x = px + PHONE_NUMBER_XPAD + (strlen(state->phone_number) * PHONE_CHAR_DISPLAY_WIDTH);
     display_fill_rect(cursor_x, py + TEXT_YPAD, 5, TILE_HEIGHT - 8 - TEXT_YPAD, current_theme.text_colour);
 }
 
@@ -193,7 +215,7 @@ static void draw_phone_number_area(Page *self, int tx, int ty)
     {
         display_fill_rect(px, py, TILE_COLS * TILE_WIDTH, TILE_ROWS * TILE_HEIGHT, current_theme.bg_colour);
         display_fill_rect(TILE_WIDTH, py + TILE_HEIGHT, width, height, current_theme.fg_colour);
-        const char *label = "   To:";
+        const char *label = "  To:";
         display_draw_string(px + 5, py + 10, label, current_theme.fg_colour, current_theme.bg_colour, 2);
     }
     draw_number(state, tx, ty);
@@ -451,10 +473,11 @@ static void new_sms_handle_input(Page *self, int event_type)
             "Message Options",
             overlay_options,
             NUM_OVERLAY_OPTIONS,
-            test_overlay_callback,
-            NULL);
+            new_sms_overlay_callback,
+            state);
         if (overlay)
             screen_push_page(overlay);
+        break;
     case INPUT_SELECT:
         break;
     default:
@@ -465,14 +488,18 @@ static void new_sms_handle_input(Page *self, int event_type)
 static void new_sms_reset(Page *self)
 {
     NewSmsState *state = (NewSmsState *)self->state;
-    cursor_reset(&state->cursor);
-    memset(state->phone_number, 0, sizeof(state->phone_number));
-    memset(state->sms_content, 0, sizeof(state->sms_content));
-    state->mode = NUMBER_INPUT;
-    state->multitap_enabled = true; // Enable multi-tap by default
-    multitap_reset();
-    state->mounted = false;
-    state->overlay_open = false;
+    if (state->mounted)
+    {
+
+        cursor_reset(&state->cursor);
+        memset(state->phone_number, 0, sizeof(state->phone_number));
+        memset(state->sms_content, 0, sizeof(state->sms_content));
+        state->mode = NUMBER_INPUT;
+        state->multitap_enabled = true; // Enable multi-tap by default
+        multitap_reset();
+        state->mounted = false;
+        state->overlay_open = false;
+    }
 }
 static void new_sms_destroy(Page *self)
 {
@@ -484,14 +511,24 @@ static void new_sms_destroy(Page *self)
     }
 }
 
-Page *new_sms_page_create()
+Page *new_sms_page_create(const char *phone_number)
 {
     Page *page = mem_malloc(sizeof(Page));
     NewSmsState *state = mem_malloc(sizeof(NewSmsState));
 
-    state->cursor = (Cursor){0, 0, 0, MAX_PHONE_NUMBER_LENGTH - 1, false};
     memset(state->phone_number, 0, sizeof(state->phone_number));
     memset(state->sms_content, 0, sizeof(state->sms_content));
+
+    // Pre-fill phone number if provided
+    int cursor_x = 0;
+    if (phone_number != NULL)
+    {
+        strncpy(state->phone_number, phone_number, MAX_PHONE_NUMBER_LENGTH);
+        state->phone_number[MAX_PHONE_NUMBER_LENGTH] = '\0';
+        cursor_x = strlen(state->phone_number);
+    }
+
+    state->cursor = (Cursor){cursor_x, 0, 0, MAX_PHONE_NUMBER_LENGTH - 1, false};
     state->mode = NUMBER_INPUT;
     state->multitap_enabled = true; // Enable multi-tap by default
     state->mounted = false;

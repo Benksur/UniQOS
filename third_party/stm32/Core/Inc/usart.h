@@ -29,7 +29,6 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-extern UART_HandleTypeDef huart3;
 
 /* USER CODE END Includes */
 
@@ -42,7 +41,7 @@ extern UART_HandleTypeDef huart1;
 void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void MX_USART3_UART_Init(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

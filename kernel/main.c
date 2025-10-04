@@ -17,6 +17,7 @@
 
 void SystemClock_Config(void);
 static void MPU_Config(void);
+void PeriphCommonClock_Config(void);
 
 int main(void)
 {
@@ -24,12 +25,12 @@ int main(void)
   MPU_Config();
   HAL_Init();
   SystemClock_Config();
+  PeriphCommonClock_Config();
   MX_GPIO_Init();
   MX_SPI4_Init();
   MX_I2C1_Init();
   MX_I2S1_Init();
   MX_RTC_Init();
-  
 
   osKernelInitialize();
   // dont want to use generated freertos init
@@ -187,3 +188,30 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+/**
+ * @brief Peripherals Common Clock Configuration
+ * @retval None
+ */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+   */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SPI4;
+  PeriphClkInitStruct.PLL3.PLL3M = 4;
+  PeriphClkInitStruct.PLL3.PLL3N = 12;
+  PeriphClkInitStruct.PLL3.PLL3P = 3;
+  PeriphClkInitStruct.PLL3.PLL3Q = 1;
+  PeriphClkInitStruct.PLL3.PLL3R = 2;
+  PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_3;
+  PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+  PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+  PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL3;
+  PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PLL3;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}

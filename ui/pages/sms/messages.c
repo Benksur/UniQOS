@@ -1,4 +1,5 @@
 #include "messages.h"
+#include "option_overlay.h"
 #include "memwrap.h"
 
 // Helper function to draw wrapped text
@@ -43,9 +44,9 @@ static void messages_page_draw(Page *self)
     display_fill_rect(px, py, TILE_COLS * TILE_WIDTH, TILE_ROWS * TILE_HEIGHT, current_theme.bg_colour);
 
     // Draw sender info
-    tile_to_pixels(1, 0, &px, &py);
+    tile_to_pixels(0, 0, &px, &py);
     display_draw_string(px + 5, py + 10, "From:", current_theme.fg_colour, current_theme.bg_colour, 2);
-    display_draw_string(px + 70, py + 10, state->sender, current_theme.text_colour, current_theme.bg_colour, 2);
+    display_draw_string(px + 65, py + 10, state->sender, current_theme.text_colour, current_theme.bg_colour, 2);
 
     // Draw first horizontal separator
     tile_to_pixels(0, 1, &px, &py);
@@ -62,6 +63,16 @@ static void messages_page_draw(Page *self)
     display_draw_rect(px + 10, py + 5, TILE_COLS * TILE_WIDTH - 20, 1, current_theme.fg_colour);
 
     draw_bottom_bar("Reply", "", "Back", 0);
+}
+
+static void messages_handle_input(Page *self, int event_type)
+{
+    if (event_type == INPUT_LEFT)
+    {
+        MessagePageState *state = (MessagePageState *)self->state;
+        Page *new_sms_page = new_sms_page_create(state->sender);
+        screen_push_page(new_sms_page);
+    }
 }
 
 static void messages_destroy(Page *self)
@@ -86,7 +97,7 @@ Page *messages_page_create(MessagePageState state)
 
     page->draw = messages_page_draw;
     page->draw_tile = NULL;
-    page->handle_input = NULL;
+    page->handle_input = messages_handle_input;
     page->reset = NULL;
     page->destroy = messages_destroy;
     page->state = page_state;
