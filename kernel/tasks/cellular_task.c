@@ -173,13 +173,6 @@ static void cellular_task_main(void *pvParameters)
         // Handle RI pulse notification (incoming call/SMS)
         if (notification_value > 0)
         {
-            static ReceivedSms received_sms;
-            memset(&received_sms, 0, sizeof(received_sms));
-            strncpy(received_sms.sender, "James Wood", sizeof(received_sms.sender) - 1);
-            received_sms.sender[sizeof(received_sms.sender) - 1] = '\0';
-            strncpy(received_sms.body, "poop man", sizeof(received_sms.body) - 1);
-            received_sms.body[sizeof(received_sms.body) - 1] = '\0';
-            DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SHOW_SMS, &received_sms);
 
             // RI pin pulsed LOW - check what type of event occurred
             char caller_id[32] = {0};
