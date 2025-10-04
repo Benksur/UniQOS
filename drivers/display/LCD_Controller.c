@@ -1,6 +1,9 @@
-/*
- * LCD_Controller.c
+/**
+ * @file LCD_Controller.c
+ * @brief LCD controller driver implementation
  *
+ * This driver provides low-level control for the LCD controller.
+ * It implements the ILCD_t interface for use with the display abstraction layer.
  */
 
 #include "LCD_Controller.h"
@@ -59,6 +62,9 @@ const ILCD_t *lcd_create_fmc(void)
     return &fmc_lcd_io;
 }
 
+/**
+ * @brief Initialize SPI interface for LCD communication
+ */
 static void spi_init(void)
 {
     HAL_GPIO_WritePin(DISP_RES_GPIO_Port, DISP_RES_Pin, GPIO_PIN_RESET);
@@ -67,6 +73,10 @@ static void spi_init(void)
     HAL_Delay(20);
 }
 
+/**
+ * @brief Write a register command via SPI interface
+ * @param Reg Register command to write
+ */
 static void spi_write_reg(uint8_t Reg)
 {
     ST7789_Select();
@@ -75,6 +85,10 @@ static void spi_write_reg(uint8_t Reg)
     ST7789_UnSelect();
 }
 
+/**
+ * @brief Write 8-bit data via SPI interface
+ * @param data 8-bit data to write
+ */
 static void spi_write_data8(uint8_t data)
 {
     ST7789_Select();
@@ -83,6 +97,10 @@ static void spi_write_data8(uint8_t data)
     ST7789_UnSelect();
 }
 
+/**
+ * @brief Write 16-bit data via SPI interface
+ * @param data 16-bit data to write
+ */
 static void spi_write_data16(uint16_t data)
 {
     ST7789_Select();
@@ -91,6 +109,10 @@ static void spi_write_data16(uint16_t data)
     ST7789_UnSelect();
 }
 
+/**
+ * @brief Read 16-bit data via SPI interface
+ * @return 16-bit data read from LCD
+ */
 static uint16_t spi_read_data(void)
 {
     ST7789_Select();
@@ -100,6 +122,11 @@ static uint16_t spi_read_data(void)
     return read_data;
 }
 
+/**
+ * @brief Write array of 16-bit data via SPI interface
+ * @param pData Pointer to data array
+ * @param Size Number of 16-bit words to write
+ */
 static void spi_write_data(uint16_t *pData, uint32_t Size)
 {
     for (uint32_t i = 0; i < Size; i++)
@@ -108,11 +135,19 @@ static void spi_write_data(uint16_t *pData, uint32_t Size)
     }
 }
 
+/**
+ * @brief Delay function for SPI interface
+ * @param delay Delay time in milliseconds
+ */
 static void spi_delay(uint32_t delay)
 {
     HAL_Delay(delay);
 }
 
+/**
+ * @brief Create SPI LCD interface instance
+ * @return Pointer to ILCD_t structure with SPI functions
+ */
 const ILCD_t *lcd_create_spi(void)
 {
     static const ILCD_t spi_lcd_io = {

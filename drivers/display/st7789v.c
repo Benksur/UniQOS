@@ -1,6 +1,13 @@
+/**
+ * @file st7789v.c
+ * @brief ST7789V LCD controller driver implementation
+ *
+ * This driver provides low-level control for the ST7789V LCD controller.
+ * It implements the IDisplayDriver_t interface for use with the display abstraction layer.
+ */
+
 #include "st7789v.h"
 
-// Static function prototypes
 static void st7789v_init(void);
 static void st7789v_set_orientation(uint32_t orientation);
 static void st7789v_set_orientation_u8(uint8_t orientation);
@@ -28,10 +35,14 @@ static uint16_t WindowsYend = ST7789V_LCD_PIXEL_HEIGHT - 1;
 
 static const ILCD_t *lcd = NULL;
 
+/**
+ * @brief Initialize the ST7789V LCD controller
+ */
 static void st7789v_init(void)
 {
   uint8_t parameter[16];
-  if (!lcd) lcd = lcd_create_spi();
+  if (!lcd)
+    lcd = lcd_create_spi();
   lcd->init();
 
   /* Software Reset */
@@ -139,6 +150,10 @@ static void st7789v_init(void)
   lcd->delay(120);
 }
 
+/**
+ * @brief Set display orientation
+ * @param orientation Orientation mode (portrait, landscape, etc.)
+ */
 static void st7789v_set_orientation(uint32_t orientation)
 {
   uint8_t parameter[1];
@@ -160,38 +175,64 @@ static void st7789v_set_orientation(uint32_t orientation)
 }
 
 // Wrapper for vtable: expects uint8_t, implementation uses uint32_t
-static void st7789v_set_orientation_u8(uint8_t orientation) {
-    st7789v_set_orientation((uint32_t)orientation);
+static void st7789v_set_orientation_u8(uint8_t orientation)
+{
+  st7789v_set_orientation((uint32_t)orientation);
 }
 
+/**
+ * @brief Turn on the display
+ */
 static void st7789v_display_on(void)
 {
   st7789_write_reg(ST7789V_DISPON, (uint8_t *)NULL, 0);
 }
 
+/**
+ * @brief Turn off the display
+ */
 static void st7789v_display_off(void)
 {
   st7789_write_reg(ST7789V_DISPOFF, (uint8_t *)NULL, 0);
 }
 
+/**
+ * @brief Get display pixel width
+ * @return Display width in pixels
+ */
 static uint16_t st7789v_get_pixel_width(void)
 {
   return ST7789V_LCD_PIXEL_WIDTH;
 }
 
+/**
+ * @brief Get display pixel height
+ * @return Display height in pixels
+ */
 static uint16_t st7789v_get_pixel_height(void)
 {
   return ST7789V_LCD_PIXEL_HEIGHT;
 }
 
+/**
+ * @brief Read display ID register
+ * @return Display ID value
+ */
 static uint16_t st7789v_read_id(void)
 {
   lcd->write_reg(ST7789V_RDDID);
-  //dummy read
+  // dummy read
   lcd->read_data();
   return lcd->read_data();
 }
 
+/**
+ * @brief Set display address window for drawing operations
+ * @param x0 Left edge X coordinate
+ * @param y0 Top edge Y coordinate
+ * @param x1 Right edge X coordinate
+ * @param y1 Bottom edge Y coordinate
+ */
 static void st7789v_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
   uint8_t parameter[4];
@@ -204,7 +245,7 @@ static void st7789v_set_address_window(uint16_t x0, uint16_t y0, uint16_t x1, ui
   x1 += x_offset;
   y1 += y_offset;
 
-  /* Column Address Set */
+  /* column address set */
   parameter[0] = (x0 >> 8) & 0xFF;
   parameter[1] = x0 & 0xFF;
   parameter[2] = (x1 >> 8) & 0xFF;
@@ -370,36 +411,40 @@ static void st7789v_fill_rect(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint
   st7789v_set_address_window(Xpos, Ypos, Xpos + Width - 1, Ypos + Height - 1);
   st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
   uint32_t total_pixels = (uint32_t)Width * Height;
-  for (uint32_t i = 0; i < total_pixels; i++) {
+  for (uint32_t i = 0; i < total_pixels; i++)
+  {
     lcd->write_data16(RGBCode);
   }
 }
 
 static void st7789v_draw_mono_bitmap(uint16_t Xpos, uint16_t Ypos, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour)
 {
-    st7789v_set_address_window(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
-    st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
-    for (uint32_t i = 0; i < (uint32_t)width * height; i++) {
-        uint8_t pixel = bitmap[i];
-        uint16_t colour = pixel ? fg_colour : bg_colour;
-        lcd->write_data16(colour);
-    }
+  st7789v_set_address_window(Xpos, Ypos, Xpos + width - 1, Ypos + height - 1);
+  st7789_write_reg(ST7789V_RAMWR, (uint8_t *)NULL, 0);
+  for (uint32_t i = 0; i < (uint32_t)width * height; i++)
+  {
+    uint8_t pixel = bitmap[i];
+    uint16_t colour = pixel ? fg_colour : bg_colour;
+    lcd->write_data16(colour);
+  }
 }
 
-// abstract display driver interface to allow easy swapping of display drivers
-const IDisplayDriver_t* st7789v_get_driver(void)
+/**
+ * @brief Get the ST7789V display driver interface
+ * @return Pointer to IDisplayDriver_t structure with all driver functions
+ */
+const IDisplayDriver_t *st7789v_get_driver(void)
 {
-    static IDisplayDriver_t driver = {
-        .init = st7789v_init,
-        .fill = st7789v_fill,
-        .fill_rect = st7789v_fill_rect,
-        .draw_pixel = st7789v_write_pixel,
-        .draw_hline = st7789v_draw_hline,
-        .draw_vline = st7789v_draw_vline,
-        .set_orientation = st7789v_set_orientation_u8,
-        .get_width = st7789v_get_pixel_width,
-        .get_height = st7789v_get_pixel_height,
-        .draw_bitmap = st7789v_draw_mono_bitmap // Added draw_bitmap to vtable
-    };
-    return &driver;
+  static IDisplayDriver_t driver = {
+      .init = st7789v_init,
+      .fill = st7789v_fill,
+      .fill_rect = st7789v_fill_rect,
+      .draw_pixel = st7789v_write_pixel,
+      .draw_hline = st7789v_draw_hline,
+      .draw_vline = st7789v_draw_vline,
+      .set_orientation = st7789v_set_orientation_u8,
+      .get_width = st7789v_get_pixel_width,
+      .get_height = st7789v_get_pixel_height,
+      .draw_bitmap = st7789v_draw_mono_bitmap};
+  return &driver;
 }

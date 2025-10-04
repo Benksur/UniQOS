@@ -1,3 +1,11 @@
+/**
+ * @file sdcard.c
+ * @brief SD card driver implementation using FatFS
+ *
+ * This driver provides SD card functionality using the FatFS file system.
+ * It supports mounting, unmounting, file operations, and space management.
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include "gpio.h"
@@ -8,6 +16,7 @@
 #include "errornum.h"
 #include "sdcard.h"
 
+
 // Main FatFS instance
 FATFS FatFs;
 FIL File;
@@ -15,6 +24,10 @@ DWORD clusters;
 
 const char config_file[] = "config.ini";
 
+/**
+ * @brief Initialize and mount the SD card
+ * @return 0 on success, ENODEV if mount fails
+ */
 uint8_t sdcard_init(void)
 {
     FRESULT ret;
@@ -30,6 +43,10 @@ uint8_t sdcard_init(void)
     return 0;
 }
 
+/**
+ * @brief Unmount and deinitialize the SD card
+ * @return 0 on success, EIO if unmount fails
+ */
 uint8_t sdcard_deinit(void)
 {
     FRESULT ret;
@@ -44,6 +61,11 @@ uint8_t sdcard_deinit(void)
     return 0;
 }
 
+/**
+ * @brief Get free space on SD card
+ * @param free_space Pointer to store free space in KB
+ * @return 0 on success, EIO on error
+ */
 uint8_t sdcard_get_space(uint32_t *free_space)
 {
     FRESULT ret;
@@ -58,11 +80,16 @@ uint8_t sdcard_get_space(uint32_t *free_space)
     }
 
     *free_space = (uint32_t)(clusters * FS_Ptr->csize * 0.5);
-    // TotalSize = (uint32_t)((FS_Ptr->n_fatent - 2) * FS_Ptr->csize * 0.5);
+    // totalsize = (uint32_t)((fs_ptr->n_fatent - 2) * fs_ptr->csize * 0.5);
 
     return 0;
 }
 
+/**
+ * @brief List files in a directory on SD card
+ * @param path Directory path to list files from
+ * @return 0 on success, EIO on error
+ */
 uint8_t sdcard_list_files(char *path)
 {
     DIR dir;
@@ -87,13 +114,20 @@ uint8_t sdcard_list_files(char *path)
         if ((ret != FR_OK) || (fno.fname[0] == 0))
             break;
 
-        // Do something with the names put into string list?
+        // do something with the names put into string list?
         // fno.fname until null char
         // other file info here
     }
     return 0;
 }
 
+/**
+ * @brief Load icon data from SD card
+ * @param icon Icon type to load
+ * @param buff Buffer to store icon data
+ * @param len Maximum buffer length
+ * @return 0 on success, error code on failure
+ */
 uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff, uint32_t len)
 {
     char folder_name[MAX_FILENAME_LEN];
@@ -104,7 +138,7 @@ uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff, uint32_t len)
     FRESULT res;
     int ret;
 
-    // I believe these are case sensitive be warned
+    // i believe these are case sensitive be warned
     ini_gets("Icons", "Folder", DEFAULT_ICON_FOLDER, folder_name, MAX_FILENAME_LEN, config_file);
 
     switch (icon)
@@ -129,7 +163,7 @@ uint8_t sdcard_get_icon(enum Icons icon, uint8_t *buff, uint32_t len)
         return ENOENT;
     }
 
-    if (f_size(&File) > sizeof(buff)) 
+    if (f_size(&File) > sizeof(buff))
     {
         f_close(&File);
         return E2BIG;

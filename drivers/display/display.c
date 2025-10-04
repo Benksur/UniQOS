@@ -1,6 +1,13 @@
+/**
+ * @file display.c
+ * @brief Display driver implementation
+ *
+ * This file implements the display driver functions for the LCD display.
+ */
+
 #include "display.h"
 
-// Get the display driver vtable
+// display driver vtable
 static const IDisplayDriver_t *driver = NULL;
 
 static const uint8_t font5x7[96][5] = {
@@ -130,12 +137,20 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
     driver->fill_rect(x, y, width, height, colour);
 }
 
+/**
+ * @brief Draw a rectangular outline
+ * @param x X coordinate of top-left corner
+ * @param y Y coordinate of top-left corner
+ * @param width Width of rectangle
+ * @param height Height of rectangle
+ * @param colour 16-bit RGB565 color value
+ */
 void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour)
 {
-    driver->draw_hline(colour, x, y, width);
-    driver->draw_hline(colour, x, y + height - 1, width);
-    driver->draw_vline(colour, x, y, height);
-    driver->draw_vline(colour, x + width - 1, y, height);
+    driver->draw_hline(colour, x, y, width);              // top edge
+    driver->draw_hline(colour, x, y + height - 1, width); // bottom edge
+    driver->draw_vline(colour, x, y, height);             // left edge
+    driver->draw_vline(colour, x + width - 1, y, height); // right edge
 }
 
 void display_draw_vertical_line(uint16_t x, uint16_t y0, uint16_t y1, uint16_t colour)
@@ -158,6 +173,14 @@ void display_draw_horizontal_line(uint16_t x0, uint16_t y, uint16_t x1, uint16_t
     driver->draw_hline(colour, x0, y, x1 - x0 + 1);
 }
 
+/**
+ * @brief Draw a line between two points using Bresenham's algorithm
+ * @param x0 X coordinate of start point
+ * @param y0 Y coordinate of start point
+ * @param x1 X coordinate of end point
+ * @param y1 Y coordinate of end point
+ * @param colour 16-bit RGB565 color value
+ */
 void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour)
 {
     int16_t dx = abs16(x1 - x0);
@@ -188,6 +211,13 @@ void display_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint1
     }
 }
 
+/**
+ * @brief Draw a circle outline using Bresenham's algorithm
+ * @param x0 X coordinate of center
+ * @param y0 Y coordinate of center
+ * @param radius Circle radius
+ * @param colour 16-bit RGB565 color value
+ */
 void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour)
 {
     int16_t x = radius;
@@ -218,6 +248,13 @@ void display_draw_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t col
     }
 }
 
+/**
+ * @brief Fill a circle with color using Bresenham's algorithm
+ * @param x0 X coordinate of center
+ * @param y0 Y coordinate of center
+ * @param radius Circle radius
+ * @param colour 16-bit RGB565 color value
+ */
 void display_fill_circle(uint16_t x0, uint16_t y0, uint16_t radius, uint16_t colour)
 {
     int16_t x = radius;
@@ -409,10 +446,19 @@ void display_fill_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, u
     }
 }
 
+/**
+ * @brief Draw a single character using 5x7 font
+ * @param x X coordinate of top-left corner
+ * @param y Y coordinate of top-left corner
+ * @param c Character to draw (ASCII 32-127)
+ * @param colour 16-bit RGB565 foreground color
+ * @param bg_colour 16-bit RGB565 background color
+ * @param size Character size multiplier (1 = normal size)
+ */
 void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t bg_colour, uint8_t size)
 {
     if (c < 32 || c > 127)
-        c = 32;
+        c = 32; // replace invalid chars with space
 
     const uint8_t *glyph = font5x7[c - 32];
     uint8_t i, j;
@@ -444,18 +490,27 @@ void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t
                     display_fill_rect(x + i * size, y + j * size, size, size, bg_colour);
                 }
             }
-            line >>= 1;
+            line >>= 1; // shift to next bit
         }
     }
 }
 
+/**
+ * @brief Draw a string of characters
+ * @param x X coordinate of top-left corner
+ * @param y Y coordinate of top-left corner
+ * @param str Null-terminated string to draw
+ * @param colour 16-bit RGB565 foreground color
+ * @param bg_colour 16-bit RGB565 background color
+ * @param size Character size multiplier (1 = normal size)
+ */
 void display_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t colour, uint16_t bg_colour, uint8_t size)
 {
     uint16_t pos_x = x;
     while (*str)
     {
         display_draw_char(pos_x, y, *str, colour, bg_colour, size);
-        pos_x += 6 * size;
+        pos_x += 6 * size; // advance by character width
         str++;
     }
 }
@@ -483,6 +538,10 @@ void display_draw_bits(uint16_t x, uint16_t y, uint8_t *buff, uint16_t colour, u
     }
 }
 
+/**
+ * @brief Set display rotation/orientation
+ * @param rotation Rotation value (0-3)
+ */
 void display_set_rotation(uint8_t rotation)
 {
     if (!driver)
@@ -504,6 +563,13 @@ void display_set_rotation(uint8_t rotation)
     }
 }
 
+/**
+ * @brief Convert RGB values to 16-bit RGB565 format
+ * @param r Red component (0-255)
+ * @param g Green component (0-255)
+ * @param b Blue component (0-255)
+ * @return 16-bit RGB565 color value
+ */
 uint16_t display_colour565(uint8_t r, uint8_t g, uint8_t b)
 {
     return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
@@ -571,6 +637,7 @@ void display_draw_signal_bars(uint16_t x, uint16_t y, uint8_t strength, uint16_t
     }
 }
 
-void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour) {
+void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height, uint16_t fg_colour, uint16_t bg_colour)
+{
     driver->draw_bitmap(x, y, bitmap, width, height, fg_colour, bg_colour);
 }
