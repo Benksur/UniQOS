@@ -42,6 +42,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+        // DEBUG: Toggle LED in ISR to verify interrupt fires
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+
         // Notify the cellular task from ISR (lightweight, no RAM overhead)
         vTaskNotifyGiveFromISR(g_cellular_task_handle, &xHigherPriorityTaskWoken);
 
@@ -165,6 +168,7 @@ static void cellular_task_main(void *pvParameters)
         // Handle RI pulse notification (incoming call/SMS)
         if (notification_value > 0)
         {
+
             // RI pin pulsed LOW - check what type of event occurred
             char caller_id[32] = {0};
             uint8_t sms_index = 0;
