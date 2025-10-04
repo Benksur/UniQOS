@@ -5,11 +5,26 @@
  * This driver provides I2C communication and audio control functions for the NAU88C22
  * audio codec. It supports speaker, headphone, and microphone control with volume
  * and mute functionality.
+ *
+ * @defgroup nau88c22_driver NAU88C22 Audio Codec Driver
+ * @brief Low-level driver for NAU88C22 audio codec
+ * @{
+ *
+ * @defgroup nau88c22_basic Basic Functions
+ * @brief Initialization and basic control functions
+ * @{
+ *
+ * @defgroup nau88c22_volume Volume Control
+ * @brief Functions for controlling audio volume levels
+ * @{
+ *
+ * @defgroup nau88c22_mute Mute Control
+ * @brief Functions for muting/unmuting audio outputs
+ * @{
  */
 
 #include "nau88c22.h"
 #include "errornum.h"
-
 
 static uint8_t nau88c22_write_reg(uint8_t reg_addr, uint16_t reg_data);
 static uint8_t nau88c22_read_reg(uint8_t reg_addr, uint16_t *reg_data);
@@ -576,6 +591,7 @@ static uint8_t nau88c22_set_eq(uint8_t band, uint8_t gain)
 /**
  * @brief Get the NAU88C22 audio driver interface
  * @return Pointer to IAudioDriver_t structure with all driver functions
+ * @ingroup nau88c22_basic
  */
 const IAudioDriver_t *nau88c22_get_driver(void)
 {
@@ -589,12 +605,14 @@ const IAudioDriver_t *nau88c22_get_driver(void)
                 .mute = nau88c22_mute_mic_void,
                 .set_volume = nau88c22_set_mic_volume_void,
             }},
-        .headphones = {
-            .mute = nau88c22_mute_hp_void, 
-            .set_volume = nau88c22_set_hp_volume_void, 
-            .mic = {
-                .mute = nau88c22_mute_hp_mic_void,
-                .set_volume = nau88c22_set_hp_mic_volume_void,
-            }}};
+        .headphones = {.mute = nau88c22_mute_hp_void, .set_volume = nau88c22_set_hp_volume_void, .mic = {
+                                                                                                     .mute = nau88c22_mute_hp_mic_void,
+                                                                                                     .set_volume = nau88c22_set_hp_mic_volume_void,
+                                                                                                 }}};
     return &driver;
 }
+
+/** @} */ // end of nau88c22_mute group
+/** @} */ // end of nau88c22_volume group
+/** @} */ // end of nau88c22_basic group
+/** @} */ // end of nau88c22_driver group

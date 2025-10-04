@@ -3,6 +3,7 @@
  * @brief Display driver implementation
  *
  * This file implements the display driver functions for the LCD display.
+ *
  */
 
 #include "display.h"
@@ -121,12 +122,41 @@ static void swap16(uint16_t *a, uint16_t *b)
     *b = temp;
 }
 
+/**
+ * @brief Initialize the display driver
+ *
+ * Initializes the display system by getting the ST7789V driver
+ * and calling its initialization function. This must be called
+ * before any other display functions.
+ *
+ * @note This function is safe to call multiple times
+ * @warning Display functions will not work until this is called
+ *
+ * @return None
+ *
+ * @see display_fill(), display_draw_char()
+ *
+ * @code
+ * // Initialize display
+ * display_init();
+ *
+ * // Now safe to use display functions
+ * display_fill(COLOUR_BLACK);
+ * @endcode
+ *
+ * @ingroup display_basic
+ */
 void display_init(void)
 {
     driver = st7789v_get_driver();
     driver->init();
 }
 
+/**
+ * @brief Fill the entire display with a solid color
+ * @param colour 16-bit RGB565 color value
+ * @ingroup display_basic
+ */
 void display_fill(uint16_t colour)
 {
     driver->fill(colour);
@@ -144,6 +174,7 @@ void display_fill_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
  * @param width Width of rectangle
  * @param height Height of rectangle
  * @param colour 16-bit RGB565 color value
+ * @ingroup display_drawing
  */
 void display_draw_rect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t colour)
 {
@@ -454,6 +485,7 @@ void display_fill_triangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, u
  * @param colour 16-bit RGB565 foreground color
  * @param bg_colour 16-bit RGB565 background color
  * @param size Character size multiplier (1 = normal size)
+ * @ingroup display_text
  */
 void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t colour, uint16_t bg_colour, uint8_t size)
 {
@@ -569,6 +601,7 @@ void display_set_rotation(uint8_t rotation)
  * @param g Green component (0-255)
  * @param b Blue component (0-255)
  * @return 16-bit RGB565 color value
+ * @ingroup display_utility
  */
 uint16_t display_colour565(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -641,3 +674,9 @@ void display_draw_mono_bitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uin
 {
     driver->draw_bitmap(x, y, bitmap, width, height, fg_colour, bg_colour);
 }
+
+/** @} */ // end of display_utility group
+/** @} */ // end of display_text group
+/** @} */ // end of display_drawing group
+/** @} */ // end of display_basic group
+/** @} */ // end of display_driver group

@@ -1,3 +1,27 @@
+/**
+ * @file display.h
+ * @brief Display driver header
+ * 
+ * @defgroup display_driver Display Driver
+ * @brief High-level display functions for drawing graphics and text
+ * @{
+ * 
+ * @defgroup display_basic Basic Display Functions
+ * @brief Basic display initialization and control functions
+ * @{
+ * 
+ * @defgroup display_drawing Drawing Functions
+ * @brief Functions for drawing shapes, lines, and graphics
+ * @{
+ * 
+ * @defgroup display_text Text Functions
+ * @brief Functions for drawing text and characters
+ * @{
+ * 
+ * @defgroup display_utility Utility Functions
+ * @brief Utility functions for color conversion and helpers
+ * @{
+ */
 #ifndef DISPLAY_H
 #define DISPLAY_H
 

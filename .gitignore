@@ -4,3 +4,5 @@
 build/
 *dat
 test_bptree
+docs/html
+docs/latex
