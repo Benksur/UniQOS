@@ -152,9 +152,10 @@ void game_tick(SnakeState *state)
     if (state->new_apple)
     {
         // new apple
-        bool safe_spawn = true;
+        bool safe_spawn;
         do
         {
+            safe_spawn = true; // Reset for each attempt
             state->apple_x = (uint8_t)(rand() % GRID_SIZE_X);
             state->apple_y = (uint8_t)(rand() % GRID_SIZE_Y);
 
