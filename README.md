@@ -55,12 +55,14 @@ Make sure the following tools are installed and accessible in your `PATH`:
 The `BOARD` flag will specify the chip target, for building on the existing board use `pcb`. For testing on personal development boards using the H7 chipsets, you may need to modify the `/driver` and `/kernel` Makefiles depending on the exact chipset used by the board.
 
 ### Running Tests
+*from `/drivers`*
 ```bash
 make BOARD=(dev or pcb) TEST=(display, modem etc..)
 ```
 
 
 ### Main OS
+*from `/kernel`*
 ```bash
 make BOARD=(dev or pcb)
 ```
