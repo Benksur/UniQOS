@@ -287,12 +287,8 @@ uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
         {
             msg += 2; // Skip \r\n to start of message
 
-            // Find message end (before \r\n\r\nOK or \r\nOK)
+            // Find message end
             char *msg_end = strstr(msg, "\r\n\r\nOK");
-            if (!msg_end)
-            {
-                msg_end = strstr(msg, "\r\nOK");
-            }
 
             if (msg_end)
             {
@@ -301,12 +297,6 @@ uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
                     len = message_size - 1;
                 strncpy(message, msg, len);
                 message[len] = '\0';
-            }
-            else
-            {
-                // Fallback: copy everything remaining
-                strncpy(message, msg, message_size - 1);
-                message[message_size - 1] = '\0';
             }
         }
     }
