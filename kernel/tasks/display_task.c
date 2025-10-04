@@ -242,7 +242,7 @@ static void display_task_main(void *pvParameters)
     screen_tick();
 
     // turn backlight full power
-    // HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, LOAD_SW_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET); // backlight
 
     // Task main loop - handles messages and ticks like the test file
