@@ -1,3 +1,12 @@
+/**
+ * @file call_state.h
+ * @brief Call state machine task
+ * @ingroup call_state_task
+ *
+ * Manages call state transitions and coordinates between cellular modem,
+ * display, and audio systems during call operations.
+ */
+
 #ifndef CALL_STATE_H
 #define CALL_STATE_H
 
@@ -11,33 +20,45 @@
 #include "drv2603.h"
 #include "stm32_config.h"
 
+/** @ingroup call_state_task
+ *  @brief Stack size for call state task in bytes */
 #define CALL_STATE_TASK_STACK_SIZE 1024
+
+/** @ingroup call_state_task
+ *  @brief Call state task priority */
 #define CALL_STATE_TASK_PRIORITY osPriorityAboveNormal
 
-// Call state definitions
+/**
+ * @brief Call state enumeration
+ * @ingroup call_state_task
+ */
 typedef enum
 {
-    CALL_STATE_IDLE,
-    CALL_STATE_RINGING,
-    CALL_STATE_DIALLING,
-    CALL_STATE_ACTIVE,
-    CALL_STATE_ENDING
+    CALL_STATE_IDLE,     /**< No active call */
+    CALL_STATE_RINGING,  /**< Incoming call ringing */
+    CALL_STATE_DIALLING, /**< Outgoing call dialing */
+    CALL_STATE_ACTIVE,   /**< Call is active */
+    CALL_STATE_ENDING    /**< Call is ending */
 } CallState;
 
-// Call commands
+/**
+ * @brief Call command enumeration
+ * @ingroup call_state_task
+ */
 typedef enum
 {
-    CALL_CMD_INCOMING_CALL,
-    CALL_CMD_ANSWER_CALL,
-    CALL_CMD_DIALLING,
-    CALL_CMD_HANGUP_CALL,
+    CALL_CMD_INCOMING_CALL, /**< Handle incoming call */
+    CALL_CMD_ANSWER_CALL,   /**< Answer incoming call */
+    CALL_CMD_DIALLING,      /**< Start dialing */
+    CALL_CMD_HANGUP_CALL,   /**< Hang up call */
 } CallCommand;
 
-// Event group bits for coordination
-#define CALL_EVENT_INCOMING (1 << 0) // Incoming call detected (controls vibration)
-#define CALL_EVENT_ANSWER (1 << 1)   // Call answered (controls GPIO switching)
-#define CALL_EVENT_HANGUP (1 << 2)   // Call ended (controls GPIO switching)
-#define CALL_EVENT_DISPLAY (1 << 3)  // Display notification
+/** @ingroup call_state_task
+ *  @brief Event group bits for coordination */
+#define CALL_EVENT_INCOMING (1 << 0) /**< Incoming call detected (controls vibration) */
+#define CALL_EVENT_ANSWER (1 << 1)   /**< Call answered (controls GPIO switching) */
+#define CALL_EVENT_HANGUP (1 << 2)   /**< Call ended (controls GPIO switching) */
+#define CALL_EVENT_DISPLAY (1 << 3)  /**< Display notification */
 
 // Call data structure - for passing call information
 typedef struct

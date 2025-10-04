@@ -1,9 +1,20 @@
 
+/**
+ * @file lsm6dsv.h
+ * @brief LSM6DSV IMU sensor driver
+ * @ingroup imu_driver
+ *
+ * Driver for the STMicroelectronics LSM6DSV 6-axis IMU sensor.
+ * Provides accelerometer and gyroscope data with configurable sample rates.
+ */
+
 #ifndef LSM6DSV_H
 #define LSM6DSV_H
 
 #include <stdint.h>
 
+/** @ingroup imu_driver
+ *  @brief I2C address of LSM6DSV sensor */
 #define LSM6DSV_I2C_ADDR 0x6A
 
 /* Register addresses from datasheet */
@@ -120,10 +131,11 @@
 #define LSM6DSV_GFA (1 << 1)
 #define LSM6DSV_XLDA (1 << 0)
 
-typedef struct {
-    float ax, ay, az;   // Acceleration in g
-    float gx, gy, gz;   // Gyroscope in dps
-    float temp;         // Temperature in °C
+typedef struct
+{
+    float ax, ay, az; // Acceleration in g
+    float gx, gy, gz; // Gyroscope in dps
+    float temp;       // Temperature in °C
 } lsm6dsv_data_t;
 
 uint8_t lsm6dsv_init(void);

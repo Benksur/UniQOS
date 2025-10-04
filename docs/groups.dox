@@ -48,6 +48,15 @@
  */
 
 /**
+ * @defgroup display_types Display Data Types
+ * @ingroup display_driver
+ * @brief Structures and types for display operations
+ * 
+ * Data structures used throughout the display API including
+ * points, rectangles, and color definitions.
+ */
+
+/**
  * @defgroup modem_drivers Cellular Modem Drivers
  * @ingroup drivers
  * @brief Cellular modem communication drivers
@@ -191,6 +200,15 @@
  * @defgroup contacts_bptree Contacts B+ Tree
  * @ingroup data_structures
  * @brief B+ tree implementation for contact storage
+ */
+
+/**
+ * @defgroup contact_node_types Contact Tree Node Types
+ * @ingroup contacts_bptree
+ * @brief Internal structures for B+ tree nodes
+ * 
+ * Low-level node structures used internally by the B+ tree.
+ * Users typically don't interact with these directly.
  */
 
 /**

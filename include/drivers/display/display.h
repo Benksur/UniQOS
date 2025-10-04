@@ -25,7 +25,7 @@
 
 /**
  * @brief Point structure for 2D coordinates
- * @ingroup display_driver
+ * @ingroup display_types
  */
 typedef struct
 {
@@ -35,7 +35,7 @@ typedef struct
 
 /**
  * @brief Rectangle structure
- * @ingroup display_driver
+ * @ingroup display_types
  */
 typedef struct
 {

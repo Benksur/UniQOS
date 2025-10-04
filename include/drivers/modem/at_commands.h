@@ -1,3 +1,12 @@
+/**
+ * @file at_commands.h
+ * @brief AT command interface for cellular modem
+ * @ingroup at_commands
+ *
+ * Provides AT command definitions, timeouts, and result codes for
+ * communicating with the cellular modem. Based on RC76xx AT command reference.
+ */
+
 #ifndef AT_COMMANDS_H_
 #define AT_COMMANDS_H_
 
@@ -8,85 +17,117 @@
 #include "errornum.h"
 #include "stm32_config.h"
 
+/** @ingroup at_commands
+ *  @brief Modem type selection (RC7620) */
 #define MODEM_RC7620 // move this to some master config later
 
 #ifdef MODEM_RC7620
 #include "rc7620_api.h"
 #endif
 
-// Standard Command Timeout Values See Table A-3 of RC76xx AT Command Reference
-#define TIMEOUT_1S 1000
-#define TIMEOUT_2S 2000
-#define TIMEOUT_5S 5000
-#define TIMEOUT_30S 30000
-#define TIMEOUT_60S 60000
-#define TIMEOUT_120S 120000
+/** @ingroup at_commands
+ *  @brief Standard command timeout values (see Table A-3 of RC76xx AT Command Reference) */
+#define TIMEOUT_1S 1000     /**< 1 second timeout */
+#define TIMEOUT_2S 2000     /**< 2 second timeout */
+#define TIMEOUT_5S 5000     /**< 5 second timeout */
+#define TIMEOUT_30S 30000   /**< 30 second timeout */
+#define TIMEOUT_60S 60000   /**< 60 second timeout */
+#define TIMEOUT_120S 120000 /**< 120 second timeout */
 
-// Max string size for phone number
+/** @ingroup at_commands
+ *  @brief Maximum string size for phone numbers */
 #define MAXNUMBERSTR 16
 
+/**
+ * @brief Function mode enumeration
+ * @ingroup at_commands
+ */
 enum FunctionModes
 {
-    MODE_MIN = 0,      // minimum functionality, low power draw
-    MODE_FULL = 1,     // full functionality, high power draw
-    MODE_AIRPLANE = 4, // Airplane mode, low power draw
-    MODE_TEST = 5,     // Factory Test Mode
-    MODE_RST = 6,      // Reset UE
-    MODE_OFFLINE = 7,  // Offline mode
+    MODE_MIN = 0,      /**< Minimum functionality, low power draw */
+    MODE_FULL = 1,     /**< Full functionality, high power draw */
+    MODE_AIRPLANE = 4, /**< Airplane mode, low power draw */
+    MODE_TEST = 5,     /**< Factory Test Mode */
+    MODE_RST = 6,      /**< Reset UE */
+    MODE_OFFLINE = 7,  /**< Offline mode */
 };
 
+/**
+ * @brief Text mode enumeration
+ * @ingroup at_commands
+ */
 enum TextModes
 {
-    TEXTMODE_PDU = 0,
-    TEXTMODE_TEXT = 1,
+    TEXTMODE_PDU = 0,  /**< PDU mode for SMS */
+    TEXTMODE_TEXT = 1, /**< Text mode for SMS */
 };
 
+/**
+ * @brief ATV0 result codes enumeration
+ * @ingroup at_commands
+ */
 enum ATV0ResultCodes
 {
-    ATV0_OK = 0,
-    ATV0_CONNECT = 1,
-    ATV0_RING = 2,
-    ATV0_NO_CARRIER = 3,
-    ATV0_ERROR = 4,
-    ATV0_NO_DAILTONE = 6,
-    ATV0_BUSY = 7,
-    ATV0_NO_ANSWER = 8,    
+    ATV0_OK = 0,          /**< Command executed successfully */
+    ATV0_CONNECT = 1,     /**< Connection established */
+    ATV0_RING = 2,        /**< Incoming call */
+    ATV0_NO_CARRIER = 3,  /**< No carrier detected */
+    ATV0_ERROR = 4,       /**< Command error */
+    ATV0_NO_DAILTONE = 6, /**< No dial tone */
+    ATV0_BUSY = 7,        /**< Busy signal */
+    ATV0_NO_ANSWER = 8,   /**< No answer */
 };
 
+/**
+ * @brief Call direction enumeration
+ * @ingroup at_commands
+ */
 enum CallDir
 {
-    DIR_MO = 0, // Mobile Originated
-    DIR_MT = 1, // Mobile Terminated
+    DIR_MO = 0, /**< Mobile Originated (outgoing) */
+    DIR_MT = 1, /**< Mobile Terminated (incoming) */
 };
 
+/**
+ * @brief Call status enumeration
+ * @ingroup at_commands
+ */
 enum CallStat
 {
-    STAT_ACTIVE = 0,
-    STAT_HELD = 1,
-    STAT_DIALING = 2,  //
-    STAT_ALERTING = 3, //
-    STAT_INCOMMING = 4,
-    STAT_WAITING = 5,
+    STAT_ACTIVE = 0,    /**< Call is active */
+    STAT_HELD = 1,      /**< Call is on hold */
+    STAT_DIALING = 2,   /**< Dialing in progress */
+    STAT_ALERTING = 3,  /**< Alerting (ringing) */
+    STAT_INCOMMING = 4, /**< Incoming call */
+    STAT_WAITING = 5,   /**< Call waiting */
 };
 
+/**
+ * @brief Call mode enumeration
+ * @ingroup at_commands
+ */
 enum CallMode
 {
-    MODE_VOICE = 0,
-    MODE_DATA = 1,
-    MODE_FAX = 2,
-    MODE_VFBD_VM = 3, // voice followed by data, voice mode
-    MODE_AVD_VM = 4, // alternating voice/data, voice mode
-    MODE_AVF_VM = 5, // alternating voice/fax, voice mode
-    MODE_VFBD_DM = 6, // voice followed by data, data mode
-    MODE_AVD_DM = 7, // alternating voice/data, data mode
-    MODE_AVF_FM = 8, // alternating voice/fax, fax mode
-    MODE_UNKNOWN = 9,
+    MODE_VOICE = 0,   /**< Voice call mode */
+    MODE_DATA = 1,    /**< Data call mode */
+    MODE_FAX = 2,     /**< Fax call mode */
+    MODE_VFBD_VM = 3, /**< Voice followed by data, voice mode */
+    MODE_AVD_VM = 4,  /**< Alternating voice/data, voice mode */
+    MODE_AVF_VM = 5,  /**< Alternating voice/fax, voice mode */
+    MODE_VFBD_DM = 6, /**< Voice followed by data, data mode */
+    MODE_AVD_DM = 7,  /**< Alternating voice/data, data mode */
+    MODE_AVF_FM = 8,  /**< Alternating voice/fax, fax mode */
+    MODE_UNKNOWN = 9, /**< Unknown mode */
 };
 
+/**
+ * @brief Multiparty call enumeration
+ * @ingroup at_commands
+ */
 enum CallMPTY
 {
-    MPTY_NO = 0,
-    MPTY_YES = 1,
+    MPTY_NO = 0,  /**< Not a multiparty call */
+    MPTY_YES = 1, /**< Multiparty call */
 };
 
 /* -------------------------------- Call Status -------------------------------- */
@@ -187,7 +228,6 @@ uint8_t at_call_status(call_status_t **status, int max_items);
 uint8_t at_set_message_format(enum TextModes mode);
 uint8_t at_get_sms_textmode(int index, char *sms_buff, int bufflen);
 uint8_t at_send_sms_textmode(const char *sms_address, const char *sms_message);
-
 
 /* Governed By ITU-T Recommendation V.250*/
 uint8_t at_call_dial(char *dial_string, enum ATV0ResultCodes *result_code);

@@ -1,4 +1,13 @@
 
+/**
+ * @file st7789v.h
+ * @brief ST7789V LCD controller driver
+ * @ingroup st7789v_driver
+ *
+ * Low-level driver for the ST7789V TFT LCD controller.
+ * Provides register definitions and basic control functions for the 240x320 display.
+ */
+
 #ifndef __ST7789V_H
 #define __ST7789V_H
 
@@ -11,13 +20,28 @@ extern "C"
 #include "LCD_Controller.h"
 #include "idisplay_driver.h"
 
+/** @ingroup st7789v_driver
+ *  @brief ST7789V device ID */
 #define ST7789V_ID 0x85
 
+/** @ingroup st7789v_driver
+ *  @brief LCD pixel width in pixels */
 #define ST7789V_LCD_PIXEL_WIDTH ((uint16_t)240)
+
+/** @ingroup st7789v_driver
+ *  @brief LCD pixel height in pixels */
 #define ST7789V_LCD_PIXEL_HEIGHT ((uint16_t)320)
 
+/** @ingroup st7789v_driver
+ *  @brief Portrait orientation (240x320) */
 #define ST7789V_ORIENTATION_PORTRAIT ((uint32_t)0x00)
+
+/** @ingroup st7789v_driver
+ *  @brief Landscape orientation (320x240) */
 #define ST7789V_ORIENTATION_LANDSCAPE ((uint32_t)0x01)
+
+/** @ingroup st7789v_driver
+ *  @brief Landscape rotated 180° orientation */
 #define ST7789V_ORIENTATION_LANDSCAPE_ROT180 ((uint32_t)0x02)
 
 #define ST7789V_NOP 0x00
@@ -100,8 +124,31 @@ extern "C"
 #define ST7789V_TEON 0x35
 #define ST7789V_TEOFF 0x34
 
+    /**
+     * @ingroup st7789v_driver
+     * @brief Get the ST7789V display driver interface
+     * @return Pointer to the display driver interface structure
+     */
     const IDisplayDriver_t *st7789v_get_driver(void);
+
+    /**
+     * @ingroup st7789v_driver
+     * @brief Draw a bitmap image to the display
+     * @param Xpos X position on screen
+     * @param Ypos Y position on screen
+     * @param pbmp Pointer to bitmap data
+     */
     void st7789v_draw_bitmap(uint16_t Xpos, uint16_t Ypos, uint8_t *pbmp);
+
+    /**
+     * @ingroup st7789v_driver
+     * @brief Draw an RGB image to the display
+     * @param Xpos X position on screen
+     * @param Ypos Y position on screen
+     * @param Xsize Width of image in pixels
+     * @param Ysize Height of image in pixels
+     * @param pdata Pointer to RGB image data
+     */
     void st7789v_draw_rgb_image(uint16_t Xpos, uint16_t Ypos, uint16_t Xsize, uint16_t Ysize, uint8_t *pdata);
 
 #ifdef __cplusplus
