@@ -42,6 +42,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+        // Disable interrupt temporarily to ignore the 50ms pulse and any bouncing
+        HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+
         // DEBUG: Toggle LED in ISR to verify interrupt fires
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 
@@ -155,6 +158,8 @@ static void cellular_task_main(void *pvParameters)
     uint32_t last_signal_check = 0;
 
     // modem_init();
+    // pull down to prevent sleep
+    // HAL_GPIO_WritePin(UART_DTR_GPIO_Port, UART_DTR_Pin, GPIO_PIN_RESET);
 
     for (;;)
     {
@@ -168,6 +173,13 @@ static void cellular_task_main(void *pvParameters)
         // Handle RI pulse notification (incoming call/SMS)
         if (notification_value > 0)
         {
+            static ReceivedSms received_sms;
+            memset(&received_sms, 0, sizeof(received_sms));
+            strncpy(received_sms.sender, "James Wood", sizeof(received_sms.sender) - 1);
+            received_sms.sender[sizeof(received_sms.sender) - 1] = '\0';
+            strncpy(received_sms.body, "poop man", sizeof(received_sms.body) - 1);
+            received_sms.body[sizeof(received_sms.body) - 1] = '\0';
+            DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SHOW_SMS, &received_sms);
 
             // RI pin pulsed LOW - check what type of event occurred
             char caller_id[32] = {0};
@@ -215,6 +227,15 @@ static void cellular_task_main(void *pvParameters)
                 // No event or unknown event - ignore
                 break;
             }
+
+            // Wait for pin to return HIGH (pulse should be ~50ms), then re-enable interrupt
+            osDelay(100);
+
+            // Clear any pending interrupt that may have occurred during processing
+            __HAL_GPIO_EXTI_CLEAR_IT(MODEM_RI_Pin);
+
+            // Re-enable interrupt for next event
+            HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
         }
 
         // Periodic signal strength check (every 2 seconds)
