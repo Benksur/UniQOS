@@ -31,7 +31,6 @@ void input_task_main(void *pvParameters)
         {
             if (keypad_is_button_pressed(button_idx))
             {
-                HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
                 event = keypad_get_button_event(button_idx);
 
                 // Handle test trigger - STAR key triggers incoming call test

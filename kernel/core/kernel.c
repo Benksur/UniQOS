@@ -25,7 +25,7 @@ void kernel_init(void)
     display_ctx = DisplayTask_Init(call_ctx, NULL);
 
     // Initialize cellular task (needs display and call contexts)
-    // cellular_ctx = CellularTask_Init(display_ctx, call_ctx);
+    cellular_ctx = CellularTask_Init(display_ctx, call_ctx);
 
     // Initialize power task (needs display context)
     power_ctx = PowerTask_Init(display_ctx);
