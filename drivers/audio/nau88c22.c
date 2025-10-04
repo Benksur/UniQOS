@@ -5,23 +5,8 @@
  * This driver provides I2C communication and audio control functions for the NAU88C22
  * audio codec. It supports speaker, headphone, and microphone control with volume
  * and mute functionality.
- *
- * @defgroup nau88c22_driver NAU88C22 Audio Codec Driver
- * @brief Low-level driver for NAU88C22 audio codec
- * @{
- *
- * @defgroup nau88c22_basic Basic Functions
- * @brief Initialization and basic control functions
- * @{
- *
- * @defgroup nau88c22_volume Volume Control
- * @brief Functions for controlling audio volume levels
- * @{
- *
- * @defgroup nau88c22_mute Mute Control
- * @brief Functions for muting/unmuting audio outputs
- * @{
  */
+ 
 
 #include "nau88c22.h"
 #include "errornum.h"

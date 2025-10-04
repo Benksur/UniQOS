@@ -1,0 +1,282 @@
+/**
+ * @file groups.dox
+ * @brief Doxygen module group definitions for UniQOS
+ * 
+ * This file defines the hierarchical structure of documentation groups.
+ * Individual source files use @ingroup or @addtogroup to place themselves
+ * in the appropriate groups.
+ */
+
+/**
+ * @defgroup drivers Hardware Drivers
+ * @brief Low-level hardware abstraction layer drivers
+ * 
+ * This module contains all hardware driver implementations for peripherals
+ * and external components used in the UniQOS system.
+ */
+
+/**
+ * @defgroup audio_drivers Audio Drivers
+ * @ingroup drivers
+ * @brief Audio codec and sound processing drivers
+ * 
+ * Drivers for audio output/input devices and audio processing.
+ */
+
+/**
+ * @defgroup nau88c22_driver NAU88C22 Audio Codec
+ * @ingroup audio_drivers
+ * @brief NAU88C22 I2S audio codec driver
+ */
+
+/**
+ * @defgroup display_drivers Display Drivers
+ * @ingroup drivers
+ * @brief LCD display and graphics drivers
+ */
+
+/**
+ * @defgroup st7789v_driver ST7789V Display Controller
+ * @ingroup display_drivers
+ * @brief Low-level ST7789V LCD controller driver
+ */
+
+/**
+ * @defgroup display_driver High-Level Display API
+ * @ingroup display_drivers
+ * @brief High-level graphics and drawing functions
+ */
+
+/**
+ * @defgroup modem_drivers Cellular Modem Drivers
+ * @ingroup drivers
+ * @brief Cellular modem communication drivers
+ */
+
+/**
+ * @defgroup modem_driver Modem Interface
+ * @ingroup modem_drivers
+ * @brief High-level modem control interface
+ */
+
+/**
+ * @defgroup at_commands AT Command Interface
+ * @ingroup modem_drivers
+ * @brief AT command protocol implementation
+ */
+
+/**
+ * @defgroup rc7620_api RC7620 API
+ * @ingroup modem_drivers
+ * @brief RC7620-specific modem functions
+ */
+
+/**
+ * @defgroup peripheral_drivers Peripheral Drivers
+ * @ingroup drivers
+ * @brief Miscellaneous peripheral device drivers
+ */
+
+/**
+ * @defgroup keypad_driver Keypad Driver
+ * @ingroup peripheral_drivers
+ * @brief Matrix keypad input driver
+ */
+
+/**
+ * @defgroup imu_driver IMU Driver
+ * @ingroup peripheral_drivers
+ * @brief LSM6DSV motion sensor driver
+ */
+
+/**
+ * @defgroup haptic_driver Haptic Driver
+ * @ingroup peripheral_drivers
+ * @brief DRV2603 vibration motor driver
+ */
+
+/**
+ * @defgroup led_driver LED Driver
+ * @ingroup peripheral_drivers
+ * @brief WS2812 RGB LED driver
+ */
+
+/**
+ * @defgroup sdcard_driver SD Card Driver
+ * @ingroup peripheral_drivers
+ * @brief SD card interface driver
+ */
+
+/**
+ * @defgroup power_drivers Power Management Drivers
+ * @ingroup drivers
+ * @brief Battery and power management drivers
+ */
+
+/**
+ * @defgroup bq27441_driver BQ27441 Fuel Gauge
+ * @ingroup power_drivers
+ * @brief Battery fuel gauge driver
+ */
+
+/**
+ * @defgroup mcp73871_driver MCP73871 Charger
+ * @ingroup power_drivers
+ * @brief Battery charging controller driver
+ */
+
+/**
+ * @defgroup kernel Kernel
+ * @brief Real-time operating system kernel components
+ * 
+ * Core kernel functionality including task management, memory management,
+ * and inter-task communication.
+ */
+
+/**
+ * @defgroup kernel_core Kernel Core
+ * @ingroup kernel
+ * @brief Core kernel initialization and management
+ */
+
+/**
+ * @defgroup tasks System Tasks
+ * @ingroup kernel
+ * @brief FreeRTOS tasks for system operation
+ */
+
+/**
+ * @defgroup display_task Display Task
+ * @ingroup tasks
+ * @brief UI rendering and display management task
+ */
+
+/**
+ * @defgroup cellular_task Cellular Task
+ * @ingroup tasks
+ * @brief Cellular modem management task
+ */
+
+/**
+ * @defgroup call_state_task Call State Task
+ * @ingroup tasks
+ * @brief Call state machine and management
+ */
+
+/**
+ * @defgroup audio_task Audio Task
+ * @ingroup tasks
+ * @brief Audio playback and recording task
+ */
+
+/**
+ * @defgroup power_task Power Management Task
+ * @ingroup tasks
+ * @brief Battery monitoring and power management
+ */
+
+/**
+ * @defgroup input_task Input Handler Task
+ * @ingroup tasks
+ * @brief User input processing task
+ */
+
+/**
+ * @defgroup data_structures Data Structures
+ * @ingroup kernel
+ * @brief Core data structures used throughout the system
+ */
+
+/**
+ * @defgroup contacts_bptree Contacts B+ Tree
+ * @ingroup data_structures
+ * @brief B+ tree implementation for contact storage
+ */
+
+/**
+ * @defgroup sms_types SMS Types
+ * @ingroup data_structures
+ * @brief SMS message data structures
+ */
+
+/**
+ * @defgroup memory Memory Management
+ * @ingroup kernel
+ * @brief Dynamic memory allocation wrappers
+ */
+
+/**
+ * @defgroup ui User Interface
+ * @brief User interface rendering and interaction
+ * 
+ * High-level UI components, pages, and rendering system.
+ */
+
+/**
+ * @defgroup ui_core UI Core
+ * @ingroup ui
+ * @brief Core UI system components
+ */
+
+/**
+ * @defgroup ui_screen Screen Management
+ * @ingroup ui_core
+ * @brief Screen lifecycle and page management
+ */
+
+/**
+ * @defgroup ui_theme Theme System
+ * @ingroup ui_core
+ * @brief Color schemes and theming
+ */
+
+/**
+ * @defgroup ui_components UI Components
+ * @ingroup ui
+ * @brief Reusable UI widget components
+ */
+
+/**
+ * @defgroup ui_pages Application Pages
+ * @ingroup ui
+ * @brief Full-screen application views
+ */
+
+/**
+ * @defgroup ui_overlays Overlay Dialogs
+ * @ingroup ui
+ * @brief Modal dialogs and notifications
+ */
+
+/**
+ * @defgroup ui_input Input Handling
+ * @ingroup ui
+ * @brief User input processing and multitap text entry
+ */
+
+/**
+ * @defgroup audio Audio System
+ * @brief Audio mixing and sound generation
+ * 
+ * High-level audio system including mixer and oscillators.
+ */
+
+/**
+ * @defgroup audio_mixer Audio Mixer
+ * @ingroup audio
+ * @brief Multi-channel audio mixing
+ */
+
+/**
+ * @defgroup audio_oscillator Oscillator
+ * @ingroup audio
+ * @brief Tone and waveform generation
+ */
+
+/**
+ * @defgroup tests Test Programs
+ * @brief Hardware and driver test programs
+ * 
+ * Standalone test programs for validating hardware and drivers.
+ */
+

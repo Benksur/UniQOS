@@ -1,3 +1,12 @@
+/**
+ * @file nau88c22.h
+ * @brief NAU88C22 audio codec driver header file
+ * @ingroup nau88c22_driver
+ *
+ * This header file provides the declarations for the NAU88C22 audio codec driver.
+ * It includes the register addresses and function prototypes for the driver.
+ */
+
 #ifndef NAU88C22_H
 #define NAU88C22_H
 
@@ -79,5 +88,11 @@ typedef struct
     bool hp_mic;
 } nau_mute_states_t;
 
-const IAudioDriver_t* nau88c22_get_driver(void);
-#endif
+/**
+ * @ingroup nau88c22_driver
+ * @brief Get the NAU88C22 driver interface
+ * @return Pointer to the audio driver interface structure
+ */
+const IAudioDriver_t *nau88c22_get_driver(void);
+
+#endif /* NAU88C22_H */

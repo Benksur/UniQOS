@@ -10,6 +10,17 @@
  * 
  * This documentation covers the complete API for all drivers and system components.
  * 
+ * @subsection doc_organization Documentation Organization
+ * 
+ * The documentation is organized into logical **module groups** for easy navigation:
+ * - Use the **Modules** tab to browse the hierarchical API structure
+ * - See @ref drivers "Hardware Drivers" for all peripheral and device drivers
+ * - See @ref kernel "Kernel" for RTOS tasks and core system components
+ * - See @ref ui "User Interface" for UI pages, components, and rendering
+ * - See @ref audio "Audio System" for audio mixing and sound generation
+ * 
+ * **For developers:** See docs/doxygen_template.h for best practices on documenting new code.
+ * 
  * @section project_structure Project Structure
  * 
  * @subsection drivers_dir @ref drivers "drivers/"
