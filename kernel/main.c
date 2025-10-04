@@ -13,7 +13,6 @@
 #include "gpio.h"
 #include "kernel.h"
 #include "stm32_config.h"
-#include "sm64_mario_boing.h"
 
 void SystemClock_Config(void);
 static void MPU_Config(void);
