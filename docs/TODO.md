@@ -1,4 +1,4 @@
-# UniQOS - TODO List for Future Development
+# TODO List for Future Development
 
 This document outlines pending features and improvements for the next team of students.
 
