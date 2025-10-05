@@ -6,7 +6,8 @@
 #include "cursor.h"
 #include "input.h"
 #include "theme.h"
-#include "power.h"
+#include "power_page.h"
+#include "imu_page.h"
 #include "memwrap.h"
 #include <stddef.h>
 #include <string.h>
@@ -129,6 +130,12 @@ static void debug_handle_input(Page *self, int event_type)
         {
             Page *power_page = power_page_create();
             screen_push_page(power_page);
+            break;
+        }
+        case 1:
+        {
+            Page *imu_page = imu_page_create();
+            screen_push_page(imu_page);
             break;
         }
         }

@@ -1,4 +1,4 @@
-#include "power.h"
+#include "power_page.h"
 #include "screen.h"
 #include "display.h"
 #include "tile.h"

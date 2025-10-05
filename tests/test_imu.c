@@ -20,14 +20,15 @@ int main(void)
   PeriphCommonClock_Config();
 
   MX_GPIO_Init();
-  MX_I2C1_Init();
+  // MX_I2C1_Init();
 
-  lsm6dsv_init();
+  // lsm6dsv_init();
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port,LOAD_SW_Pin, GPIO_PIN_RESET);
 
-  uint8_t databuff, x_data[2], y_data[2];
-  float temp = 0;
-  lsm6dsv_data_t data;
-  HAL_StatusTypeDef ret;
+  // uint8_t databuff, x_data[2], y_data[2];
+  // float temp = 0;
+  // lsm6dsv_data_t data;
+  // HAL_StatusTypeDef ret;
   while (1)
   {
     // ret = lsm6dsv_read_reg(LSM6DSV_WHO_AM_I, &databuff, 1); // returns 0b01110000 always

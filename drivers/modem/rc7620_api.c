@@ -13,6 +13,31 @@ uint8_t modem_write_command(const char *command)
 
 uint8_t modem_read_response(uint8_t *buffer, uint16_t max_len, uint32_t timeout)
 {
+    uint16_t rxlen = 0;
+    
+    memset(buffer, 0, max_len);
+
+    HAL_StatusTypeDef result = HAL_UARTEx_ReceiveToIdle(&MODEM_UART_HANDLE, buffer, max_len - 1, &rxlen, timeout);
+
+    if (result == HAL_TIMEOUT && rxlen == 0)
+    {
+        DEBUG_PRINTF("ERROR: Timed out reading response\r\n");
+        return ETIMEDOUT;
+    }
+    else if (result != HAL_OK && result != HAL_TIMEOUT)
+    {
+        DEBUG_PRINTF("ERROR: Error reading response\r\n");
+        return EIO;
+    }
+
+    // probably need more sanity checking in here
+
+    return 0;
+}
+
+// OLD version here in case receivetoidle has issues
+uint8_t depr_modem_read_response(uint8_t *buffer, uint16_t max_len, uint32_t timeout)
+{
     memset(buffer, 0, max_len);
     HAL_StatusTypeDef result = HAL_UART_Receive(&MODEM_UART_HANDLE, buffer, max_len - 1, timeout);
 
