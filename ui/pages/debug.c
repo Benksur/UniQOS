@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#define DEBUG_ITEMS_COUNT 1
+#define DEBUG_ITEMS_COUNT 2
 #define DEBUG_VISIBLE_COUNT 5
 
 typedef struct
@@ -169,6 +169,7 @@ Page *debug_page_create()
 
     // Initialize debug options
     state->items[0] = "Power";
+    state->items[1] = "IMU";
     state->page_offset = 0;
 
     page->draw = debug_draw;

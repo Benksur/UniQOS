@@ -32,6 +32,9 @@ static void imu_draw_tile(Page *self, int tx, int ty)
         display_fill_rect(px, py, TILE_WIDTH * TILE_COLS, TILE_HEIGHT * TILE_ROWS, current_theme.bg_colour);
         state->mounted = true;
         state->last_tick = 0;
+        // init first time just in case 
+        // TODO: Remove later 
+        lsm6dsv_init();
     }
 
     if ((curr_time - state->last_tick) > TICK_TIME)
@@ -39,37 +42,37 @@ static void imu_draw_tile(Page *self, int tx, int ty)
         lsm6dsv_get_all(&state->data);
 
         tile_to_pixels(0, 1, &px, &py);
-        snprintf(buff, sizeof(buff), "ACC X: %8.3fg", state->data.ax);
+        snprintf(buff, sizeof(buff), "ACC X: %11.4fg", state->data.ax);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
         tile_to_pixels(0, 2, &px, &py);
-        snprintf(buff, sizeof(buff), "ACC Y: %8.3fg", state->data.ay);
+        snprintf(buff, sizeof(buff), "ACC Y: %11.4fg", state->data.ay);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
         tile_to_pixels(0, 3, &px, &py);
-        snprintf(buff, sizeof(buff), "ACC Z: %8.3fg", state->data.az);
+        snprintf(buff, sizeof(buff), "ACC Z: %11.4fg", state->data.az);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
         tile_to_pixels(0, 4, &px, &py);
-        snprintf(buff, sizeof(buff), "GYR X: %6.3fdps", state->data.gx);
+        snprintf(buff, sizeof(buff), "GYR X: %9.4fdps", state->data.gx);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
         tile_to_pixels(0, 5, &px, &py);
-        snprintf(buff, sizeof(buff), "GYR Y: %6.3fdps", state->data.gy);
+        snprintf(buff, sizeof(buff), "GYR Y: %9.4fdps", state->data.gy);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
         tile_to_pixels(0, 6, &px, &py);
-        snprintf(buff, sizeof(buff), "GYR Z: %6.3fdps", state->data.gz);
+        snprintf(buff, sizeof(buff), "GYR Z: %9.4fdps", state->data.gz);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
         tile_to_pixels(0, 7, &px, &py);
-        snprintf(buff, sizeof(buff), "TEMP: %9.3fc", state->data.temp);
+        snprintf(buff, sizeof(buff), "TEMP: %12.4fc", state->data.temp);
         display_draw_string(px, py, buff, current_theme.text_colour, current_theme.bg_colour, 2);
         memset(buff, 0, sizeof(buff));
 
