@@ -37,6 +37,12 @@ uint8_t modem_init(void)
     modem_power_on();
     HAL_Delay(1000);
 
+    // wait for power on
+    while (HAL_GPIO_ReadPin(UART1_RX_PORT, UART1_RX_PIN) == GPIO_PIN_RESET)
+    {
+        HAL_Delay(500);
+    }
+
     // test AT startup
     while (1)
     {

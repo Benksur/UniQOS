@@ -15,9 +15,6 @@ void kernel_init(void)
     PowerTaskContext *power_ctx = NULL;
     TestTaskContext *test_ctx = NULL;
 
-    // Initialize audio task first (no dependencies)
-    audio_ctx = AudioTask_Init();
-
     // Initialize call state (needs display, but we'll set it later)
     call_ctx = CallState_Init(NULL);
 
@@ -29,6 +26,9 @@ void kernel_init(void)
 
     // Initialize power task (needs display context)
     power_ctx = PowerTask_Init(display_ctx);
+
+    // Initialize audio task first (needs cellular init first)
+    audio_ctx = AudioTask_Init();
 
     // Now set the cross-references
     CallState_SetDisplayContext(call_ctx, display_ctx);

@@ -62,7 +62,7 @@ void MX_GPIO_Init(void)
                           |MOB_WAKE_Pin|AUDIO_SW_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, UART_DSR_Pin|GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DISP_CS_GPIO_Port, DISP_CS_Pin, GPIO_PIN_RESET);
@@ -142,9 +142,8 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : UART_DSR_Pin */
   GPIO_InitStruct.Pin = UART_DSR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(UART_DSR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC2 PC3 PC5 */

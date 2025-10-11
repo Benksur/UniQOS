@@ -9,7 +9,7 @@
 
 // Change to actual password in production 
 // DO NOT COMMIT WITH ACTUAL PASSWORD
-#define RC7620_AT_PASSWORD "12345"
+#define RC7620_AT_PASSWORD "A710"
 
 uint8_t modem_write_command(const char *command);
 

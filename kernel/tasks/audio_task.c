@@ -254,15 +254,10 @@ static void dispatch_audio_command(AudioTaskContext *ctx, AudioMessage *msg)
     }
 }
 
-#include"modem.h"
-
 static void audio_task_main(void *pvParameters)
 {
     AudioTaskContext *ctx = (AudioTaskContext *)pvParameters;
     AudioMessage msg;
-
-    // TODO REMOVE need to put this in cellular task
-    modem_power_on();
 
     ctx->codec = nau88c22_get_driver();
     ctx->codec->init();

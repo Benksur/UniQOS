@@ -169,9 +169,9 @@ static void cellular_task_main(void *pvParameters)
     uint32_t last_rtc_sync = 0;
     bool rtc_synced_on_boot = false;
 
-    // modem_init();
+    modem_init();
     // pull down to prevent sleep
-    // HAL_GPIO_WritePin(UART_DTR_GPIO_Port, UART_DTR_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(UART_DTR_GPIO_Port, UART_DTR_Pin, GPIO_PIN_RESET);
 
     for (;;)
     {

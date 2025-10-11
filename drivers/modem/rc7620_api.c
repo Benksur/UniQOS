@@ -75,7 +75,7 @@ uint8_t modem_send_command(const char *command, char *response, uint16_t respons
     while (HAL_GetTick() - start_tick < timeout)
     {
         DEBUG_PRINTF("Writing AT command: %s\r\n", cmd_buffer);
-        ret |= modem_write_command(cmd_buffer);
+        ret = modem_write_command(cmd_buffer);
         if (ret)
         {
             return ret;
@@ -193,9 +193,9 @@ uint8_t at_custom(char *customization, uint8_t value)
         return EACCES;
     }
 
-    if (snprintf(cmd, sizeof(cmd), "AT!CUSTOM\"%s\",%d", customization, value) < 0)
+    if (snprintf(cmd, sizeof(cmd), "AT!CUSTOM=\"%s\",%d", customization, value) < 0)
     {
-        DEBUG_PRINTF("ERROR: in creating string \"AT!CUSTOM\"%s\",%d\"\r\n", customization, value);
+        DEBUG_PRINTF("ERROR: in creating string \"AT!CUSTOM=\"%s\",%d\"\r\n", customization, value);
         return EINVAL;
     }
 

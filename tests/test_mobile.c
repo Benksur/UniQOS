@@ -46,6 +46,11 @@ int main(void)
   {
   };
 
+  at_set_function_mode(0);
+  HAL_Delay(10000);
+  at_set_function_mode(1);
+  HAL_Delay(10000);
+
   while (1)
   {
     // DSR
@@ -61,8 +66,15 @@ int main(void)
     stat = HAL_GPIO_ReadPin(UART_DTR_GPIO_Port, UART_DTR_Pin);
     // printf("%d", stat);
 
+    // memset(response, 0, sizeof(response));
+    // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT!GSTATUS?\r\n",13, HAL_MAX_DELAY);
+    // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    // HAL_Delay(1000);
+
+
+
     memset(response, 0, sizeof(response));
-    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT\r\n", 4, HAL_MAX_DELAY);
+    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT+CPIN?\r\n", 10, HAL_MAX_DELAY);
     res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
     HAL_Delay(1000);
 
@@ -78,12 +90,12 @@ int main(void)
     printf("%d %d", ret, date.Date);
     HAL_Delay(1000);
 
-    at_check_cpin();
-    HAL_Delay(500);
-    at_check_net_reg();
-    HAL_Delay(500);
-    at_check_eps_net_reg();
-    HAL_Delay(500);
+    // at_check_cpin();
+    // HAL_Delay(500);
+    // at_check_net_reg();
+    // HAL_Delay(500);
+    // at_check_eps_net_reg();
+    // HAL_Delay(500);
 
     // printf("%s, %d", response, res);
     // test AT startup
