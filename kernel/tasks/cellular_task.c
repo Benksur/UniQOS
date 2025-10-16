@@ -53,10 +53,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
         // Disable interrupt temporarily to ignore the 50ms pulse and any bouncing
-        HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+        // HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 
         // DEBUG: Toggle LED in ISR to verify interrupt fires
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+        // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 
         // Notify the cellular task from ISR (lightweight, no RAM overhead)
         vTaskNotifyGiveFromISR(g_cellular_task_handle, &xHigherPriorityTaskWoken);
@@ -139,6 +139,12 @@ static void handle_hang_up(CellularTaskContext *ctx, CellularMessage *msg)
     CallState_PostCommand(ctx->call_ctx, CALL_CMD_HANGUP_CALL, NULL);
 }
 
+static void handle_answer(CellularTaskContext *ctx, CellularMessage *msg)
+{
+    enum ATV0ResultCodes result_code;
+    modem_answer_call(&result_code);
+}
+
 static CellularCmdHandler cellular_cmd_table[] = {
     [CELLULAR_CMD_INIT] = handle_init,
     [CELLULAR_CMD_SLEEP] = handle_sleep,
@@ -147,6 +153,7 @@ static CellularCmdHandler cellular_cmd_table[] = {
     [CELLULAR_CMD_SEND_SMS] = handle_send_sms,
     [CELLULAR_CMD_DIAL] = handle_dial,
     [CELLULAR_CMD_HANG_UP] = handle_hang_up,
+    [CELLULAR_CMD_ANSWER] = handle_answer,
 };
 
 static void dispatch_cellular_command(CellularTaskContext *ctx, CellularMessage *msg)
@@ -189,7 +196,8 @@ static void cellular_task_main(void *pvParameters)
             // RI pin pulsed LOW - check what type of event occurred
             char caller_id[32] = {0};
             uint8_t sms_index = 0;
-            ModemEventType event = modem_check_event(caller_id, sizeof(caller_id), &sms_index);
+            char memtype[3] = {0};
+            ModemEventType event = modem_check_event(caller_id, sizeof(caller_id), &sms_index, memtype);
 
             switch (event)
             {
@@ -219,7 +227,7 @@ static void cellular_task_main(void *pvParameters)
                 memset(&received_sms, 0, sizeof(received_sms));
 
                 if (modem_read_sms(sms_index, received_sms.sender, sizeof(received_sms.sender),
-                                   received_sms.body, sizeof(received_sms.body)) == 0)
+                                   received_sms.body, sizeof(received_sms.body), memtype) == 0)
                 {
 
                     DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SHOW_SMS, &received_sms);
@@ -240,11 +248,11 @@ static void cellular_task_main(void *pvParameters)
             __HAL_GPIO_EXTI_CLEAR_IT(MODEM_RI_Pin);
 
             // Re-enable interrupt for next event
-            HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+            // HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
         }
 
-        // Periodic signal strength check (every 2 seconds)
-        if (HAL_GetTick() - last_signal_check >= 2000)
+        // Periodic signal strength check (every 10 seconds)
+        if (HAL_GetTick() - last_signal_check >= 10000)
         {
             last_signal_check = HAL_GetTick();
 
@@ -253,17 +261,18 @@ static void cellular_task_main(void *pvParameters)
             uint8_t current_signal_bars;
 
             // Get signal strength in dBm from modem
-            if (modem_get_signal_strength(&current_signal_dbm, &current_ber) == 0)
-            {
-                // Convert dBm value to signal bars (0-5)
-                current_signal_bars = dbm_to_signal_bars(current_signal_dbm);
+            // if (CallState_GetCurrentState(ctx->call_ctx) == CALL_STATE_IDLE && 
+            //     modem_get_signal_strength(&current_signal_dbm, &current_ber) == 0)
+            // {
+            //     // Convert dBm value to signal bars (0-5)
+            //     current_signal_bars = dbm_to_signal_bars(current_signal_dbm);
 
-                if (current_signal_bars != ctx->signal_bars)
-                {
-                    ctx->signal_bars = current_signal_bars;
-                    DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SET_SIGNAL_STATUS, &ctx->signal_bars);
-                }
-            }
+            //     if (current_signal_bars != ctx->signal_bars)
+            //     {
+            //         ctx->signal_bars = current_signal_bars;
+            //         DisplayTask_PostCommand(ctx->display_ctx, DISPLAY_SET_SIGNAL_STATUS, &ctx->signal_bars);
+            //     }
+            // }
         }
 
         // RTC synchronization with modem clock

@@ -123,14 +123,17 @@ uint8_t at_get_signal_strength(int16_t *rssi, uint8_t *ber)
     }
 
     // response in form +CSQ: <rssi>,<ber>
-    matches = sscanf(response, "AT+CSQ: %hhd,%hhd",
-                     &rssi_val, &ber_val);
-
-    if (matches != 2)
+    const char *p = response;
+    while (*p && *p != ':')
     {
-        DEBUG_PRINTF("Bad Matches on Response: %s\r\n", response);
-        return EBADMSG;
+        p++;
     }
+    if (*p == ':')
+        p++;
+        p++;
+
+    rssi_val = atoi(p);
+    ber_val = atoi(p + 3);
 
     if (rssi_val != 99)
     {

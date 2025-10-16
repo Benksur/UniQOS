@@ -26,7 +26,7 @@
 
 /** @ingroup cellular_task
  *  @brief Cellular task priority */
-#define CELLULAR_TASK_PRIORITY osPriorityNormal
+#define CELLULAR_TASK_PRIORITY osPriorityAboveNormal
 
 /**
  * @brief Cellular command enumeration
@@ -41,6 +41,7 @@ typedef enum
     CELLULAR_CMD_SEND_SMS,          /**< Send SMS message */
     CELLULAR_CMD_DIAL,              /**< Dial phone number */
     CELLULAR_CMD_HANG_UP,           /**< Hang up call */
+    CELLULAR_CMD_ANSWER
 } CellularCommand;
 
 /**

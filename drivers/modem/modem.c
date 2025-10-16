@@ -144,15 +144,21 @@ uint8_t modem_init(void)
 
     // Enable I2S Audio interface
     // 5 is the default audio profile
+    DEBUG_PRINTF("Sending: AT!AVCFG=5,0,1\r\n");
     modem_send_command("AT!AVCFG=5,0,1", response, sizeof(response), default_timeout);
+    DEBUG_PRINTF("Response: %s\r\n", response);
+    // Enable PCM Adio interface -- NOT USED 
     // modem_send_command("AT!AVCFG=5,0,0,0,0,0,0,2", response, sizeof(response), default_timeout);
     HAL_Delay(100);
 
+    // Set max volume
+    DEBUG_PRINTF("Sending: AT+CLVL=5\r\n");
     modem_send_command("AT+CLVL=5", response, sizeof(response), default_timeout);
+    DEBUG_PRINTF("Response: %s\r\n", response);
     HAL_Delay(100);
 
     // Setting message format
-    at_set_message_format(TEXTMODE_TEXT);
+    ret = at_set_message_format(TEXTMODE_TEXT);
     if (ret)
     {
         DEBUG_PRINTF("FATAL ERROR ON INIT: TEXTMODE");
@@ -198,18 +204,16 @@ uint8_t modem_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time)
     return at_get_clock(date, time);
 }
 
-ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index)
+ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index, char memtype[2])
 {
     char buffer[128];
+    memset(buffer, 0, sizeof(buffer));
     uint16_t received_len = 0;
 
-    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle(&MODEM_UART_HANDLE, (uint8_t *)buffer, sizeof(buffer) - 1, &received_len, 100);
+    HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle(&MODEM_UART_HANDLE, (uint8_t *)buffer, sizeof(buffer) - 1, &received_len, 6000);
 
     if ((status == HAL_OK || status == HAL_TIMEOUT) && received_len > 0)
     {
-        // Null-terminate at actual received length
-        buffer[received_len] = '\0';
-
         // Check for incoming call (RING or +CLIP with caller ID)
         if (strstr(buffer, "RING") != NULL)
         {
@@ -246,6 +250,10 @@ ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t
             if (sms_index != NULL)
             {
                 // Find the comma separating memory type and index
+                char *quote1 = strchr(cmti_start, '"');
+                quote1++;
+                strncpy(memtype, quote1, 2);
+
                 char *comma = strchr(cmti_start, ',');
                 if (comma != NULL)
                 {
@@ -261,11 +269,11 @@ ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t
 }
 
 uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
-                       char *message, size_t message_size)
+                       char *message, size_t message_size, char memtype[3])
 {
     char response[512];
-    char cmd[16];
-    snprintf(cmd, sizeof(cmd), "AT+CMGR=%d", index);
+    char cmd[48];
+    snprintf(cmd, sizeof(cmd), "AT+CPMS=\"%s\";+CMGR=%d", memtype, index);
 
     if (modem_send_command(cmd, response, sizeof(response), TIMEOUT_5S) != 0)
         return 1; // error
@@ -330,4 +338,9 @@ uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
 uint8_t modem_hang_up(void)
 {
     return at_call_hook();
+}
+
+uint8_t modem_answer_call(enum ATV0ResultCodes *result_code)
+{
+    return at_call_answer(result_code);
 }

@@ -30,7 +30,7 @@
  * @brief Initialize the DRV2603 haptic driver
  * @return 0 on success, error code otherwise
  */
-uint8_t drv2603_init();
+uint8_t drv2603_init(void);
 
 /**
  * @ingroup haptic_driver

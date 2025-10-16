@@ -130,7 +130,7 @@ static void call_state_task_main(void *pvParameters)
     EventBits_t event_bits;
 
     // Initialize hardware
-    drv2603_init(&htim3);
+    drv2603_init();
 
     // Main task loop
     for (;;)
@@ -182,12 +182,6 @@ static void call_state_task_main(void *pvParameters)
         while (xQueueReceive(ctx->queue, &msg, 0))
         {
             process_call_command(ctx, &msg);
-        }
-
-        // Continuously toggle LED while ringing (visual indicator)
-        if (ctx->current_state == CALL_STATE_RINGING)
-        {
-            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
         }
 
         // Yield to other tasks - critical for system responsiveness

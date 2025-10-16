@@ -18,7 +18,7 @@ uint8_t ws2812_brightness;
 void ws2812_init(void)
 {
     ws2812_set_brightness(0);
-    ws2812_fill_led(0xFF, 0xFF, 0xFF);
+    ws2812_fill_led(0xFF, 0x00, 0xFF);
     ws2812_update_leds();
 }
 

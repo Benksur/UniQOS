@@ -99,20 +99,21 @@ uint8_t modem_get_clock(RTC_DateTypeDef *date, RTC_TimeTypeDef *time);
  * @param sender_size Size of sender buffer
  * @param message Buffer to receive message text
  * @param message_size Size of message buffer
+ * @param memtype Pointer to a char array containing 2 items for the memory type 
  * @return 0 on success, error code otherwise
  */
 uint8_t modem_read_sms(uint8_t index, char *sender, size_t sender_size,
-                       char *message, size_t message_size);
-
+                       char *message, size_t message_size, char memtype[3]);
 /**
  * @ingroup modem_driver
  * @brief Check for incoming modem events
  * @param caller_id Buffer to receive caller ID (if incoming call)
  * @param caller_id_size Size of caller_id buffer
  * @param sms_index Pointer to receive SMS index (if incoming SMS)
+ * @param memtype Pointer to a char array containing 2 items for the memory type 
  * @return Event type detected
  */
-ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index);
+ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t *sms_index, char memtype[3]);
 
 /**
  * @ingroup modem_driver
@@ -120,5 +121,13 @@ ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t
  * @return 0 on success, error code otherwise
  */
 uint8_t modem_hang_up(void);
+
+/**
+ * @ingroup modem_driver
+ * @brief Answer incomming call
+ * @param result_code Result code for answer command
+ * @return 0 on success, error code otherwise
+ */
+uint8_t modem_answer_call(enum ATV0ResultCodes *result_code);
 
 #endif /* MODEM_H_ */

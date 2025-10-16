@@ -29,10 +29,12 @@ static void incoming_call_callback(int action, void *user_data)
     case INCOMING_CALL_ACTION_PICKUP:
         // Answer the call
         CallState_PostCommand(ctx->call_ctx, CALL_CMD_ANSWER_CALL, NULL);
+        CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_ANSWER, NULL);
         break;
     case INCOMING_CALL_ACTION_HANGUP:
         // Reject/hangup the call
         CallState_PostCommand(ctx->call_ctx, CALL_CMD_HANGUP_CALL, NULL);
+        CellularTask_PostCommand(ctx->cellular_ctx, CELLULAR_CMD_HANG_UP, NULL);
         break;
     default:
         break;

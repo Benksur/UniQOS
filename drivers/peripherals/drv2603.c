@@ -8,7 +8,7 @@
 #include "drv2603.h"
 #include "errornum.h"
 
-uint8_t drv2603_init()
+uint8_t drv2603_init(void)
 {
     HAL_GPIO_WritePin(DRV2603_ENABLE_PORT, DRV2603_ENABLE_PIN, GPIO_PIN_RESET);
     __HAL_TIM_SET_COMPARE(DRV2603_TIM, DRV2603_TIM_CHANEL, 0);

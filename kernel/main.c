@@ -14,6 +14,7 @@
 #include "kernel.h"
 #include "stm32_config.h"
 #include "sm64_mario_boing.h"
+#include "ws2812.h"
 
 void SystemClock_Config(void);
 static void MPU_Config(void);
@@ -31,7 +32,17 @@ int main(void)
   MX_I2C1_Init();
   MX_I2S1_Init();
   MX_RTC_Init();
+  MX_TIM5_Init();
+  MX_TIM3_Init();
   MX_USART1_UART_Init();
+
+  // start LEDS immediately
+  HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, GPIO_PIN_1, GPIO_PIN_SET);
+  HAL_Delay(100);
+  ws2812_init();
+  ws2812_set_brightness(10);
+  ws2812_fill_led(0xFF, 0x00, 0xFF);
+  ws2812_update_leds();
 
   osKernelInitialize();
   // dont want to use generated freertos init
