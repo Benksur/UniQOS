@@ -121,6 +121,10 @@ $(CSRCS) \
 ../../ui/components/bottom_bar.c \
 ../../ui/pages/games/snake.c\
 ../../ui/pages/games/sweeper.c\
+../../ui/pages/games/games.c\
+../../ui/pages/debug/power_page.c\
+../../ui/pages/debug/imu_page.c\
+../../ui/pages/debug/debug.c\
 ../../ui/overlays/option_overlay.c \
 ../../ui/overlays/incoming_call.c \
 ../../ui/overlays/incoming_text.c \

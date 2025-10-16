@@ -488,7 +488,7 @@ uint8_t at_set_message_format(enum TextModes mode)
 
     // Verify Dialable correct?
 
-    if (snprintf(cmd, sizeof(cmd), "AT+CMGF%d;", mode) < 0)
+    if (snprintf(cmd, sizeof(cmd), "AT+CMGF=%d", mode) < 0)
     {
         DEBUG_PRINTF("ERROR: in creating string \"AT+CMGF%d\"\r\n", mode);
         return EINVAL;

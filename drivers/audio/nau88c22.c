@@ -114,7 +114,7 @@ static uint8_t nau88c22_init(void)
     };
 
     const reg_conf_t init_seq[] = {
-        {NAU_AINTF, 0x051}, // mono, 24 bit audio stream
+        {NAU_AINTF, 0x0D3}, // mono, 24 bit audio stream
         {NAU_CLOCK2, 0x001},
         // {NAU_JACK_DETECT1, 0x040}, // disable now because jack detection is shit
         // {NAU_JACK_DETECT2, 0x021}, // toggle loudspeaker to headphones on jack detect

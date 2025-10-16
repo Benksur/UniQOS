@@ -145,6 +145,10 @@ uint8_t modem_init(void)
     // Enable I2S Audio interface
     // 5 is the default audio profile
     modem_send_command("AT!AVCFG=5,0,1", response, sizeof(response), default_timeout);
+    // modem_send_command("AT!AVCFG=5,0,0,0,0,0,0,2", response, sizeof(response), default_timeout);
+    HAL_Delay(100);
+
+    modem_send_command("AT+CLVL=5", response, sizeof(response), default_timeout);
     HAL_Delay(100);
 
     // Setting message format

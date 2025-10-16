@@ -13,6 +13,8 @@
 #include "gpio.h"
 #include "stm32_config.h"
 #include "usart.h"
+#include "nau88c22.h"
+#include "iaudio_driver.h"
 
 void MPU_Config(void);
 void SystemClock_Config(void);
@@ -28,10 +30,24 @@ int main(void)
 
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
+  MX_I2S1_Init();
 
   modem_power_on();
-  // status = modem_init();
+  // modem_reset();
+  status = modem_init();
   HAL_Delay(3000);
+
+  static const IAudioDriver_t *codec = NULL;
+  codec = nau88c22_get_driver();
+  codec->init();
+  codec->speaker.mute(true);
+  codec->speaker.set_volume(100);
+  codec->speaker.mute(false);
+  codec->speaker.mic.mute(false);
+  codec->speaker.mic.set_volume(100);
+
+  HAL_Delay(1000);
 
   char response[128];
   const uint32_t default_timeout = TIMEOUT_2S;
@@ -42,53 +58,77 @@ int main(void)
   HAL_GPIO_WritePin(AUDIO_SW_GPIO_Port, AUDIO_SW_Pin, GPIO_PIN_SET);
 
   // ret |= at_set_echo(false);
-  while (at_set_echo(false))
-  {
-  };
+  // while (at_set_echo(false))
+  // {
+  // };
 
-  at_set_function_mode(0);
-  HAL_Delay(10000);
-  at_set_function_mode(1);
-  HAL_Delay(10000);
+  // at_set_function_mode(0);
+  // HAL_Delay(10000);
+  // at_set_function_mode(1);
+  // HAL_Delay(10000);
+
+  // memset(response, 0, sizeof(response));
+  // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT!AVCFG=?\r\n",12, HAL_MAX_DELAY);
+  // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+  // HAL_Delay(1000);
+
+  memset(response, 0, sizeof(response));
+  res = HAL_UART_Transmit(&huart1, (uint8_t *)"ATD+61413279693;\r\n",18, HAL_MAX_DELAY);
+  res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+  HAL_Delay(5000);
+
 
   while (1)
   {
+    memset(response, 0, sizeof(response));
+    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT+VTS=1\r\n",10, HAL_MAX_DELAY);
+    res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    HAL_Delay(1000);
     // DSR
-    stat = HAL_GPIO_ReadPin(UART_DSR_GPIO_Port, UART_DSR_Pin);
-    // printf("%d", stat);
-    // RI
-    stat = HAL_GPIO_ReadPin(UART_RI_GPIO_Port, UART_RI_Pin);
-    // printf("%d", stat);
-    // DCD
-    stat = HAL_GPIO_ReadPin(UART_DCD_GPIO_Port, UART_DCD_Pin);
-    // printf("%d", stat);
-    // DTR
-    stat = HAL_GPIO_ReadPin(UART_DTR_GPIO_Port, UART_DTR_Pin);
-    // printf("%d", stat);
+    // stat = HAL_GPIO_ReadPin(UART_DSR_GPIO_Port, UART_DSR_Pin);
+    // // printf("%d", stat);
+    // // RI
+    // stat = HAL_GPIO_ReadPin(UART_RI_GPIO_Port, UART_RI_Pin);
+    // // printf("%d", stat);
+    // // DCD
+    // stat = HAL_GPIO_ReadPin(UART_DCD_GPIO_Port, UART_DCD_Pin);
+    // // printf("%d", stat);
+    // // DTR
+    // stat = HAL_GPIO_ReadPin(UART_DTR_GPIO_Port, UART_DTR_Pin);
+    // // printf("%d", stat);
 
     // memset(response, 0, sizeof(response));
     // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT!GSTATUS?\r\n",13, HAL_MAX_DELAY);
     // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
     // HAL_Delay(1000);
+    // at_set_message_format(TEXTMODE_PDU);
 
+    // memset(response, 0, sizeof(response));
+    // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT+CMGR=11\r\n",13, HAL_MAX_DELAY);
+    // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    // HAL_Delay(1000);
 
+    // memset(response, 0, sizeof(response));
+    // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT+CMGR=12\r\n",13, HAL_MAX_DELAY);
+    // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    // HAL_Delay(1000);
 
-    memset(response, 0, sizeof(response));
-    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT+CPIN?\r\n", 10, HAL_MAX_DELAY);
-    res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
-    HAL_Delay(1000);
+    // memset(response, 0, sizeof(response));
+    // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT+CPIN?\r\n", 10, HAL_MAX_DELAY);
+    // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    // HAL_Delay(1000);
 
-    res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT\r\n", 4, HAL_MAX_DELAY);
-    res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
+    // res = HAL_UART_Transmit(&huart1, (uint8_t *)"AT\r\n", 4, HAL_MAX_DELAY);
+    // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
     // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
     // res = HAL_UART_Transmit(&huart1, (uint8_t *)"ATE0\r\n", 6, HAL_MAX_DELAY);
     // res = HAL_UART_Receive(&MODEM_UART_HANDLE, response, 128, 1000);
 
-    RTC_DateTypeDef date;
-    RTC_TimeTypeDef time;
-    ret = at_get_clock(&date, &time);
-    printf("%d %d", ret, date.Date);
-    HAL_Delay(1000);
+    // RTC_DateTypeDef date;
+    // RTC_TimeTypeDef time;
+    // ret = at_get_clock(&date, &time);
+    // printf("%d %d", ret, date.Date);
+    // HAL_Delay(1000);
 
     // at_check_cpin();
     // HAL_Delay(500);
