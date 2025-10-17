@@ -55,9 +55,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         // Clear the interrupt flag FIRST to prevent spurious re-triggers
         __HAL_GPIO_EXTI_CLEAR_IT(MODEM_RI_Pin);
 
-        // Disable interrupt temporarily to ignore the 50ms pulse and any bouncing
-        HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
-
         // DEBUG: Toggle LED in ISR to verify interrupt fires
         // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 
@@ -245,13 +242,11 @@ static void cellular_task_main(void *pvParameters)
             }
 
             // Wait for pin to return HIGH (pulse should be ~50ms), then re-enable interrupt
-            osDelay(100);
+            osDelay(50);
 
             // Clear any pending interrupt that may have occurred during processing
             __HAL_GPIO_EXTI_CLEAR_IT(MODEM_RI_Pin);
 
-            // Re-enable interrupt for next event
-            HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
         }
 
         // Periodic signal strength check (every 10 seconds)
