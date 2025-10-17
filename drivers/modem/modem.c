@@ -43,6 +43,9 @@ uint8_t modem_init(void)
         HAL_Delay(500);
     }
 
+    // Cheeky 
+    modem_write_command("\x1B\x1B");
+
     // test AT startup
     while (1)
     {
@@ -165,6 +168,16 @@ uint8_t modem_init(void)
         return ret;
     }
     HAL_Delay(100);
+
+    // modem_send_command("AT+CSCS=\"GSM\"", response, sizeof(response), default_timeout);
+    // HAL_Delay(1000);
+    // modem_write_command("AT+CMGS=\"+61413279693\"\r");
+    // HAL_Delay(1000);
+
+    // modem_write_command("TEST\x1A");
+    // char ctrl_z[2] = {0x1A, 0x00};
+    // ret |= modem_write_command(ctrl_z);
+
 
     return ret; // Initialization successful
 }

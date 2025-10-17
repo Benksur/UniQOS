@@ -552,6 +552,16 @@ uint8_t at_send_sms_textmode(const char *sms_address, const char *sms_message)
     char response[128];
     uint8_t ret = 0;
 
+    // Magic code NO WORK IF REMOVE 
+    modem_send_command("AT+CSCS=\"GSM\"", response, sizeof(response), TIMEOUT_2S);
+    HAL_Delay(100);
+    // modem_write_command("AT+CMGS=\"+61413279693\"\r");
+    // HAL_Delay(1000);
+
+    // modem_write_command("TEST\x1A");
+    // return 0;
+
+    // int cmd_len = snprintf(command_buffer, sizeof(command_buffer), "AT+CMGS=\"+61413279693\"\r\n");
     int cmd_len = snprintf(command_buffer, sizeof(command_buffer), "AT+CMGS=\"%s\"\r", sms_address);
     if (cmd_len < 0 || cmd_len >= sizeof(command_buffer))
     {
@@ -567,27 +577,27 @@ uint8_t at_send_sms_textmode(const char *sms_address, const char *sms_message)
         return ret;
     }
 
-    HAL_Delay(100);
-    memset(response, 0, sizeof(response));
-    ret |= modem_read_response((uint8_t *)response, sizeof(response), TIMEOUT_1S);
-    if (ret)
-    {
-        DEBUG_PRINTF("Did not receive prompt > within timeout.\r\n");
-        return ret;
-    }
+    HAL_Delay(5000);
+    // memset(response, 0, sizeof(response));
+    // ret |= modem_read_response((uint8_t *)response, sizeof(response), TIMEOUT_30S);
+    // if (ret)
+    // {
+    //     DEBUG_PRINTF("Did not receive prompt > within timeout.\r\n");
+    //     return ret;
+    // }
 
-    char *prompt_start = response;
-    while (*prompt_start == '\r' || *prompt_start == '\n' || *prompt_start == ' ')
-    {
-        prompt_start++;
-    }
+    // char *prompt_start = response;
+    // while (*prompt_start == '\r' || *prompt_start == '\n' || *prompt_start == ' ')
+    // {
+    //     prompt_start++;
+    // }
 
-    if (strncmp(prompt_start, "> ", 2) != 0)
-    {
-        DEBUG_PRINTF("Did not receive correct prompt >. Received:\r\n%s\r\n", response);
-        return EBADMSG;
-    }
-    DEBUG_PRINTF("Received prompt >\r\n");
+    // if (strncmp(prompt_start, "> ", 2) != 0)
+    // {
+    //     DEBUG_PRINTF("Did not receive correct prompt >. Received:\r\n%s\r\n", response);
+    //     return EBADMSG;
+    // }
+    // DEBUG_PRINTF("Received prompt >\r\n");
 
     DEBUG_PRINTF("Sending message body: %s\r\n", sms_message);
     ret |= modem_write_command(sms_message);
@@ -598,13 +608,14 @@ uint8_t at_send_sms_textmode(const char *sms_address, const char *sms_message)
     }
 
     DEBUG_PRINTF("Sending Ctrl+Z (0x1A)\r\n");
-    char ctrl_z[2] = {0x1A, 0x00};
-    ret |= modem_write_command(ctrl_z);
+    ret |= modem_write_command("\x1A");
     if (ret)
     {
         DEBUG_PRINTF("Failed to write Ctrl+Z.\r\n");
         return ret;
     }
+
+    return 0;
 
     memset(response, 0, sizeof(response));
     ret |= modem_read_response((uint8_t *)response, sizeof(response), TIMEOUT_5S);
