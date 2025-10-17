@@ -33,23 +33,7 @@ void input_task_main(void *pvParameters)
             {
                 event = keypad_get_button_event(button_idx);
 
-                // Handle test trigger - STAR key triggers incoming call test
-                if (event == INPUT_KEYPAD_STAR && input_ctx->call_ctx)
-                {
-                    static CallData test_call = {
-                        .caller_id = "+61413279693"};
-                    CallState_PostCommand(input_ctx->call_ctx, CALL_CMD_INCOMING_CALL, &test_call);
-                }
-                // Handle test trigger - HASH key triggers incoming SMS test
-                // else if (event == INPUT_KEYPAD_HASH && display_ctx)
-                // {
-                //     static ReceivedSms test_sms = {
-                //         .sender = "+61412345678",
-                //         .body = "Hello! This is a test SMS message from the input task. Testing the SMS notification system."};
-                //     DisplayTask_PostCommand(display_ctx, DISPLAY_SHOW_SMS, &test_sms);
-                // }
-                // Handle audio-specific events
-                else if (event == INPUT_VOLUME_UP)
+                if (event == INPUT_VOLUME_UP)
                 {
                     // Send volume up command to audio task
                     if (audio_ctx)
