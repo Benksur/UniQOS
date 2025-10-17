@@ -297,6 +297,7 @@ static void cellular_task_main(void *pvParameters)
         {
             dispatch_cellular_command(ctx, &msg);
         }
+        osDelay(100);
     }
 }
 

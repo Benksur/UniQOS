@@ -26,7 +26,7 @@
 
 /** @ingroup cellular_task
  *  @brief Cellular task priority */
-#define CELLULAR_TASK_PRIORITY osPriorityAboveNormal
+#define CELLULAR_TASK_PRIORITY osPriorityNormal
 
 /**
  * @brief Cellular command enumeration

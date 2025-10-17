@@ -7,8 +7,9 @@
             "request": "launch",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
-            "executable": "./build/test_display.elf",
-            "device": "STM32H753xx",
+            "executable": "./build/${fileBasenameNoExtension}.elf",
+            "device": "STM32H723xx",
+            "gdbPath": "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin/arm-none-eabi-gdb",
             "configFiles": [
                 "interface/stlink.cfg",
                 "target/stm32h7x.cfg"

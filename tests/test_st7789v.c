@@ -128,7 +128,7 @@ int main(void)
       {
         if (keypad_is_button_pressed(button_idx))
         {
-          HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+          // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
           input_event_t event = keypad_get_button_event(button_idx);
 
           // Handle special cases
@@ -174,7 +174,7 @@ int main(void)
           }
           // Play sound for numeric keypad presses
         }
-        HAL_Delay(500);
+        // HAL_Delay(500);
         status_bar_update_battery(bq27441_SOC());
         status_bar_tick();
         screen_tick();
