@@ -42,9 +42,14 @@ uint8_t modem_init(void)
     {
         HAL_Delay(500);
     }
-
+    // modem_reset();
+    // HAL_Delay(5000);
+    at_set_function_mode(0);
+    HAL_Delay(1000);
+    at_set_function_mode(1);
+    HAL_Delay(5000);
     // Cheeky 
-    modem_write_command("\x1B\x1B");
+    // modem_write_command("\x1B\x1B");   
 
     // test AT startup
     while (1)
@@ -68,7 +73,7 @@ uint8_t modem_init(void)
     if (ret)
     {
         DEBUG_PRINTF("FATAL ERROR ON INIT: ECHO");
-        return ret;
+        // return ret;
     }
     HAL_Delay(100);
 
@@ -77,7 +82,7 @@ uint8_t modem_init(void)
     if (ret)
     {
         DEBUG_PRINTF("FATAL ERROR ON INIT: GPSENABLE");
-        return ret;
+        // return ret;
     }
     HAL_Delay(100);
 
@@ -86,7 +91,7 @@ uint8_t modem_init(void)
     if (ret)
     {
         DEBUG_PRINTF("FATAL ERROR ON INIT: SIM PASSWORD");
-        return ret;
+        // return ret;
     }
     HAL_Delay(100);
 
@@ -118,7 +123,7 @@ uint8_t modem_init(void)
     if (ret)
     {
         DEBUG_PRINTF("FATAL ERROR ON INIT: AUTO TIMEZONE");
-        return ret;
+        // return ret;
     }
 
     // Set APN to telstra IP
@@ -165,7 +170,7 @@ uint8_t modem_init(void)
     if (ret)
     {
         DEBUG_PRINTF("FATAL ERROR ON INIT: TEXTMODE");
-        return ret;
+        // return ret;
     }
     HAL_Delay(100);
 
