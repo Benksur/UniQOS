@@ -715,7 +715,7 @@ uint8_t at_call_dial(char *dial_string, enum ATV0ResultCodes *result_code)
         return EINVAL;
     }
 
-    ret |= modem_send_command(cmd, response, sizeof(response), TIMEOUT_2S);
+    ret |= modem_send_command_norepeat(cmd, response, sizeof(response), TIMEOUT_2S);
 
     if (ret)
     {

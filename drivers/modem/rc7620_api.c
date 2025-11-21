@@ -57,6 +57,43 @@ uint8_t depr_modem_read_response(uint8_t *buffer, uint16_t max_len, uint32_t tim
     return 0;
 }
 
+uint8_t modem_send_command_norepeat(const char *command, char *response, uint16_t response_size, uint32_t timeout)
+{
+    char cmd_buffer[128]; // may need to dynamically allocate
+    int cmd_len = snprintf(cmd_buffer, sizeof(cmd_buffer), "%s\r\n", command);
+    uint8_t ret = 0;
+    uint32_t start_tick = HAL_GetTick();
+
+    if (cmd_len < 0 || cmd_len >= sizeof(cmd_buffer))
+    {
+        DEBUG_PRINTF("ERROR: Bad Command Size\r\n");
+        return E2BIG;
+    }
+
+    HAL_UART_Receive(&MODEM_UART_HANDLE, response, 100, 10);
+
+    while (HAL_GetTick() - start_tick < timeout)
+    {
+        DEBUG_PRINTF("Writing AT command: %s\r\n", cmd_buffer);
+        ret = modem_write_command(cmd_buffer);
+        if (ret)
+        {
+            return ret;
+        }
+
+        ret = modem_read_response((uint8_t *)response, response_size, 100);
+        if (ret == 0)
+        {
+            return ret;
+            DEBUG_PRINTF("Got AT command response: %s\r\n", response);
+        }
+
+        HAL_Delay(500);
+    }
+
+    return ret;
+}
+
 uint8_t modem_send_command(const char *command, char *response, uint16_t response_size, uint32_t timeout)
 {
     char cmd_buffer[128]; // may need to dynamically allocate
@@ -91,6 +128,7 @@ uint8_t modem_send_command(const char *command, char *response, uint16_t respons
 
     return ret;
 }
+
 uint8_t modem_check_response_ok(const char *response)
 {
     //may want to adjust

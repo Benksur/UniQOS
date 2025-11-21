@@ -134,8 +134,8 @@ static void games_handle_input(Page *self, int event_type)
         }
         case 1:
         {
-            Page *sweeper_page = sweeper_page_create();
-            screen_push_page(sweeper_page);
+            // Page *sweeper_page = sweeper_page_create();
+            // screen_push_page(sweeper_page);
             break;
         }
         }

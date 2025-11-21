@@ -132,12 +132,18 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB_MENU_R_Pin UART_DTR_Pin FUEL_GPO_Pin MCP_STAT2_Pin
+  /*Configure GPIO pins : UART_DTR_Pin FUEL_GPO_Pin MCP_STAT2_Pin
                            MOB_PWR_REM_Pin HP_DET_Pin */
-  GPIO_InitStruct.Pin = PB_MENU_R_Pin|UART_DTR_Pin|FUEL_GPO_Pin|MCP_STAT2_Pin
+  GPIO_InitStruct.Pin = UART_DTR_Pin|FUEL_GPO_Pin|MCP_STAT2_Pin
                           |MOB_PWR_REM_Pin|HP_DET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB_MENU_R_Pin */
+  GPIO_InitStruct.Pin = PB_MENU_R_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : UART_DSR_Pin */

@@ -228,6 +228,12 @@ ModemEventType modem_check_event(char *caller_id, size_t caller_id_size, uint8_t
     memset(buffer, 0, sizeof(buffer));
     uint16_t received_len = 0;
 
+    // magic code
+    __HAL_UART_CLEAR_FLAG(&MODEM_UART_HANDLE, UART_CLEAR_OREF | UART_CLEAR_PEF | UART_CLEAR_FEF);
+    MODEM_UART_HANDLE.gState = HAL_UART_STATE_READY;
+    MODEM_UART_HANDLE.RxState = HAL_UART_STATE_READY;
+
+
     HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle(&MODEM_UART_HANDLE, (uint8_t *)buffer, sizeof(buffer) - 1, &received_len, 6000);
 
     if ((status == HAL_OK || status == HAL_TIMEOUT) && received_len > 0)
