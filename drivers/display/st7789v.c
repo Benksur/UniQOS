@@ -42,7 +42,13 @@ static void st7789v_init(void)
 {
   uint8_t parameter[16];
   if (!lcd)
+  {
+#ifdef BOARD_NUCLEO_FMC
+    lcd = lcd_create_fmc();
+#else
     lcd = lcd_create_spi();
+#endif
+  }
   lcd->init();
 
   /* Software Reset */

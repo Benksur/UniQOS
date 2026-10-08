@@ -12,6 +12,12 @@
 #include "stm32_config.h"
 #include "main.h"
 
+#ifdef BOARD_NUCLEO_FMC
+// NUCLEO-H723ZG blue user button: PC13, external pull-down, high when pressed
+#define NUCLEO_B1_GPIO_Port GPIOC
+#define NUCLEO_B1_Pin GPIO_PIN_13
+#endif
+
 // Button state bitmap - each bit represents a button state
 static uint32_t button_states;
 static uint32_t button_states_last;
@@ -43,7 +49,9 @@ static const button_map_t button_map[] = {
     {PB_3_GPIO_Port, PB_3_Pin, INPUT_KEYPAD_3, 3},
     {PB_4_GPIO_Port, PB_4_Pin, INPUT_KEYPAD_4, 4},
     {PB_5_GPIO_Port, PB_5_Pin, INPUT_KEYPAD_5, 5},
+#ifndef BOARD_NUCLEO_FMC /* PD5 is the LCD's FMC_NWE on the Nucleo */
     {PB_6_GPIO_Port, PB_6_Pin, INPUT_KEYPAD_6, 6},
+#endif
     {PB_7_GPIO_Port, PB_7_Pin, INPUT_KEYPAD_7, 7},
     {PB_8_GPIO_Port, PB_8_Pin, INPUT_KEYPAD_8, 8},
     {PB_9_GPIO_Port, PB_9_Pin, INPUT_KEYPAD_9, 9},
@@ -55,15 +63,23 @@ static const button_map_t button_map[] = {
     {PB_DPAD_DOWN_GPIO_Port, PB_DPAD_DOWN_Pin, INPUT_DPAD_DOWN, 13},
     {PB_DPAD_LEFT_GPIO_Port, PB_DPAD_LEFT_Pin, INPUT_DPAD_LEFT, 14},
     {PB_DPAD_RIGHT_GPIO_Port, PB_DPAD_RIGHT_Pin, INPUT_DPAD_RIGHT, 15},
+#ifndef BOARD_NUCLEO_FMC /* PC0 is the LCD's FMC_D12 on the Nucleo */
     {PB_DPAD_SELECT_GPIO_Port, PB_DPAD_SELECT_Pin, INPUT_SELECT, 16},
+#else /* Nucleo blue user button B1 (active high) stands in for Select */
+    {NUCLEO_B1_GPIO_Port, NUCLEO_B1_Pin, INPUT_SELECT, 16},
+#endif
 
     // Menu buttons
     {PB_MENU_L_GPIO_Port, PB_MENU_L_Pin, INPUT_LEFT, 17},
+#ifndef BOARD_NUCLEO_FMC /* PD4 is the LCD's FMC_NOE on the Nucleo */
     {PB_MENU_R_GPIO_Port, PB_MENU_R_Pin, INPUT_RIGHT, 18},
+#endif
 
     // Phone buttons
     {PB_CALL_GPIO_Port, PB_CALL_Pin, INPUT_PICKUP, 19},
+#ifndef BOARD_NUCLEO_FMC /* PD7 is the LCD's chip select on the Nucleo */
     {PB_END_CALL_GPIO_Port, PB_END_CALL_Pin, INPUT_HANGUP, 20},
+#endif
 
     // Volume and power buttons
     {PB_VOL_UP_GPIO_Port, PB_VOL_UP_Pin, INPUT_VOLUME_UP, 21},
@@ -82,6 +98,15 @@ static button_debounce_t button_debounce[BUTTON_COUNT] = {0};
  */
 void keypad_init(void)
 {
+#ifdef BOARD_NUCLEO_FMC
+    // PC13 is MOB_PWR (an output) in the phone PCB config; make it an input
+    // for B1. The board already has a pull-down on it.
+    GPIO_InitTypeDef gpio = {0};
+    gpio.Pin = NUCLEO_B1_Pin;
+    gpio.Mode = GPIO_MODE_INPUT;
+    gpio.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(NUCLEO_B1_GPIO_Port, &gpio);
+#endif
     // clear button states
     button_states = 0;
     button_states_last = 0;
@@ -114,6 +139,12 @@ void keypad_update_states(void)
 
         // read current gpio state
         bool current_gpio_state = (HAL_GPIO_ReadPin(button->port, button->pin) == GPIO_PIN_RESET);
+#ifdef BOARD_NUCLEO_FMC
+        if (button->port == NUCLEO_B1_GPIO_Port && button->pin == NUCLEO_B1_Pin)
+        {
+            current_gpio_state = !current_gpio_state; // B1 is active high
+        }
+#endif
 
         // debouncing logic
         if (current_gpio_state != debounce->is_pressed)

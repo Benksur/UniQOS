@@ -15,6 +15,9 @@
 #include "stm32_config.h"
 #include "sm64_mario_boing.h"
 #include "ws2812.h"
+#ifdef BOARD_NUCLEO_FMC
+#include "fmc_nucleo.h"
+#endif
 
 void SystemClock_Config(void);
 static void MPU_Config(void);
@@ -35,6 +38,10 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
+#ifdef BOARD_NUCLEO_FMC
+  // last, so the LCD bus wins the pins the phone PCB config also claims
+  fmc_nucleo_init();
+#endif
 
   // start LEDS immediately
   HAL_GPIO_WritePin(LOAD_SW_GPIO_Port, GPIO_PIN_1, GPIO_PIN_SET);

@@ -11,6 +11,12 @@ else ifeq ($(BOARD), pcb)
 LDSCRIPT = STM32H723XG_FLASH.ld
 STARTUP_FILE = startup_stm32h723xx.s
 BOARD_C_DEF = -DSTM32H723xx
+else ifeq ($(BOARD), nucleo)
+# NUCLEO-H723ZG with the ST7789V LCD on FMC (see drivers/display/fmc_nucleo.c)
+LDSCRIPT = STM32H723XG_FLASH.ld
+STARTUP_FILE = startup_stm32h723xx.s
+BOARD_C_DEF = -DSTM32H723xx -DBOARD_NUCLEO_FMC
+BOARD_SOURCES = ../../drivers/display/fmc_nucleo.c
 else ifeq ($(BOARD), dev)
 LDSCRIPT = STM32H753XX_FLASH.ld
 STARTUP_FILE = startup_stm32h753xx.s
@@ -22,7 +28,7 @@ BOARD_C_DEF = -DSTM32H753xx \
               -DRCC_USART16910CLKSOURCE_CSI=RCC_USART16CLKSOURCE_CSI \
               -DRCC_USART16910CLKSOURCE_LSE=RCC_USART16CLKSOURCE_LSE
 else
-$(error Invalid BOARD specified: $(BOARD). Use 'pcb' or 'dev')
+$(error Invalid BOARD specified: $(BOARD). Use 'pcb', 'dev' or 'nucleo')
 endif
 
 # Combine common and board-specific C definitions
@@ -51,6 +57,7 @@ SUBMAKE_C_DEFS := $(COMMON_C_DEFS) $(BOARD_C_DEF) \
 # Custom driver sources - files specific to project. filenames are relative to third_party/stm32 makefile
 CUSTOM_DRIVER_SOURCES := \
 $(CSRCS) \
+$(BOARD_SOURCES) \
 ../../drivers/display/st7789v.c \
 ../../drivers/display/LCD_Controller.c \
 ../../drivers/display/display.c \

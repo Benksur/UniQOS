@@ -23,7 +23,7 @@ static void fmc_write_reg(uint8_t Reg)
 
 static void fmc_write_data8(uint8_t data)
 {
-    *FMC_BANK1_DATA = data && 0x00FF;
+    *FMC_BANK1_DATA = data & 0x00FF;
 }
 
 static void fmc_write_data16(uint16_t data)
